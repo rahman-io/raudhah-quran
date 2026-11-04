@@ -42,7 +42,7 @@ CLIPS = [
     ("س", "04022", 2.50, 2.96),
     ("ز", "04023", 1.05, 1.84),
     ("ظ", "04024", 1.31, 1.80),
-    ("ذ", "04025", 1.08, 1.74),
+    ("ذ", "04025", 1.36, 1.74),
     ("ث", "04026", 2.47, 2.90),
     ("ف", "04027", 2.34, 2.82),
     ("و", "04028", 1.42, 2.12),
@@ -82,6 +82,14 @@ def extract(apk: Path, only: str | None = None) -> None:
                 for i in range(fade_samples):
                     index = len(samples) - fade_samples + i
                     samples[index] = round(samples[index] * (1 - (i + 1) / fade_samples))
+                frames = samples.tobytes()
+            if audio_id == "04025":
+                # Fade in DZA after the preceding "ha" in the source recording.
+                samples = array("h")
+                samples.frombytes(frames)
+                fade_samples = round(0.02 * rate) * params.nchannels
+                for i in range(fade_samples):
+                    samples[i] = round(samples[i] * (i + 1) / fade_samples)
                 frames = samples.tobytes()
             cut = scratch / "cut.wav"
             with wave.open(str(cut), "wb") as wav:
