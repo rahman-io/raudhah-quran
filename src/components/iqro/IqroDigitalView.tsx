@@ -26,7 +26,9 @@ import { IQRO_LEVELS, IqroJilid, IqroPage, IqroItem } from '../../data/iqroData'
 import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
 import { playIqroItem, stopIqroAudio } from '../../utils/iqroAudioEngine';
-import { Iqro1BookPage, IQRO1_BOOK_PAGE_COUNT } from './Iqro1BookPage';
+import { iqro1PagesFromBook } from '../../data/iqro1PdfContent';
+
+const iqro1BookPages = iqro1PagesFromBook(IQRO_LEVELS[0].pages);
 
 interface IqroDigitalViewProps {
   onGoToQuiz?: () => void;
@@ -69,7 +71,10 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
     }
   });
 
-  const currentJilid: IqroJilid = IQRO_LEVELS.find((l) => l.level === selectedLevel) || IQRO_LEVELS[0];
+  const selectedJilid = IQRO_LEVELS.find((l) => l.level === selectedLevel) || IQRO_LEVELS[0];
+  const currentJilid: IqroJilid = selectedLevel === 1
+    ? { ...selectedJilid, pages: iqro1BookPages }
+    : selectedJilid;
   const currentPage: IqroPage = currentJilid.pages[activePageIndex] || currentJilid.pages[0];
 
   // Save progress
@@ -98,13 +103,9 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
   };
 
   const getJilidProgress = (jilidLevel: number) => {
-    if (jilidLevel === 1) {
-      const completed = Array.from({ length: IQRO1_BOOK_PAGE_COUNT }, (_, index) =>
-        completedCards[`L1_BOOK_P${index + 1}`] ? 1 : 0
-      ).reduce<number>((sum, value) => sum + value, 0);
-      return { completed, total: IQRO1_BOOK_PAGE_COUNT, percent: Math.round(completed / IQRO1_BOOK_PAGE_COUNT * 100) };
-    }
-    const jilid = IQRO_LEVELS.find((l) => l.level === jilidLevel);
+    const jilid = jilidLevel === 1
+      ? { ...IQRO_LEVELS[0], pages: iqro1BookPages }
+      : IQRO_LEVELS.find((l) => l.level === jilidLevel);
     if (!jilid) return { completed: 0, total: 0, percent: 0 };
     let total = 0;
     let completed = 0;
@@ -147,16 +148,6 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
   };
 
   const handleNextPage = () => {
-    if (selectedLevel === 1) {
-      sounds.playWordClick();
-      if (activePageIndex < IQRO1_BOOK_PAGE_COUNT - 1) {
-        setActivePageIndex((prev) => prev + 1);
-      } else {
-        setCompletedCards((prev) => ({ ...prev, L1_BOOK_P31: true }));
-        setCompletedLevels((prev) => prev.includes(1) ? prev : [...prev, 1]);
-      }
-      return;
-    }
     if (activePageIndex < currentJilid.pages.length - 1) {
       sounds.playWordClick();
       setActivePageIndex((prev) => prev + 1);
@@ -337,7 +328,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             {/* Voice Mode Toggle (Human WebAudio Stitch vs AI Syekh Qari) */}
-            {selectedLevel !== 1 && import.meta.env.VITE_STATIC_PAGES !== 'true' && <button
+            {import.meta.env.VITE_STATIC_PAGES !== 'true' && <button
               type="button"
               onClick={() => setUseAiVoice(!useAiVoice)}
               className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
@@ -388,7 +379,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
         </div>
 
         {/* Primary Rule from KH As'ad Humam */}
-        {selectedLevel !== 1 && <div className="p-3 bg-white dark:bg-slate-900/80 rounded-xl border border-[#84A98C]/40 text-[#2F3E46] dark:text-slate-200 flex items-start gap-2.5">
+        <div className="p-3 bg-white dark:bg-slate-900/80 rounded-xl border border-[#84A98C]/40 text-[#2F3E46] dark:text-slate-200 flex items-start gap-2.5">
           <Lightbulb className="w-4 h-4 text-[#E9C46A] shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <span className="font-bold text-[11px] text-[#E76F51]">
@@ -398,22 +389,11 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
               {currentJilid.keyRule}
             </p>
           </div>
-        </div>}
+        </div>
       </div>
 
       {/* Main Interactive Reading Page Card */}
-      {selectedLevel === 1 ? (
-        <Iqro1BookPage
-          pageNumber={activePageIndex + 1}
-          completed={!!completedCards[`L1_BOOK_P${activePageIndex + 1}`]}
-          showLatin={showLatin}
-          playingItemId={playingItemId}
-          onPlay={(item) => handlePlayItemAudio(item, 'book')}
-          onToggleCompleted={() => toggleCardCompleted(`L1_BOOK_P${activePageIndex + 1}`)}
-          onPrevious={handlePrevPage}
-          onNext={handleNextPage}
-        />
-      ) : !isQuizMode ? (
+      {!isQuizMode ? (
         (() => {
           const pageTotalCards = currentPage.rows.reduce((sum, row) => sum + row.items.length, 0);
           const pageCompletedCards = currentPage.rows.reduce((sum, row) => {
