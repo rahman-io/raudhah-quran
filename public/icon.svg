@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="128" fill="#2F3E46"/>
+  <circle cx="256" cy="256" r="210" stroke="#E9C46A" stroke-width="4" stroke-dasharray="12 12" opacity="0.6"/>
+  <!-- Open Holy Quran Book shape -->
+  <path d="M256 340 C220 320 160 320 110 334 L110 200 C160 184 220 184 256 206 C292 184 352 184 402 200 L402 334 C352 320 292 320 256 340 Z" fill="#FDFBF7" stroke="#E9C46A" stroke-width="8"/>
+  <path d="M256 206 L256 340" stroke="#84A98C" stroke-width="6"/>
+  <!-- Rehal Stand / Base -->
+  <path d="M160 380 L352 380 M200 340 L312 420 M312 340 L200 420" stroke="#E9C46A" stroke-width="12" stroke-linecap="round"/>
+  <!-- Sprouting Leaf of Paradise (Taman Surga) -->
+  <path d="M256 160 C256 110 290 90 290 90 C290 90 290 130 256 160 Z" fill="#84A98C"/>
+  <path d="M256 160 C256 110 222 90 222 90 C222 90 222 130 256 160 Z" fill="#52796F"/>
+  <circle cx="256" cy="74" r="8" fill="#E9C46A"/>
+</svg>

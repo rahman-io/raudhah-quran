@@ -1,0 +1,6 @@
+{
+  "name": "Raudhah Qur'an - Gamifikasi Tahfidz & Tadabbur",
+  "description": "Aplikasi gamifikasi hafalan dan tadabbur Al-Qur'an 2D yang interaktif, menenangkan (cozy aesthetic), dengan Mode Ceria dan Mode Sakinah, visualizer Taman Surga, dan audio murottal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
