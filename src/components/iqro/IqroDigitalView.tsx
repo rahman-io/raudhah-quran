@@ -37,9 +37,9 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
   // State
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
   const [activePageIndex, setActivePageIndex] = useState<number>(0);
-  const [audioSpeed, setAudioSpeed] = useState<number>(0.85);
+  const [audioSpeed, setAudioSpeed] = useState<number>(1.0);
   const [showLatin, setShowLatin] = useState<boolean>(true);
-  const [useAiVoice, setUseAiVoice] = useState<boolean>(true);
+  const [useAiVoice, setUseAiVoice] = useState<boolean>(false);
   const [playingItemId, setPlayingItemId] = useState<string | null>(null);
 
   // Quiz State
@@ -127,7 +127,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
     setPlayingItemId(uniqueKey);
 
     playIqroItem(item, audioSpeed, () => {
-      setPlayingItemId(null);
+      setPlayingItemId((current) => current === uniqueKey ? null : current);
     }, useAiVoice);
   };
 
@@ -328,10 +328,10 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                   ? 'bg-[#1D3557] text-[#E9C46A] border-[#E9C46A]/60 shadow-xs ring-2 ring-[#E9C46A]/30'
                   : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-[#1D3557] dark:text-slate-200 hover:bg-slate-50'
               }`}
-              title="Ganti Mode Audio: Suara Rekaman Manusia vs Syekh AI Qari"
+              title="Rekaman yang cocok selalu dipakai; pilih AI untuk bacaan yang belum memiliki rekaman"
             >
               <Sparkles className="w-3.5 h-3.5 text-[#E9C46A]" />
-              <span>{useAiVoice ? '🎙️ AI Syekh Qari' : '🔊 Audio Manusia'}</span>
+              <span>{useAiVoice ? '🎙️ AI untuk bacaan lain' : '🔊 Bacaan kartu'}</span>
             </button>
 
             {/* Speed Controller */}

@@ -9,6 +9,7 @@
 let audioCtx: AudioContext | null = null;
 const bufferCache = new Map<string, AudioBuffer>();
 let activeSourceNode: AudioBufferSourceNode | null = null;
+let playbackGeneration = 0;
 
 /**
  * Get or initialize Web Audio Context singleton.
@@ -53,6 +54,7 @@ export async function fetchAndDecodeAudio(url: string): Promise<AudioBuffer | nu
  * Stop any currently playing concatenated audio.
  */
 export function stopConcatenatedAudio(): void {
+  playbackGeneration++;
   if (activeSourceNode) {
     try {
       activeSourceNode.stop();
@@ -79,6 +81,8 @@ export async function concatenateAudioUrls(
 
   // Fetch all buffers in parallel
   const buffers = await Promise.all(urls.map((url) => fetchAndDecodeAudio(url)));
+  // A partial sequence would teach the wrong reading; let the caller fall back.
+  if (buffers.some((buffer) => buffer === null)) return null;
   const validBuffers = buffers.filter((b): b is AudioBuffer => b !== null);
 
   if (validBuffers.length === 0) return null;
@@ -144,10 +148,11 @@ export async function playStitchedAudio(
   onEnd?: () => void
 ): Promise<boolean> {
   stopConcatenatedAudio();
+  const generation = playbackGeneration;
 
   const combinedBuffer = await concatenateAudioUrls(urls, 35);
+  if (generation !== playbackGeneration) return true;
   if (!combinedBuffer) {
-    if (onEnd) onEnd();
     return false;
   }
 
@@ -160,6 +165,7 @@ export async function playStitchedAudio(
     source.connect(ctx.destination);
 
     source.onended = () => {
+      if (activeSourceNode !== source) return;
       activeSourceNode = null;
       if (onEnd) onEnd();
     };
@@ -169,7 +175,6 @@ export async function playStitchedAudio(
     return true;
   } catch (err) {
     console.error('Error playing stitched Web Audio:', err);
-    if (onEnd) onEnd();
     return false;
   }
 }

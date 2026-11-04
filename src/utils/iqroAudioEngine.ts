@@ -3,14 +3,31 @@
  * Mad Elongation, and 100% Arabic Harakat Precision.
  */
 
-import { playHumanQariAudio, stopPronunciation, getSingleLetterAudioUrl } from './tajwidAudio';
+import { playHumanQariAudio, stopPronunciation, IQRO_HARAKAT_AUDIO_MAP } from './tajwidAudio';
 import { playStitchedAudio, stopConcatenatedAudio } from './webAudioConcatenator';
 import { IqroItem } from '../data/iqroData';
 
 let activeSequentialTimer: NodeJS.Timeout | null = null;
 let activeSpeechUtterance: SpeechSynthesisUtterance | null = null;
+let playbackGeneration = 0;
+let activeAiAudio: HTMLAudioElement | null = null;
+
+// Only use recordings that pronounce the written vowel. The /audio/letters
+// recordings say letter names and are unsuitable for Iqro's direct reading.
+export function getIqroRecordedUrls(item: IqroItem): string[] | null {
+  if (item.audioUrls?.length) return item.audioUrls;
+  if (item.audioUrl) return [item.audioUrl];
+  const syllables = item.arabic.trim().split(/\s+/u);
+  const urls = syllables.map((part) => IQRO_HARAKAT_AUDIO_MAP[part]);
+  return urls.every((url) => url?.startsWith('/audio/iqro/harakat/')) ? urls : null;
+}
 
 export function stopIqroAudio() {
+  playbackGeneration++;
+  if (activeAiAudio) {
+    activeAiAudio.pause();
+    activeAiAudio = null;
+  }
   stopPronunciation();
   stopConcatenatedAudio();
   if (activeSequentialTimer) {
@@ -20,6 +37,7 @@ export function stopIqroAudio() {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
+  activeSpeechUtterance = null;
 }
 
 /**
@@ -32,6 +50,7 @@ export function playSequentialAudio(
   onEnd?: () => void
 ): void {
   stopIqroAudio();
+  const generation = playbackGeneration;
 
   if (!urls || urls.length === 0) {
     if (onEnd) onEnd();
@@ -40,10 +59,11 @@ export function playSequentialAudio(
 
   // Use Web Audio API PCM stitching for click-free human voice concatenation
   playStitchedAudio(urls, speed, onEnd).then((success) => {
-    if (!success) {
+    if (!success && generation === playbackGeneration) {
       // Fallback to sequential HTML5 audio player if Web Audio decode fails
       let index = 0;
       function playNext() {
+        if (generation !== playbackGeneration) return;
         if (index >= urls.length) {
           if (onEnd) onEnd();
           return;
@@ -98,11 +118,13 @@ export function speakArabicHarakat(
     utterance.pitch = 1.0;
 
     utterance.onend = () => {
+      if (activeSpeechUtterance !== utterance) return;
       activeSpeechUtterance = null;
       if (onEnd) onEnd();
     };
 
     utterance.onerror = () => {
+      if (activeSpeechUtterance !== utterance) return;
       activeSpeechUtterance = null;
       if (onEnd) onEnd();
     };
@@ -125,8 +147,8 @@ export async function playAiSyekhAudio(
   isLong: boolean = false,
   onEnd?: () => void
 ): Promise<boolean> {
+  const generation = playbackGeneration;
   try {
-    stopIqroAudio();
     const res = await fetch('/api/tts/arabic', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -138,13 +160,19 @@ export async function playAiSyekhAudio(
     }
 
     const data = await res.json();
+    if (generation !== playbackGeneration) return true;
     if (data.audioWavBase64) {
       const audioUrl = `data:audio/wav;base64,${data.audioWavBase64}`;
       const audio = new Audio(audioUrl);
+      activeAiAudio = audio;
       audio.onended = () => {
+        if (activeAiAudio !== audio) return;
+        activeAiAudio = null;
         if (onEnd) onEnd();
       };
       audio.onerror = () => {
+        if (activeAiAudio !== audio) return;
+        activeAiAudio = null;
         if (onEnd) onEnd();
       };
       await audio.play();
@@ -163,12 +191,22 @@ export function playIqroItem(
   useAiVoice: boolean = true
 ): void {
   stopIqroAudio();
+  const generation = playbackGeneration;
+  const recordedUrls = getIqroRecordedUrls(item);
 
-  // If AI Syekh Qari voice mode is active (default)
+  // Exact recordings take priority, including multi-letter cards. AI can
+  // pronounce a different word when given a short series of isolated letters.
+  if (recordedUrls) {
+    if (recordedUrls.length > 1) playSequentialAudio(recordedUrls, speed, onEnd);
+    else playHumanQariAudio(recordedUrls[0], speed, onEnd);
+    return;
+  }
+
+  // AI is optional for cards without a matching recording.
   if (useAiVoice) {
     playAiSyekhAudio(item.arabic, item.isLong, onEnd).then((success) => {
-      if (!success) {
-        // Fallback to human Web Audio concatenation or single letter fallback
+      if (!success && generation === playbackGeneration) {
+        // Fall back to the displayed phonetic reading.
         playHumanFallback();
       }
     });
@@ -178,30 +216,8 @@ export function playIqroItem(
   playHumanFallback();
 
   function playHumanFallback() {
-    // 1. If multiple audio URLs exist (sequential syllables like Ku - Ti - Ba)
-    if (item.audioUrls && item.audioUrls.length > 0) {
-      playSequentialAudio(item.audioUrls, speed, onEnd);
-      return;
-    }
-
-    // 2. If single explicit audioUrl is defined
-    if (item.audioUrl) {
-      playHumanQariAudio(item.audioUrl, speed, () => {
-        if (onEnd) onEnd();
-      });
-      return;
-    }
-
-    // 3. Fallback to harakat audio map or single letter audio
-    const singleAudioUrl = getSingleLetterAudioUrl(item.arabic);
-    if (singleAudioUrl) {
-      playHumanQariAudio(singleAudioUrl, speed, () => {
-        if (onEnd) onEnd();
-      });
-      return;
-    }
-
-    // 4. Fallback to clean phonetic SpeechSynthesis
+    // No exact recording: use the displayed phonetic reading, never a
+    // recording of a different letter or only the first part of the card.
     speakArabicHarakat(item.arabic, item.isLong, speed, onEnd, item.latin);
   }
 }
