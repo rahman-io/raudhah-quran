@@ -6,6 +6,7 @@ book/Html/006.html, then the short final utterance of the first (fathah) phrase
 was selected from each three-vowel group.
 """
 
+from array import array
 import subprocess
 import sys
 import tempfile
@@ -23,7 +24,7 @@ CLIPS = [
     ("ه", "04004", 1.56, 2.25),
     ("ع", "04005", 1.20, 1.95),
     ("غ", "04006", 1.54, 2.26),
-    ("ح", "04007", 1.40, 2.10),
+    ("ح", "04007", 1.40, 1.72),
     ("خ", "04008", 2.12, 2.57),
     ("ق", "04009", 1.40, 1.80),
     ("ك", "04010", 1.57, 2.02),
@@ -50,13 +51,17 @@ CLIPS = [
 ]
 
 
-def extract(apk: Path) -> None:
+def extract(apk: Path, only: str | None = None) -> None:
     if not zipfile.is_zipfile(apk):
         raise SystemExit(f"Bukan APK/ZIP valid: {apk}")
+    if only and only not in {audio_id for _, audio_id, _, _ in CLIPS}:
+        raise SystemExit(f"Tidak ada rekaman huruf dengan ID {only}")
     OUTPUT.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(apk) as archive, tempfile.TemporaryDirectory() as scratch:
         scratch = Path(scratch)
         for letter, audio_id, start, end in CLIPS:
+            if only and audio_id != only:
+                continue
             name = f"assets/www/book/Audio/default/{audio_id}.mp3"
             mp3 = scratch / "source.mp3"
             mp3.write_bytes(archive.read(name))
@@ -69,6 +74,15 @@ def extract(apk: Path) -> None:
                 wav.setpos(round(start * rate))
                 frames = wav.readframes(round((end - start) * rate))
                 params = wav.getparams()
+            if audio_id == "04007":
+                # Fade the end of HA before the next sound in this recording.
+                samples = array("h")
+                samples.frombytes(frames)
+                fade_samples = round(0.03 * rate) * params.nchannels
+                for i in range(fade_samples):
+                    index = len(samples) - fade_samples + i
+                    samples[index] = round(samples[index] * (1 - (i + 1) / fade_samples))
+                frames = samples.tobytes()
             cut = scratch / "cut.wav"
             with wave.open(str(cut), "wb") as wav:
                 wav.setparams(params)
@@ -81,4 +95,7 @@ def extract(apk: Path) -> None:
 
 
 if __name__ == "__main__":
-    extract(Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "qamar-nooraniya.apk")
+    extract(
+        Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "qamar-nooraniya.apk",
+        sys.argv[2] if len(sys.argv) > 2 else None,
+    )
