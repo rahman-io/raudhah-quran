@@ -21,19 +21,19 @@ OUTPUT = ROOT / "public/audio/iqro/qamar"
 # ح from ه and ط from ت; timestamps select the first, fathah reading only.
 CLIPS = [
     ("أ", "04003", 1.08, 1.50),
-    ("ه", "04004", 1.56, 2.25),
-    ("ع", "04005", 1.20, 1.95),
-    ("غ", "04006", 1.54, 2.26),
+    ("ه", "04004", 1.84, 2.25),
+    ("ع", "04005", 1.55, 1.95),
+    ("غ", "04006", 1.81, 2.26),
     ("ح", "04007", 1.40, 1.72),
     ("خ", "04008", 2.12, 2.57),
     ("ق", "04009", 1.40, 1.80),
     ("ك", "04010", 1.57, 2.02),
     ("ج", "04011", 2.70, 3.15),
-    ("ش", "04012", 1.64, 2.36),
-    ("ي", "04013", 1.00, 1.76),
+    ("ش", "04012", 1.87, 2.36),
+    ("ي", "04013", 1.25, 1.76),
     ("ض", "04014", 2.64, 3.08),
-    ("ل", "04015", 2.00, 2.67),
-    ("ن", "04016", 1.98, 2.64),
+    ("ل", "04015", 2.28, 2.67),
+    ("ن", "04016", 2.24, 2.64),
     ("ر", "04017", 1.52, 1.91),
     ("ط", "04018", 1.37, 1.79),
     ("د", "04019", 2.34, 2.77),
@@ -45,9 +45,9 @@ CLIPS = [
     ("ذ", "04025", 1.36, 1.74),
     ("ث", "04026", 2.47, 2.90),
     ("ف", "04027", 2.34, 2.82),
-    ("و", "04028", 1.42, 2.12),
+    ("و", "04028", 1.64, 2.12),
     ("ب", "04029", 3.11, 3.57),
-    ("م", "04030", 1.46, 2.16),
+    ("م", "04030", 1.71, 2.16),
 ]
 
 
@@ -101,6 +101,14 @@ def extract(apk: Path, only: str | None = None) -> None:
                 frames = samples.tobytes()
             if audio_id == "04023":
                 # Fade in ZA after the preceding "ha" in the source recording.
+                samples = array("h")
+                samples.frombytes(frames)
+                fade_samples = round(0.02 * rate) * params.nchannels
+                for i in range(fade_samples):
+                    samples[i] = round(samples[i] * (i + 1) / fade_samples)
+                frames = samples.tobytes()
+            if audio_id in {"04004", "04005", "04006", "04012", "04013", "04015", "04016", "04028", "04030"}:
+                # Preserve each consonant onset while dropping the preceding vowel.
                 samples = array("h")
                 samples.frombytes(frames)
                 fade_samples = round(0.02 * rate) * params.nchannels
