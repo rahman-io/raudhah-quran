@@ -23,7 +23,7 @@ CLIPS = [
     ("أ", "04003", 1.08, 1.50),
     ("ه", "04004", 1.84, 2.25),
     ("ع", "04005", 1.55, 1.95),
-    ("غ", "04006", 1.81, 2.26),
+    ("غ", "04007", 1.68, 2.02),
     ("ح", "04007", 1.40, 1.72),
     ("خ", "04008", 2.12, 2.57),
     ("ق", "04009", 1.40, 1.80),
@@ -54,13 +54,14 @@ CLIPS = [
 def extract(apk: Path, only: str | None = None) -> None:
     if not zipfile.is_zipfile(apk):
         raise SystemExit(f"Bukan APK/ZIP valid: {apk}")
-    if only and only not in {audio_id for _, audio_id, _, _ in CLIPS}:
+    if only and only not in {audio_id for _, audio_id, _, _ in CLIPS} | {"gho"}:
         raise SystemExit(f"Tidak ada rekaman huruf dengan ID {only}")
     OUTPUT.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(apk) as archive, tempfile.TemporaryDirectory() as scratch:
         scratch = Path(scratch)
         for letter, audio_id, start, end in CLIPS:
-            if only and audio_id != only:
+            output_id = "gho" if letter == "غ" else audio_id
+            if only and only not in {audio_id, output_id}:
                 continue
             name = f"assets/www/book/Audio/default/{audio_id}.mp3"
             mp3 = scratch / "source.mp3"
@@ -74,7 +75,7 @@ def extract(apk: Path, only: str | None = None) -> None:
                 wav.setpos(round(start * rate))
                 frames = wav.readframes(round((end - start) * rate))
                 params = wav.getparams()
-            if audio_id == "04007":
+            if audio_id == "04007" and letter == "ح":
                 # Fade the end of HA before the next sound in this recording.
                 samples = array("h")
                 samples.frombytes(frames)
@@ -115,15 +116,26 @@ def extract(apk: Path, only: str | None = None) -> None:
                 for i in range(fade_samples):
                     samples[i] = round(samples[i] * (i + 1) / fade_samples)
                 frames = samples.tobytes()
+            if letter == "غ":
+                # Ghain follows a different letter in the source phrase. Keep
+                # only its own voiced syllable and soften both cut boundaries.
+                samples = array("h")
+                samples.frombytes(frames)
+                fade_samples = round(0.015 * rate) * params.nchannels
+                for i in range(fade_samples):
+                    samples[i] = round(samples[i] * (i + 1) / fade_samples)
+                    index = len(samples) - fade_samples + i
+                    samples[index] = round(samples[index] * (1 - (i + 1) / fade_samples))
+                frames = samples.tobytes()
             cut = scratch / "cut.wav"
             with wave.open(str(cut), "wb") as wav:
                 wav.setparams(params)
                 wav.writeframes(frames)
             subprocess.run(
-                ["lame", "--silent", "-V", "6", str(cut), str(OUTPUT / f"{audio_id}.mp3")],
+                ["lame", "--silent", "-V", "6", str(cut), str(OUTPUT / f"{output_id}.mp3")],
                 check=True,
             )
-            print(f"{letter}َ: {audio_id}.mp3 ({end-start:.2f}s)")
+            print(f"{letter}َ: {output_id}.mp3 ({end-start:.2f}s)")
 
 
 if __name__ == "__main__":

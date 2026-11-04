@@ -20,7 +20,7 @@ const VOWEL_NUMBER: Record<string, number> = { 'َ': 1, 'ِ': 2, 'ُ': 3 };
 // Qamar Apps, Al Qaida Al Nooraniya, lesson 4 (fathah only). The numbers
 // match the REL IDs of the letter groups on pages 005 and 006 of the book.
 const IQRO1_QAMAR_FATHAH: Record<string, string> = {
-  'أ': '04003', 'ه': '04004', 'ع': '04005', 'غ': '04006',
+  'أ': '04003', 'ه': '04004', 'ع': '04005', 'غ': 'gho',
   'ح': '04007', 'خ': '04008', 'ق': '04009', 'ك': '04010',
   'ج': '04011', 'ش': '04012', 'ي': '04013', 'ض': '04014',
   'ل': '04015', 'ن': '04016', 'ر': '04017', 'ط': '04018',
