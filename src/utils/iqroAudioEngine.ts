@@ -3,7 +3,7 @@
  * Mad Elongation, and 100% Arabic Harakat Precision.
  */
 
-import { playHumanQariAudio, stopPronunciation, IQRO_HARAKAT_AUDIO_MAP } from './tajwidAudio';
+import { playHumanQariAudio, stopPronunciation } from './tajwidAudio';
 import { playStitchedAudio, stopConcatenatedAudio } from './webAudioConcatenator';
 import { IqroItem } from '../data/iqroData';
 
@@ -12,14 +12,32 @@ let activeSpeechUtterance: SpeechSynthesisUtterance | null = null;
 let playbackGeneration = 0;
 let activeAiAudio: HTMLAudioElement | null = null;
 
-// Only use recordings that pronounce the written vowel. The /audio/letters
-// recordings say letter names and are unsuitable for Iqro's direct reading.
+// One speaker's labelled vowel recordings from the pronunciation dataset.
+// Item 25 (nun) has only unexplained variants, so it is deliberately excluded.
+const IQRO_LETTERS = Array.from('ابتثجحخدذرزسشصضطظعغفقكلمنوهي');
+const VOWEL_NUMBER: Record<string, number> = { 'َ': 1, 'ِ': 2, 'ُ': 3 };
+
+function recordedSyllableUrl(syllable: string): string | null {
+  const chars = Array.from(syllable);
+  if (chars.length !== 2) return null;
+  const letter = ['أ', 'إ', 'ء'].includes(chars[0]) ? 'ا' : chars[0];
+  const number = IQRO_LETTERS.indexOf(letter) + 1;
+  const vowel = VOWEL_NUMBER[chars[1]];
+  if (!number || number === 25 || !vowel) return null;
+  return `/audio/iqro/verified/${number}-${vowel}.wav`;
+}
+
 export function getIqroRecordedUrls(item: IqroItem): string[] | null {
+  const syllables = item.arabic.trim().split(/\s+/u).filter((part) => part !== '-' && part !== '=');
+  const urls = syllables.map(recordedSyllableUrl);
+  if (urls.every((url): url is string => url !== null)) return urls;
   if (item.audioUrls?.length) return item.audioUrls;
-  if (item.audioUrl) return [item.audioUrl];
-  const syllables = item.arabic.trim().split(/\s+/u);
-  const urls = syllables.map((part) => IQRO_HARAKAT_AUDIO_MAP[part]);
-  return urls.every((url) => url?.startsWith('/audio/iqro/harakat/')) ? urls : null;
+  if (item.audioUrl) {
+    // An explicit recording is still useful for words; obsolete isolated
+    // vowel clips must never override the labelled human recordings.
+    if (!item.audioUrl.startsWith('/audio/iqro/harakat/')) return [item.audioUrl];
+  }
+  return null;
 }
 
 export function stopIqroAudio() {
