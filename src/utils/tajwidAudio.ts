@@ -10,6 +10,8 @@
  * serta preservasi pitch alami.
  */
 
+import { assetUrl } from './assetUrl';
+
 export type QariId = 'alafasy' | 'husary';
 
 export interface QariProfile {
@@ -1223,7 +1225,7 @@ export function playHumanQariAudio(
   try {
     stopPronunciation();
 
-    const audio = new Audio(audioUrl);
+    const audio = new Audio(assetUrl(audioUrl));
     currentHumanAudio = audio;
     audio.playbackRate = Math.max(0.4, Math.min(speed, 1.5));
     // Native pitch preservation so human vocal tract remains natural

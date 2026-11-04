@@ -6,6 +6,8 @@
  * Provides 100% natural human voice playback without robotic AI artifacts.
  */
 
+import { assetUrl } from './assetUrl';
+
 let audioCtx: AudioContext | null = null;
 const bufferCache = new Map<string, AudioBuffer>();
 let activeSourceNode: AudioBufferSourceNode | null = null;
@@ -35,7 +37,7 @@ export async function fetchAndDecodeAudio(url: string): Promise<AudioBuffer | nu
 
   try {
     const ctx = getAudioContext();
-    const response = await fetch(url);
+    const response = await fetch(assetUrl(url));
     if (!response.ok) {
       console.warn(`Failed to fetch audio file from ${url}: ${response.statusText}`);
       return null;

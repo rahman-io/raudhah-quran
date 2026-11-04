@@ -320,7 +320,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             {/* Voice Mode Toggle (Human WebAudio Stitch vs AI Syekh Qari) */}
-            <button
+            {import.meta.env.VITE_STATIC_PAGES !== 'true' && <button
               type="button"
               onClick={() => setUseAiVoice(!useAiVoice)}
               className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
@@ -332,7 +332,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
             >
               <Sparkles className="w-3.5 h-3.5 text-[#E9C46A]" />
               <span>{useAiVoice ? '🎙️ AI untuk bacaan lain' : '🔊 Bacaan kartu'}</span>
-            </button>
+            </button>}
 
             {/* Speed Controller */}
             <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">

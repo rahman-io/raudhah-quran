@@ -65,6 +65,25 @@ Dibuat menggunakan **React + TypeScript + Vite + Tailwind CSS**, siap langsung d
 
 ## 🚀 Panduan Instalasi Lokal
 
+### GitHub Pages
+
+Di **Settings → Pages**, pilih **GitHub Actions** sebagai sumber (seperti pada screenshot).
+Workflow `.github/workflows/pages.yml` akan membangun dan menerbitkan situs setiap kali
+ada push ke `main`. Setelah deployment berhasil, buka
+`https://rahman-io.github.io/raudhah-quran/`.
+
+GitHub Pages hanya melayani file statis: endpoint Gemini TTS di `server.ts` tidak
+berjalan di sana. Kartu Iqro memakai rekaman yang cocok atau suara sintesis
+perangkat untuk materi yang belum memiliki rekaman. Audio dari layanan luar
+tetap memerlukan internet.
+
+```bash
+git add .github/workflows/pages.yml vite.config.ts index.html public/manifest.json src/utils/assetUrl.ts src/utils/tajwidAudio.ts src/utils/webAudioConcatenator.ts src/components/iqro/IqroDigitalView.tsx src/components/tajwid/LetterAudioModal.tsx README.md
+git commit -m "Deploy Raudhah Quran to GitHub Pages"
+git push origin main
+```
+
+
 ### 1. Clone Repositori
 ```bash
 git clone https://github.com/username-anda/raudhah-quran.git

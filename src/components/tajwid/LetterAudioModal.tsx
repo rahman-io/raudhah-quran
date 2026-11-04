@@ -13,6 +13,7 @@ import {
   setActiveQari
 } from '../../utils/tajwidAudio';
 import { sounds } from '../../utils/soundEffects';
+import { assetUrl } from '../../utils/assetUrl';
 
 interface LetterAudioModalProps {
   letter: string | null;
@@ -214,7 +215,7 @@ export const LetterAudioModal: React.FC<LetterAudioModalProps> = ({ letter, onCl
                 <span className="text-slate-500">Tautan File MP3 Asli:</span>
                 <div className="flex items-center gap-3">
                   <a
-                    href={singleLetterUrl}
+                    href={assetUrl(singleLetterUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-[#2A9D8F] hover:underline font-semibold"
