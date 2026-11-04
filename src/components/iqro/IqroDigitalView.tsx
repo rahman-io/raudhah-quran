@@ -128,7 +128,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
 
     playIqroItem(item, audioSpeed, () => {
       setPlayingItemId((current) => current === uniqueKey ? null : current);
-    }, useAiVoice);
+    }, useAiVoice, selectedLevel);
   };
 
   const handleLevelChange = (level: number) => {

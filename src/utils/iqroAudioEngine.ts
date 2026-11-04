@@ -17,6 +17,26 @@ let activeAiAudio: HTMLAudioElement | null = null;
 const IQRO_LETTERS = Array.from('ابتثجحخدذرزسشصضطظعغفقكلمنوهي');
 const VOWEL_NUMBER: Record<string, number> = { 'َ': 1, 'ِ': 2, 'ُ': 3 };
 
+// Qamar Apps, Al Qaida Al Nooraniya, lesson 4 (fathah only). The numbers
+// match the REL IDs of the letter groups on pages 005 and 006 of the book.
+const IQRO1_QAMAR_FATHAH: Record<string, string> = {
+  'أ': '04003', 'ه': '04004', 'ع': '04005', 'غ': '04006',
+  'ح': '04007', 'خ': '04008', 'ق': '04009', 'ك': '04010',
+  'ج': '04011', 'ش': '04012', 'ي': '04013', 'ض': '04014',
+  'ل': '04015', 'ن': '04016', 'ر': '04017', 'ط': '04018',
+  'د': '04019', 'ت': '04020', 'ص': '04021', 'س': '04022',
+  'ز': '04023', 'ظ': '04024', 'ذ': '04025', 'ث': '04026',
+  'ف': '04027', 'و': '04028', 'ب': '04029', 'م': '04030',
+};
+
+function iqro1QamarUrl(syllable: string): string | null {
+  const chars = Array.from(syllable);
+  if (chars.length !== 2 || chars[1] !== 'َ') return null;
+  const letter = ['ا', 'ء'].includes(chars[0]) ? 'أ' : chars[0];
+  const id = IQRO1_QAMAR_FATHAH[letter];
+  return id ? `/audio/iqro/qamar/${id}.mp3` : null;
+}
+
 function recordedSyllableUrl(syllable: string): string | null {
   const chars = Array.from(syllable);
   if (chars.length !== 2) return null;
@@ -27,8 +47,14 @@ function recordedSyllableUrl(syllable: string): string | null {
   return `/audio/iqro/verified/${number}-${vowel}.wav`;
 }
 
-export function getIqroRecordedUrls(item: IqroItem): string[] | null {
+export function getIqroRecordedUrls(item: IqroItem, level?: number): string[] | null {
   const syllables = item.arabic.trim().split(/\s+/u).filter((part) => part !== '-' && part !== '=');
+  if (level === 1) {
+    // The elongated marks on page 28 show letter shapes, not extra sounds.
+    const spoken = syllables.filter((part) => !part.startsWith('ـ'));
+    const urls = spoken.map(iqro1QamarUrl);
+    return urls.length && urls.every((url): url is string => url !== null) ? urls : null;
+  }
   const urls = syllables.map(recordedSyllableUrl);
   if (urls.every((url): url is string => url !== null)) return urls;
   if (item.audioUrls?.length) return item.audioUrls;
@@ -206,11 +232,12 @@ export function playIqroItem(
   item: IqroItem,
   speed: number = 0.85,
   onEnd?: () => void,
-  useAiVoice: boolean = true
+  useAiVoice: boolean = true,
+  level?: number
 ): void {
   stopIqroAudio();
   const generation = playbackGeneration;
-  const recordedUrls = getIqroRecordedUrls(item);
+  const recordedUrls = getIqroRecordedUrls(item, level);
 
   // Exact recordings take priority, including multi-letter cards. AI can
   // pronounce a different word when given a short series of isolated letters.
