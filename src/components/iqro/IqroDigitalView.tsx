@@ -27,8 +27,10 @@ import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
 import { playIqroItem, stopIqroAudio } from '../../utils/iqroAudioEngine';
 import { iqro1PagesFromBook } from '../../data/iqro1PdfContent';
+import { iqro2PagesFromBook } from '../../data/iqro2PdfContent';
 
 const iqro1BookPages = iqro1PagesFromBook(IQRO_LEVELS[0].pages);
+const iqro2BookPages = iqro2PagesFromBook(IQRO_LEVELS[1].pages);
 
 interface IqroDigitalViewProps {
   onGoToQuiz?: () => void;
@@ -74,7 +76,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
   const selectedJilid = IQRO_LEVELS.find((l) => l.level === selectedLevel) || IQRO_LEVELS[0];
   const currentJilid: IqroJilid = selectedLevel === 1
     ? { ...selectedJilid, pages: iqro1BookPages }
-    : selectedJilid;
+    : selectedLevel === 2 ? { ...selectedJilid, pages: iqro2BookPages } : selectedJilid;
   const currentPage: IqroPage = currentJilid.pages[activePageIndex] || currentJilid.pages[0];
 
   // Save progress
@@ -105,6 +107,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
   const getJilidProgress = (jilidLevel: number) => {
     const jilid = jilidLevel === 1
       ? { ...IQRO_LEVELS[0], pages: iqro1BookPages }
+      : jilidLevel === 2 ? { ...IQRO_LEVELS[1], pages: iqro2BookPages }
       : IQRO_LEVELS.find((l) => l.level === jilidLevel);
     if (!jilid) return { completed: 0, total: 0, percent: 0 };
     let total = 0;
