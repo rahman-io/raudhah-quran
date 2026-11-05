@@ -48,10 +48,12 @@ export const WriteAyahGame: React.FC = () => {
     activePointer.current = event.pointerId;
     const id = ++strokeNumber.current;
     activeStroke.current = id;
+    const point = pointFromEvent(event);
+    const width = event.pointerType === 'touch' ? 9 : 6;
     setStrokes((previous) => [...previous, {
       id,
-      points: [pointFromEvent(event)],
-      width: event.pointerType === 'touch' ? 9 : 6
+      points: [point],
+      width
     }]);
   };
 
