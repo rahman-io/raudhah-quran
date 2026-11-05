@@ -205,14 +205,14 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
   return (
     <div className="space-y-6">
       {/* Top Banner Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#1D3557] via-[#2A9D8F] to-[#52796F] p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-3xl bg-[#246579] p-6 sm:p-8 text-white shadow-sm">
         <div className="absolute -right-10 -bottom-10 opacity-10 font-arabic text-[180px] pointer-events-none select-none">
           اقرأ
         </div>
 
         <div className="relative z-10 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-[#E9C46A] text-[#1D3557] text-xs font-black uppercase tracking-wider shadow-xs flex items-center gap-1.5">
+            <span className="px-3 py-1 rounded-full bg-[#D3A253] text-[#173B4E] text-xs font-black uppercase tracking-wider shadow-xs flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Metode Iqro Interaktif Digital</span>
             </span>
@@ -230,11 +230,11 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
 
           <div className="flex flex-wrap items-center gap-3 pt-2 text-xs">
             <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/20">
-              <ShieldCheck className="w-4 h-4 text-[#E9C46A]" />
+              <ShieldCheck className="w-4 h-4 text-[#D3A253]" />
               <span>100% Suara Manusia Asli</span>
             </div>
             <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/20">
-              <Zap className="w-4 h-4 text-[#E9C46A]" />
+              <Zap className="w-4 h-4 text-[#D3A253]" />
               <span>Tanpa Mengeja (Langsung A - BA)</span>
             </div>
           </div>
@@ -243,9 +243,9 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
 
       {/* Level Selector Bar (Jilid 1 s.d. 6) */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs font-bold text-[#1D3557] dark:text-white px-1">
+        <div className="flex items-center justify-between text-xs font-bold text-[#173B4E] dark:text-white px-1">
           <span className="flex items-center gap-1.5">
-            <BookMarked className="w-4 h-4 text-[#52796F]" />
+            <BookMarked className="w-4 h-4 text-[#246579]" />
             <span>Pilih Tingkat Jilid Iqro:</span>
           </span>
           <span className="text-[11px] text-slate-500 font-normal">
@@ -266,19 +266,19 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                 onClick={() => handleLevelChange(jilid.level)}
                 className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden ${
                   isSelected
-                    ? 'bg-[#1D3557] text-white border-[#1D3557] ring-2 ring-[#E9C46A]/50 shadow-md'
-                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-[#52796F]'
+                    ? 'bg-[#173B4E] text-white border-[#173B4E] ring-2 ring-[#D3A253]/50 shadow-md'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-[#246579]'
                 }`}
               >
                 {isCompleted && (
-                  <span className="absolute top-2 right-2 text-[#2A9D8F]">
-                    <CheckCircle2 className="w-4 h-4 fill-[#2A9D8F] text-white" />
+                  <span className="absolute top-2 right-2 text-[#2D8192]">
+                    <CheckCircle2 className="w-4 h-4 fill-[#2D8192] text-white" />
                   </span>
                 )}
 
                 <div>
                   <span className={`text-[10px] font-black uppercase tracking-wider block ${
-                    isSelected ? 'text-[#E9C46A]' : 'text-[#52796F] dark:text-[#A8D5BA]'
+                    isSelected ? 'text-[#D3A253]' : 'text-[#246579] dark:text-[#A7CDD3]'
                   }`}>
                     Jilid {jilid.level}
                   </span>
@@ -292,13 +292,13 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                     <span className={isSelected ? 'text-slate-200' : 'text-slate-400'}>
                       Progres
                     </span>
-                    <span className={`font-bold ${isSelected ? 'text-[#E9C46A]' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                    <span className={`font-bold ${isSelected ? 'text-[#D3A253]' : 'text-emerald-600 dark:text-emerald-400'}`}>
                       {jProgress.percent}%
                     </span>
                   </div>
                   <div className={`w-full h-1.5 rounded-full overflow-hidden ${isSelected ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700'}`}>
                     <div
-                      className="h-full bg-[#2A9D8F] transition-all duration-300"
+                      className="h-full bg-[#2D8192] transition-all duration-300"
                       style={{ width: `${jProgress.percent}%` }}
                     />
                   </div>
@@ -310,17 +310,17 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
       </div>
 
       {/* Active Jilid Description & Teacher Rule Banner */}
-      <div className="p-4 rounded-2xl bg-[#EAF2ED] dark:bg-[#152B28] border border-[#84A98C]/30 text-xs space-y-2 shadow-2xs">
+      <div className="p-4 rounded-2xl bg-[#EAF2F3] dark:bg-[#152B28] border border-[#477F8D]/30 text-xs space-y-2 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span
               className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-2xs"
-              style={{ backgroundColor: currentJilid.colorTheme }}
+              style={{ backgroundColor: '#246579' }}
             >
               J{currentJilid.level}
             </span>
             <div>
-              <h3 className="font-bold text-sm text-[#1D3557] dark:text-white">
+              <h3 className="font-bold text-sm text-[#173B4E] dark:text-white">
                 {currentJilid.title}
               </h3>
               <p className="text-[11px] text-slate-600 dark:text-slate-300">
@@ -336,18 +336,18 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
               onClick={() => setUseAiVoice(!useAiVoice)}
               className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
                 useAiVoice
-                  ? 'bg-[#1D3557] text-[#E9C46A] border-[#E9C46A]/60 shadow-xs ring-2 ring-[#E9C46A]/30'
-                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-[#1D3557] dark:text-slate-200 hover:bg-slate-50'
+                  ? 'bg-[#173B4E] text-[#D3A253] border-[#D3A253]/60 shadow-xs ring-2 ring-[#D3A253]/30'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-[#173B4E] dark:text-slate-200 hover:bg-slate-50'
               }`}
               title="Rekaman yang cocok selalu dipakai; pilih AI untuk bacaan yang belum memiliki rekaman"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#E9C46A]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#D3A253]" />
               <span>{useAiVoice ? '🎙️ AI untuk bacaan lain' : '🔊 Bacaan kartu'}</span>
             </button>}
 
             {/* Speed Controller */}
             <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
-              <Sliders className="w-3.5 h-3.5 text-[#E9C46A] ml-1" />
+              <Sliders className="w-3.5 h-3.5 text-[#D3A253] ml-1" />
               {[
                 { val: 0.5, label: '0.5x' },
                 { val: 0.75, label: '0.75x' },
@@ -359,7 +359,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                   onClick={() => setAudioSpeed(s.val)}
                   className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                     audioSpeed === s.val
-                      ? 'bg-[#52796F] text-white'
+                      ? 'bg-[#246579] text-white'
                       : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100'
                   }`}
                 >
@@ -372,20 +372,20 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
             <button
               type="button"
               onClick={() => setShowLatin(!showLatin)}
-              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-[#1D3557] dark:text-[#E9C46A] flex items-center gap-1.5 cursor-pointer hover:bg-slate-50"
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-[#173B4E] dark:text-[#D3A253] flex items-center gap-1.5 cursor-pointer hover:bg-slate-50"
               title="Sembunyikan/Tampilkan Bantuan Latin"
             >
-              {showLatin ? <Eye className="w-3.5 h-3.5 text-[#2A9D8F]" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
+              {showLatin ? <Eye className="w-3.5 h-3.5 text-[#2D8192]" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
               <span>{showLatin ? 'Latin On' : 'Latin Off'}</span>
             </button>
           </div>
         </div>
 
         {/* Primary Rule from KH As'ad Humam */}
-        <div className="p-3 bg-white dark:bg-slate-900/80 rounded-xl border border-[#84A98C]/40 text-[#2F3E46] dark:text-slate-200 flex items-start gap-2.5">
-          <Lightbulb className="w-4 h-4 text-[#E9C46A] shrink-0 mt-0.5" />
+        <div className="p-3 bg-white dark:bg-slate-900/80 rounded-xl border border-[#477F8D]/40 text-[#293640] dark:text-slate-200 flex items-start gap-2.5">
+          <Lightbulb className="w-4 h-4 text-[#D3A253] shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <span className="font-bold text-[11px] text-[#E76F51]">
+            <span className="font-bold text-[11px] text-[#B87845]">
               Aturan Utama KH. As'ad Humam:
             </span>
             <p className="text-[11px] leading-relaxed">
@@ -413,14 +413,14 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-700">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-[#52796F] uppercase tracking-wider block">
+                    <span className="text-[10px] font-bold text-[#246579] uppercase tracking-wider block">
                       Halaman {currentPage.pageNumber} dari {currentJilid.pages.length}
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 font-bold">
                       {pageCompletedCards}/{pageTotalCards} Kartu Centang
                     </span>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-[#1D3557] dark:text-white mt-0.5">
+                  <h3 className="text-base sm:text-lg font-bold text-[#173B4E] dark:text-white mt-0.5">
                     {currentPage.title}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -439,14 +439,14 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                     <ChevronLeft className="w-5 h-5" />
                   </button>
 
-                  <span className="text-xs font-bold text-[#1D3557] dark:text-[#E9C46A] px-2">
+                  <span className="text-xs font-bold text-[#173B4E] dark:text-[#D3A253] px-2">
                     {activePageIndex + 1} / {currentJilid.pages.length}
                   </span>
 
                   <button
                     type="button"
                     onClick={handleNextPage}
-                    className="px-3.5 py-2 rounded-xl bg-[#52796F] hover:bg-[#354F52] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                    className="px-3.5 py-2 rounded-xl bg-[#246579] hover:bg-[#174C60] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
                     title="Halaman Selanjutnya"
                   >
                     <span>{activePageIndex === currentJilid.pages.length - 1 ? 'Mulai Kuis' : 'Lanjut'}</span>
@@ -457,8 +457,8 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
 
               {/* Teacher's Note Box */}
               {currentPage.teacherNote && (
-                <div className="p-3.5 rounded-2xl bg-[#F4EFEA] dark:bg-slate-700/50 border border-[#C5A059]/30 text-xs flex items-center gap-2.5">
-                  <GraduationCap className="w-5 h-5 text-[#8C6D23] dark:text-[#E9C46A] shrink-0" />
+                <div className="p-3.5 rounded-2xl bg-[#F1EDE6] dark:bg-slate-700/50 border border-[#BE9452]/30 text-xs flex items-center gap-2.5">
+                  <GraduationCap className="w-5 h-5 text-[#866421] dark:text-[#D3A253] shrink-0" />
                   <p className="text-slate-700 dark:text-slate-200 leading-snug">
                     <strong>Catatan Pengajar:</strong> {currentPage.teacherNote}
                   </p>
@@ -468,7 +468,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
               {/* Interactive Row Flashcards Grid */}
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 px-1 gap-2">
-                  <span className="font-semibold text-[#52796F] dark:text-[#A8D5BA]">
+                  <span className="font-semibold text-[#246579] dark:text-[#A7CDD3]">
                     Ayo Praktikkan! Klik kotak huruf untuk membunyikan suara & centang jika sudah lancar:
                   </span>
                   <button
@@ -490,9 +490,9 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                         return next;
                       });
                     }}
-                    className="text-[11px] font-bold text-[#2A9D8F] dark:text-[#E9C46A] hover:underline cursor-pointer flex items-center gap-1 bg-[#EAF2ED] dark:bg-slate-700/80 px-2.5 py-1 rounded-xl"
+                    className="text-[11px] font-bold text-[#2D8192] dark:text-[#D3A253] hover:underline cursor-pointer flex items-center gap-1 bg-[#EAF2F3] dark:bg-slate-700/80 px-2.5 py-1 rounded-xl"
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#2A9D8F]" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#2D8192]" />
                     <span>{isPageAllChecked ? 'Batal Centang Halaman Ini' : 'Centang Semua Halaman Ini'}</span>
                   </button>
                 </div>
@@ -501,7 +501,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                   {currentPage.rows.map((row) => (
                     <div
                       key={row.id}
-                      className="p-4 rounded-2xl bg-[#FDFBF7] dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs hover:border-[#84A98C]/60 transition-colors"
+                      className="p-4 rounded-2xl bg-[#F8F6F1] dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs hover:border-[#477F8D]/60 transition-colors"
                     >
                       <div
                         dir="rtl"
@@ -522,10 +522,10 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                               onClick={() => handlePlayItemAudio(item, row.id)}
                               className={`group relative p-3 sm:p-4 rounded-2xl border flex flex-col items-center justify-center transition-all cursor-pointer min-w-[95px] sm:min-w-[115px] ${
                                 isPlaying
-                                  ? 'bg-[#E9C46A] border-[#C5A059] ring-2 ring-[#E9C46A]/60 shadow-md'
+                                  ? 'bg-[#D3A253] border-[#BE9452] ring-2 ring-[#D3A253]/60 shadow-md'
                                   : isCompleted
                                   ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-400 dark:border-emerald-600/70 hover:border-emerald-500 shadow-2xs'
-                                  : 'bg-white dark:bg-slate-800 hover:bg-[#EAF2ED] border-slate-200 dark:border-slate-700 hover:border-[#52796F]'
+                                  : 'bg-white dark:bg-slate-800 hover:bg-[#EAF2F3] border-slate-200 dark:border-slate-700 hover:border-[#246579]'
                               }`}
                             >
                               {/* Checkmark Button on Top-Left */}
@@ -554,10 +554,10 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
 
                               <span className={`font-arabic text-3xl sm:text-4xl font-bold my-1 ${
                                 isPlaying
-                                  ? 'text-[#1D3557]'
+                                  ? 'text-[#173B4E]'
                                   : isCompleted
                                   ? 'text-emerald-800 dark:text-emerald-300'
-                                  : 'text-[#1D3557] dark:text-[#E9C46A]'
+                                  : 'text-[#173B4E] dark:text-[#D3A253]'
                               }`}>
                                 {item.arabic}
                               </span>
@@ -565,10 +565,10 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                               {showLatin && (
                                 <span className={`text-xs font-extrabold mt-1 uppercase tracking-wider ${
                                   isPlaying
-                                    ? 'text-[#1D3557]'
+                                    ? 'text-[#173B4E]'
                                     : isCompleted
                                     ? 'text-emerald-700 dark:text-emerald-400'
-                                    : 'text-[#52796F] dark:text-[#A8D5BA]'
+                                    : 'text-[#246579] dark:text-[#A7CDD3]'
                                 }`}>
                                   {item.latin}
                                 </span>
@@ -581,7 +581,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                               )}
 
                               <Volume2 className={`w-3.5 h-3.5 absolute top-2 right-2 transition-opacity ${
-                                isPlaying ? 'opacity-100 text-[#1D3557]' : 'opacity-40 group-hover:opacity-100 text-[#52796F]'
+                                isPlaying ? 'opacity-100 text-[#173B4E]' : 'opacity-40 group-hover:opacity-100 text-[#246579]'
                               }`} />
                             </motion.button>
                           );
@@ -607,7 +607,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                       setQuizScore(0);
                       setQuizCompleted(false);
                     }}
-                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#2A9D8F] hover:bg-[#21867a] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#2D8192] hover:bg-[#236E80] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all"
                   >
                     <Award className="w-4 h-4" />
                     <span>Uji Kemampuan Iqro {currentJilid.level}</span>
@@ -636,15 +636,15 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
               return (
                 <div className="space-y-6 max-w-xl mx-auto text-center">
                   <div className="flex items-center justify-between text-xs text-slate-500 border-b border-slate-100 dark:border-slate-700 pb-3">
-                    <span className="font-bold text-[#52796F] flex items-center gap-1.5">
-                      <Award className="w-4 h-4 text-[#E9C46A]" />
+                    <span className="font-bold text-[#246579] flex items-center gap-1.5">
+                      <Award className="w-4 h-4 text-[#D3A253]" />
                       <span>Uji Evaluasi Iqro {currentJilid.level}</span>
                     </span>
                     <span>Soal {currentQuestionIndex + 1} dari {questions.length}</span>
                   </div>
 
-                  <div className="p-6 rounded-2xl bg-[#FDFBF7] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-3 shadow-inner">
-                    <p className="font-arabic text-5xl font-bold text-[#1D3557] dark:text-[#E9C46A] my-2">
+                  <div className="p-6 rounded-2xl bg-[#F8F6F1] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-3 shadow-inner">
+                    <p className="font-arabic text-5xl font-bold text-[#173B4E] dark:text-[#D3A253] my-2">
                       {q.questionArabic}
                     </p>
                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -689,15 +689,15 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
           ) : (
             /* Quiz Completed View */
             <div className="text-center py-8 space-y-5 max-w-md mx-auto">
-              <div className="w-20 h-20 rounded-full bg-[#E9C46A]/20 text-[#E9C46A] flex items-center justify-center mx-auto shadow-inner">
-                <Trophy className="w-10 h-10 text-[#8C6D23] dark:text-[#E9C46A]" />
+              <div className="w-20 h-20 rounded-full bg-[#D3A253]/20 text-[#D3A253] flex items-center justify-center mx-auto shadow-inner">
+                <Trophy className="w-10 h-10 text-[#866421] dark:text-[#D3A253]" />
               </div>
 
               <div>
                 <span className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider">
                   Evaluasi Selesai!
                 </span>
-                <h3 className="text-xl font-extrabold text-[#1D3557] dark:text-white mt-2">
+                <h3 className="text-xl font-extrabold text-[#173B4E] dark:text-white mt-2">
                   Selamat! Anda Lulus Iqro {currentJilid.level}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -718,7 +718,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                   <button
                     type="button"
                     onClick={() => handleLevelChange(selectedLevel + 1)}
-                    className="w-full py-3 rounded-xl bg-[#52796F] hover:bg-[#354F52] text-white text-xs font-bold cursor-pointer shadow-xs"
+                    className="w-full py-3 rounded-xl bg-[#246579] hover:bg-[#174C60] text-white text-xs font-bold cursor-pointer shadow-xs"
                   >
                     Lanjut ke Iqro {selectedLevel + 1} →
                   </button>

@@ -23,31 +23,31 @@ export const AchievementsView: React.FC = () => {
   const getBadgeIcon = (iconName: string) => {
     switch (iconName) {
       case 'Sparkles':
-        return <Sparkles className="w-5 h-5 text-[#E9C46A]" />;
+        return <Sparkles className="w-5 h-5 text-[#D3A253]" />;
       case 'Flame':
-        return <Flame className="w-5 h-5 text-[#E76F51]" />;
+        return <Flame className="w-5 h-5 text-[#B87845]" />;
       case 'ShieldCheck':
-        return <ShieldCheck className="w-5 h-5 text-[#2A9D8F]" />;
+        return <ShieldCheck className="w-5 h-5 text-[#2D8192]" />;
       case 'BookOpen':
-        return <BookOpen className="w-5 h-5 text-[#457B9D]" />;
+        return <BookOpen className="w-5 h-5 text-[#427E98]" />;
       case 'Palmtree':
-        return <Palmtree className="w-5 h-5 text-[#52796F]" />;
+        return <Palmtree className="w-5 h-5 text-[#246579]" />;
       default:
-        return <Award className="w-5 h-5 text-[#C5A059]" />;
+        return <Award className="w-5 h-5 text-[#BE9452]" />;
     }
   };
 
   return (
     <div className="w-full space-y-6">
       {/* Level & XP Overview Card */}
-      <div className="bg-gradient-to-r from-[#2F3E46] via-[#354F52] to-[#52796F] text-white rounded-3xl p-6 sm:p-8 shadow-md">
+      <div className="bg-[#246579] text-white rounded-3xl p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <span className="text-xs uppercase tracking-wider text-[#A8D5BA] font-semibold">
+            <span className="text-xs uppercase tracking-wider text-[#A7CDD3] font-semibold">
               Tingkat Hafalan · Level {levelInfo.level}
             </span>
             <h3 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-[#E9C46A]" />
+              <Trophy className="w-6 h-6 text-[#D3A253]" />
               <span>{levelInfo.title}</span>
             </h3>
             <p className="text-xs text-[#CBD5E1]">
@@ -58,12 +58,12 @@ export const AchievementsView: React.FC = () => {
           <div className="flex items-center gap-4 bg-white/10 backdrop-blur-xs p-4 rounded-2xl border border-white/10 shrink-0">
             <div>
               <span className="text-[10px] text-[#CBD5E1] block uppercase tracking-wider">Total XP</span>
-              <span className="text-xl font-bold text-[#E9C46A] tabular-nums">{xp} XP</span>
+              <span className="text-xl font-bold text-[#D3A253] tabular-nums">{xp} XP</span>
             </div>
             <div className="w-px h-8 bg-white/20" />
             <div>
               <span className="text-[10px] text-[#CBD5E1] block uppercase tracking-wider">Istiqomah</span>
-              <span className="text-xl font-bold text-[#F4A261] tabular-nums flex items-center gap-1">
+              <span className="text-xl font-bold text-[#E3B973] tabular-nums flex items-center gap-1">
                 <Flame className="w-4 h-4" />
                 {streakDays} Hari
               </span>
@@ -82,7 +82,7 @@ export const AchievementsView: React.FC = () => {
               initial={{ width: 0 }}
               animate={{ width: `${progressPercent}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="h-full bg-gradient-to-r from-[#E9C46A] to-[#84A98C] rounded-full"
+              className="h-full bg-gradient-to-r from-[#D3A253] to-[#477F8D] rounded-full"
             />
           </div>
         </div>
@@ -91,20 +91,20 @@ export const AchievementsView: React.FC = () => {
       {/* Stats KPI Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 text-center">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#84A98C] block">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#477F8D] block">
             Ayat Dihafal
           </span>
-          <span className="text-2xl font-bold text-[#1D3557] dark:text-white tabular-nums">
+          <span className="text-2xl font-bold text-[#173B4E] dark:text-white tabular-nums">
             {memorizedAyahIds.length}
           </span>
           <span className="text-[10px] text-slate-400 block mt-0.5">Ayat Al-Qur'an</span>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 text-center">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#84A98C] block">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#477F8D] block">
             Hari Istiqomah
           </span>
-          <span className="text-2xl font-bold text-[#E76F51] tabular-nums flex items-center justify-center gap-1">
+          <span className="text-2xl font-bold text-[#B87845] tabular-nums flex items-center justify-center gap-1">
             <Flame className="w-5 h-5" />
             {streakDays}
           </span>
@@ -112,20 +112,20 @@ export const AchievementsView: React.FC = () => {
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 text-center">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#84A98C] block">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#477F8D] block">
             Tanaman Raudhah
           </span>
-          <span className="text-2xl font-bold text-[#52796F] dark:text-[#84A98C] tabular-nums">
+          <span className="text-2xl font-bold text-[#246579] dark:text-[#477F8D] tabular-nums">
             {gardenPlants.length}
           </span>
           <span className="text-[10px] text-slate-400 block mt-0.5">Pohon & Bunga</span>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 text-center">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#84A98C] block">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#477F8D] block">
             Lencana Diraih
           </span>
-          <span className="text-2xl font-bold text-[#C5A059] tabular-nums">
+          <span className="text-2xl font-bold text-[#BE9452] tabular-nums">
             {unlockedBadges.length} / {INITIAL_BADGES.length}
           </span>
           <span className="text-[10px] text-slate-400 block mt-0.5">Prestasi</span>
@@ -134,7 +134,7 @@ export const AchievementsView: React.FC = () => {
 
       {/* Badges Collection */}
       <div className="space-y-3">
-        <h4 className="text-sm font-bold text-[#2F3E46] dark:text-white">
+        <h4 className="text-sm font-bold text-[#293640] dark:text-white">
           Daftar Lencana & Prestasi (Badges)
         </h4>
 
@@ -147,7 +147,7 @@ export const AchievementsView: React.FC = () => {
                 key={badge.id}
                 className={`p-4 rounded-2xl border transition-all ${
                   isUnlocked
-                    ? 'bg-white dark:bg-slate-800 border-[#84A98C]/50 shadow-xs'
+                    ? 'bg-white dark:bg-slate-800 border-[#477F8D]/50 shadow-xs'
                     : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60 opacity-60'
                 }`}
               >
@@ -155,7 +155,7 @@ export const AchievementsView: React.FC = () => {
                   <div
                     className={`p-3 rounded-2xl shrink-0 ${
                       isUnlocked
-                        ? 'bg-[#F4EFEA] dark:bg-slate-700 text-[#1D3557]'
+                        ? 'bg-[#F1EDE6] dark:bg-slate-700 text-[#173B4E]'
                         : 'bg-slate-200 dark:bg-slate-700/50 text-slate-400'
                     }`}
                   >
@@ -164,11 +164,11 @@ export const AchievementsView: React.FC = () => {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="font-bold text-xs text-[#2F3E46] dark:text-white truncate">
+                      <p className="font-bold text-xs text-[#293640] dark:text-white truncate">
                         {badge.title}
                       </p>
                       {isUnlocked ? (
-                        <CheckCircle2 className="w-4 h-4 text-[#84A98C] shrink-0" />
+                        <CheckCircle2 className="w-4 h-4 text-[#477F8D] shrink-0" />
                       ) : (
                         <span className="text-[10px] text-slate-400 shrink-0 font-medium">Terkunci</span>
                       )}
@@ -176,7 +176,7 @@ export const AchievementsView: React.FC = () => {
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                       {badge.description}
                     </p>
-                    <span className="inline-block mt-2 text-[10px] font-semibold text-[#C5A059] bg-[#E9C46A]/10 px-2 py-0.5 rounded-full">
+                    <span className="inline-block mt-2 text-[10px] font-semibold text-[#BE9452] bg-[#D3A253]/10 px-2 py-0.5 rounded-full">
                       +{badge.xpReward} XP
                     </span>
                   </div>

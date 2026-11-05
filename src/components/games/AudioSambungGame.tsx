@@ -86,10 +86,10 @@ export const AudioSambungGame: React.FC = () => {
       {/* Header Instruction */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/70 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
         <div>
-          <span className="text-[11px] font-semibold text-[#84A98C] uppercase tracking-wider block">
+          <span className="text-[11px] font-semibold text-[#477F8D] uppercase tracking-wider block">
             Game 4 · Sambung Ayat dari Audio
           </span>
-          <p className="text-xs text-[#52796F] dark:text-[#94A3B8] mt-0.5">
+          <p className="text-xs text-[#246579] dark:text-[#94A3B8] mt-0.5">
             Dengarkan lantunan ayat pembuka di bawah ini, lalu pilih sambungan ayat berikutnya dengan tepat!
           </p>
         </div>
@@ -98,8 +98,8 @@ export const AudioSambungGame: React.FC = () => {
           onClick={() => playMurottal(promptAyah)}
           className={`flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl transition-colors shadow-xs ${
             isPlayingAudio && currentPlayingAyahId === promptAyah.id
-              ? 'bg-[#E9C46A] text-[#1D3557]'
-              : 'bg-[#52796F] text-white hover:bg-[#354F52]'
+              ? 'bg-[#D3A253] text-[#173B4E]'
+              : 'bg-[#246579] text-white hover:bg-[#174C60]'
           }`}
         >
           <Volume2 className="w-4 h-4" />
@@ -108,21 +108,21 @@ export const AudioSambungGame: React.FC = () => {
       </div>
 
       {/* Audio Wave Soundbox Prompt */}
-      <div className="bg-gradient-to-b from-[#FDFBF7] to-[#F4EFEA] dark:from-[#0F1E21] dark:to-[#16272B] rounded-3xl p-6 border border-[#C5A059]/40 text-center space-y-4 shadow-xs">
-        <div className="flex items-center justify-center gap-2 text-xs text-[#84A98C] font-semibold">
-          <Music2 className="w-4 h-4 text-[#E9C46A]" />
+      <div className="bg-gradient-to-b from-[#F8F6F1] to-[#F1EDE6] dark:from-[#102731] dark:to-[#152E38] rounded-3xl p-6 border border-[#BE9452]/40 text-center space-y-4 shadow-xs">
+        <div className="flex items-center justify-center gap-2 text-xs text-[#477F8D] font-semibold">
+          <Music2 className="w-4 h-4 text-[#D3A253]" />
           <span>Ayat Pembuka: QS. {activeSurah.nameLatin} Ayat {promptAyah.ayahNumber}</span>
         </div>
 
         {/* Big Arabic Text of Prompt Ayah */}
         <p
-          className="font-arabic text-[#1D3557] dark:text-[#E9C46A] leading-relaxed my-2"
+          className="font-arabic text-[#173B4E] dark:text-[#D3A253] leading-relaxed my-2"
           style={{ fontSize: `${fontSize}px` }}
         >
           {promptAyah.arabicText}
         </p>
 
-        <p className="text-xs text-[#52796F] dark:text-[#CBD5E1] max-w-lg mx-auto">
+        <p className="text-xs text-[#246579] dark:text-[#CBD5E1] max-w-lg mx-auto">
           "{promptAyah.translationId}"
         </p>
 
@@ -135,7 +135,7 @@ export const AudioSambungGame: React.FC = () => {
                 scaleY: isPlayingAudio && currentPlayingAyahId === promptAyah.id ? [0.4, 1.8, 0.4] : 0.4
               }}
               transition={{ repeat: Infinity, duration: 0.6 + i * 0.15, ease: 'easeInOut' }}
-              className="w-1.5 h-6 bg-[#52796F] dark:bg-[#84A98C] rounded-full"
+              className="w-1.5 h-6 bg-[#246579] dark:bg-[#477F8D] rounded-full"
             />
           ))}
         </div>
@@ -143,7 +143,7 @@ export const AudioSambungGame: React.FC = () => {
 
       {/* Answer Choices */}
       <div className="space-y-3">
-        <p className="text-xs font-semibold text-[#52796F] dark:text-[#94A3B8] text-center">
+        <p className="text-xs font-semibold text-[#246579] dark:text-[#94A3B8] text-center">
           Pilih sambungan ayat yang benar:
         </p>
 
@@ -169,10 +169,10 @@ export const AudioSambungGame: React.FC = () => {
                 onClick={() => handleSelectOption(opt)}
                 className={`p-4 sm:p-5 rounded-2xl border text-right transition-all cursor-pointer shadow-xs flex items-center justify-between gap-4 select-none ${
                   isThisCorrect
-                    ? 'bg-[#84A98C] text-white border-[#52796F] ring-2 ring-[#84A98C]/30 shadow-md'
+                    ? 'bg-[#477F8D] text-white border-[#246579] ring-2 ring-[#477F8D]/30 shadow-md'
                     : isThisWrong
                     ? 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-300'
-                    : 'bg-white dark:bg-slate-800 hover:bg-[#FDFBF7] dark:hover:bg-slate-700/80 text-[#2F3E46] dark:text-white border-slate-200 dark:border-slate-700'
+                    : 'bg-white dark:bg-slate-800 hover:bg-[#F8F6F1] dark:hover:bg-slate-700/80 text-[#293640] dark:text-white border-slate-200 dark:border-slate-700'
                 }`}
               >
                 {/* Audio preview button on choice */}
@@ -217,22 +217,22 @@ export const AudioSambungGame: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-5 bg-gradient-to-r from-[#D8EADB] to-[#F0F7F2] dark:from-[#133230] dark:to-[#1E3A34] border border-[#84A98C] rounded-3xl text-center space-y-3"
+            className="p-5 bg-gradient-to-r from-[#E2EEF0] to-[#F4F8F8] dark:from-[#123744] dark:to-[#193E4B] border border-[#477F8D] rounded-3xl text-center space-y-3"
           >
-            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#52796F] text-white">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#246579] text-white">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[#2F3E46] dark:text-white">
+              <h4 className="text-sm font-bold text-[#293640] dark:text-white">
                 Sambungan Ayat Benar! (+40 XP)
               </h4>
-              <p className="text-xs text-[#52796F] dark:text-[#CBD5E1] mt-0.5">
+              <p className="text-xs text-[#246579] dark:text-[#CBD5E1] mt-0.5">
                 Alhamdulillah, pendengaran dan memori hafalanmu tersambung dengan baik.
               </p>
             </div>
             <button
               onClick={handleNextRound}
-              className="inline-flex items-center gap-1.5 px-5 py-2 bg-[#52796F] hover:bg-[#354F52] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-5 py-2 bg-[#246579] hover:bg-[#174C60] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors cursor-pointer"
             >
               <span>{isLastRound ? 'Ulangi dari Ayat 1' : 'Lanjut ke Ayat Selanjutnya'}</span>
               <ArrowRight className="w-4 h-4" />

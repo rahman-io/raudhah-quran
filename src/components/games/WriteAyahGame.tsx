@@ -45,7 +45,7 @@ export const WriteAyahGame: React.FC = () => {
       if (!context) return;
       context.clearRect(0, 0, WIDTH, HEIGHT);
       if (patternVisible && word) {
-        context.fillStyle = '#52796F';
+        context.fillStyle = '#246579';
         context.globalAlpha = 0.35;
         drawWritingPattern(context, word.arabic, patternSize);
         context.globalAlpha = 1;
@@ -144,45 +144,45 @@ export const WriteAyahGame: React.FC = () => {
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/60 p-4">
         <div>
-          <span className="block text-[11px] font-semibold uppercase tracking-wider text-[#84A98C]">Game 7 · Tulis Ayat</span>
-          <p className="mt-1 text-xs text-[#52796F] dark:text-[#CBD5E1]">
+          <span className="block text-[11px] font-semibold uppercase tracking-wider text-[#477F8D]">Game 7 · Tulis Ayat</span>
+          <p className="mt-1 text-xs text-[#246579] dark:text-[#CBD5E1]">
             Telusuri bentuk huruf dan harakat dari kanan ke kiri, lalu tulis kembali tanpa pola.
           </p>
         </div>
-        <button type="button" onClick={() => playMurottal(selectedAyah)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#52796F] px-4 py-2 text-xs font-semibold text-white hover:bg-[#354F52]">
+        <button type="button" onClick={() => playMurottal(selectedAyah)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#246579] px-4 py-2 text-xs font-semibold text-white hover:bg-[#174C60]">
           <Volume2 className="h-4 w-4" /> Dengarkan Ayat
         </button>
       </div>
 
-      <div className="rounded-2xl border border-[#C5A059]/40 bg-[#FDFBF7] p-4 text-center dark:bg-[#16272B]">
-        <p className="text-xs font-semibold text-[#52796F] dark:text-[#A8D5BA]">QS. {activeSurah.nameLatin} · Ayat {selectedAyah.ayahNumber}</p>
+      <div className="rounded-2xl border border-[#BE9452]/40 bg-[#F8F6F1] p-4 text-center dark:bg-[#152E38]">
+        <p className="text-xs font-semibold text-[#246579] dark:text-[#A7CDD3]">QS. {activeSurah.nameLatin} · Ayat {selectedAyah.ayahNumber}</p>
         <div dir="rtl" className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1 leading-loose">
           {selectedAyah.words.map((part, index) => (
-            <span key={part.id} className={`font-arabic ${step !== 'complete' && index === wordIndex ? 'text-[#2A9D8F] underline decoration-[#E9C46A] underline-offset-8' : 'text-[#1D3557] dark:text-[#E9C46A]'}`} style={{ fontSize: `${Math.min(fontSize, 40)}px` }}>
+            <span key={part.id} className={`font-arabic ${step !== 'complete' && index === wordIndex ? 'text-[#2D8192] underline decoration-[#D3A253] underline-offset-8' : 'text-[#173B4E] dark:text-[#D3A253]'}`} style={{ fontSize: `${Math.min(fontSize, 40)}px` }}>
               {part.arabic}
             </span>
           ))}
         </div>
-        <p className="mt-2 text-xs text-[#52796F] dark:text-[#CBD5E1]">{selectedAyah.translationId}</p>
+        <p className="mt-2 text-xs text-[#246579] dark:text-[#CBD5E1]">{selectedAyah.translationId}</p>
       </div>
 
       {step === 'complete' ? (
-        <div className="rounded-3xl border border-[#84A98C] bg-[#D8EADB] p-7 text-center dark:bg-[#133230]">
-          <CheckCircle2 className="mx-auto h-9 w-9 text-[#52796F] dark:text-[#84A98C]" />
-          <h3 className="mt-3 font-semibold text-[#1D3557] dark:text-white">Semua kata telah kamu latih</h3>
-          <p className="mt-2 text-xs text-[#52796F] dark:text-[#CBD5E1]">Setiap kata telah melewati pemeriksaan kemiripan bentuk. Terus latih huruf dan harakatnya agar semakin rapi.</p>
-          <button type="button" onClick={nextAyah} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#52796F] px-5 py-2 text-xs font-semibold text-white hover:bg-[#354F52]">
+        <div className="rounded-3xl border border-[#477F8D] bg-[#E2EEF0] p-7 text-center dark:bg-[#123744]">
+          <CheckCircle2 className="mx-auto h-9 w-9 text-[#246579] dark:text-[#477F8D]" />
+          <h3 className="mt-3 font-semibold text-[#173B4E] dark:text-white">Semua kata telah kamu latih</h3>
+          <p className="mt-2 text-xs text-[#246579] dark:text-[#CBD5E1]">Setiap kata telah melewati pemeriksaan kemiripan bentuk. Terus latih huruf dan harakatnya agar semakin rapi.</p>
+          <button type="button" onClick={nextAyah} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#246579] px-5 py-2 text-xs font-semibold text-white hover:bg-[#174C60]">
             {selectedAyah.id === activeSurah.ayahs[activeSurah.ayahs.length - 1].id ? 'Ulangi dari Ayat 1' : 'Lanjut ke Ayat Berikutnya'} <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       ) : (
-        <div className="rounded-3xl border border-[#C5A059]/40 bg-white p-4 sm:p-6 dark:bg-slate-800/80">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs text-[#52796F] dark:text-[#A8D5BA]">
+        <div className="rounded-3xl border border-[#BE9452]/40 bg-white p-4 sm:p-6 dark:bg-slate-800/80">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs text-[#246579] dark:text-[#A7CDD3]">
             <span className="font-semibold">Kata {wordIndex + 1} dari {selectedAyah.words.length} · {step === 'trace' ? '1. Telusuri pola' : step === 'write' ? '2. Tulis sendiri' : '3. Bandingkan hasil'}</span>
             <span>{word?.transliteration}</span>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[640px] overflow-hidden rounded-2xl border-2 border-dashed border-[#C5A059]/60 bg-[#FDFBF7] dark:bg-[#16272B]">
+          <div className="relative mx-auto w-full max-w-[640px] overflow-hidden rounded-2xl border-2 border-dashed border-[#BE9452]/60 bg-[#F8F6F1] dark:bg-[#152E38]">
             <canvas ref={patternCanvas} width={WIDTH} height={HEIGHT} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" />
             <svg
               viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
@@ -197,13 +197,13 @@ export const WriteAyahGame: React.FC = () => {
             >
               <rect width={WIDTH} height={HEIGHT} fill="transparent" />
               {strokes.map((stroke) => stroke.points.length === 1
-                ? <circle key={stroke.id} cx={stroke.points[0].x} cy={stroke.points[0].y} r={stroke.width / 2} fill="#1D3557" pointerEvents="none" />
-                : <path key={stroke.id} d={stroke.points.map((point, index) => `${index ? 'L' : 'M'}${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(' ')} fill="none" stroke="#1D3557" strokeWidth={stroke.width} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />
+                ? <circle key={stroke.id} cx={stroke.points[0].x} cy={stroke.points[0].y} r={stroke.width / 2} fill="#173B4E" pointerEvents="none" />
+                : <path key={stroke.id} d={stroke.points.map((point, index) => `${index ? 'L' : 'M'}${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(' ')} fill="none" stroke="#173B4E" strokeWidth={stroke.width} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />
               )}
             </svg>
           </div>
 
-          <p className="mt-3 text-center text-xs text-[#52796F] dark:text-[#CBD5E1]">
+          <p className="mt-3 text-center text-xs text-[#246579] dark:text-[#CBD5E1]">
             {step === 'trace' ? 'Ikuti huruf dan harakat berwarna samar dengan jari, stylus, atau mouse.' : step === 'write' ? 'Tulis kata yang sama dari ingatanmu di bidang kosong.' : 'Lihat hasil penilaian bentuk dan tampilkan pola untuk melihat letak yang perlu diperbaiki.'}
           </p>
 
@@ -222,10 +222,10 @@ export const WriteAyahGame: React.FC = () => {
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             {step !== 'review' && (
               <>
-                <button type="button" onClick={() => { setStrokes((previous) => previous.slice(0, -1)); setAssessment(null); }} disabled={!strokes.length || !!assessment?.isCorrect} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-[#52796F] disabled:opacity-40 dark:border-slate-600 dark:text-[#A8D5BA]"><Undo2 className="h-4 w-4" /> Urungkan</button>
-                <button type="button" onClick={() => { setStrokes([]); setAssessment(null); }} disabled={!strokes.length || !!assessment?.isCorrect} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-[#52796F] disabled:opacity-40 dark:border-slate-600 dark:text-[#A8D5BA]"><Eraser className="h-4 w-4" /> Hapus</button>
-                {assessment?.isCorrect && step === 'trace' ? <button type="button" onClick={nextStep} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[#52796F] px-4 text-xs font-semibold text-white hover:bg-[#354F52]">Lanjut: Tulis sendiri <ArrowRight className="h-4 w-4" /></button> :
-                <button type="button" onClick={checkWriting} disabled={!strokes.length} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[#52796F] px-4 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 hover:bg-[#354F52]">
+                <button type="button" onClick={() => { setStrokes((previous) => previous.slice(0, -1)); setAssessment(null); }} disabled={!strokes.length || !!assessment?.isCorrect} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-[#246579] disabled:opacity-40 dark:border-slate-600 dark:text-[#A7CDD3]"><Undo2 className="h-4 w-4" /> Urungkan</button>
+                <button type="button" onClick={() => { setStrokes([]); setAssessment(null); }} disabled={!strokes.length || !!assessment?.isCorrect} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-[#246579] disabled:opacity-40 dark:border-slate-600 dark:text-[#A7CDD3]"><Eraser className="h-4 w-4" /> Hapus</button>
+                {assessment?.isCorrect && step === 'trace' ? <button type="button" onClick={nextStep} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[#246579] px-4 text-xs font-semibold text-white hover:bg-[#174C60]">Lanjut: Tulis sendiri <ArrowRight className="h-4 w-4" /></button> :
+                <button type="button" onClick={checkWriting} disabled={!strokes.length} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[#246579] px-4 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 hover:bg-[#174C60]">
                   Periksa {step === 'trace' ? 'Pola' : 'Tulisan'} <CheckCircle2 className="h-4 w-4" />
                 </button>
                 }
@@ -233,13 +233,13 @@ export const WriteAyahGame: React.FC = () => {
             )}
             {step === 'review' && (
               <>
-                <button type="button" onClick={() => setShowPattern((value) => !value)} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[#84A98C] px-4 text-xs font-semibold text-[#52796F] dark:text-[#A8D5BA]">
+                <button type="button" onClick={() => setShowPattern((value) => !value)} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[#477F8D] px-4 text-xs font-semibold text-[#246579] dark:text-[#A7CDD3]">
                   <PenLine className="h-4 w-4" /> {showPattern ? 'Sembunyikan Pola' : 'Tampilkan Pola'}
                 </button>
-                <button type="button" onClick={repeatWord} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[#C5A059] px-4 text-xs font-semibold text-[#52796F] dark:text-[#A8D5BA]"><RotateCcw className="h-4 w-4" /> Ulangi Kata</button>
-                {assessment?.isCorrect ? <button type="button" onClick={nextStep} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[#52796F] px-4 text-xs font-semibold text-white hover:bg-[#354F52]">
+                <button type="button" onClick={repeatWord} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[#BE9452] px-4 text-xs font-semibold text-[#246579] dark:text-[#A7CDD3]"><RotateCcw className="h-4 w-4" /> Ulangi Kata</button>
+                {assessment?.isCorrect ? <button type="button" onClick={nextStep} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[#246579] px-4 text-xs font-semibold text-white hover:bg-[#174C60]">
                   {wordIndex + 1 === selectedAyah.words.length ? 'Selesai' : 'Lanjut ke Kata Berikutnya'} <ArrowRight className="h-4 w-4" />
-                </button> : <button type="button" onClick={() => { setStep('write'); setAssessment(null); setShowPattern(false); }} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[#52796F] px-4 text-xs font-semibold text-white hover:bg-[#354F52]">Perbaiki Tulisan <PenLine className="h-4 w-4" /></button>}
+                </button> : <button type="button" onClick={() => { setStep('write'); setAssessment(null); setShowPattern(false); }} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-[#246579] px-4 text-xs font-semibold text-white hover:bg-[#174C60]">Perbaiki Tulisan <PenLine className="h-4 w-4" /></button>}
               </>
             )}
           </div>

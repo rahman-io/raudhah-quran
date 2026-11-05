@@ -196,10 +196,10 @@ export const TajwidQuizGame: React.FC = () => {
       {/* Header Instruction */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/70 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
         <div>
-          <span className="text-[11px] font-semibold text-[#84A98C] uppercase tracking-wider block">
+          <span className="text-[11px] font-semibold text-[#477F8D] uppercase tracking-wider block">
             Game 6 · Kuis Tajwid & Harakat
           </span>
-          <p className="text-xs text-[#52796F] dark:text-[#94A3B8] mt-0.5">
+          <p className="text-xs text-[#246579] dark:text-[#94A3B8] mt-0.5">
             Uji pemahaman hukum bacaan tajwid agar lantunan Al-Qur'anmu semakin fasih dan benar.
           </p>
         </div>
@@ -218,18 +218,18 @@ export const TajwidQuizGame: React.FC = () => {
             <span>Pelajari Materi Tajwid Ini</span>
           </button>
 
-          <span className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-[#52796F]/10 dark:bg-[#52796F]/30 text-[#52796F] dark:text-[#84A98C]">
+          <span className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-[#246579]/10 dark:bg-[#246579]/30 text-[#246579] dark:text-[#477F8D]">
             Kategori: {currentQ.category}
           </span>
         </div>
       </div>
 
       {/* Question Card with Highlighted Arabic Phrase */}
-      <div className="bg-gradient-to-b from-[#FDFBF7] to-[#F4EFEA] dark:from-[#0F1E21] dark:to-[#16272B] rounded-3xl p-6 sm:p-8 border border-[#C5A059]/40 text-center space-y-4 shadow-xs">
+      <div className="bg-gradient-to-b from-[#F8F6F1] to-[#F1EDE6] dark:from-[#102731] dark:to-[#152E38] rounded-3xl p-6 sm:p-8 border border-[#BE9452]/40 text-center space-y-4 shadow-xs">
         {/* Highlighted Arabic Word */}
-        <div className="inline-block p-4 px-8 rounded-2xl bg-white dark:bg-slate-800 border-2 border-[#E9C46A] shadow-sm">
+        <div className="inline-block p-4 px-8 rounded-2xl bg-white dark:bg-slate-800 border-2 border-[#D3A253] shadow-sm">
           <p
-            className="font-arabic font-bold text-[#1D3557] dark:text-[#E9C46A]"
+            className="font-arabic font-bold text-[#173B4E] dark:text-[#D3A253]"
             style={{ fontSize: `${Math.max(fontSize * 1.2, 34)}px` }}
           >
             {currentQ.highlightPhrase}
@@ -243,12 +243,12 @@ export const TajwidQuizGame: React.FC = () => {
             onClick={handlePlayQuizPhrase}
             className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
               isPlayingPhrase
-                ? 'bg-[#E9C46A] text-[#1D3557] border-[#C5A059] shadow-xs'
-                : 'bg-white dark:bg-slate-800 text-[#52796F] dark:text-[#A8D5BA] border-slate-200 dark:border-slate-700 hover:bg-[#F4EFEA]'
+                ? 'bg-[#D3A253] text-[#173B4E] border-[#BE9452] shadow-xs'
+                : 'bg-white dark:bg-slate-800 text-[#246579] dark:text-[#A7CDD3] border-slate-200 dark:border-slate-700 hover:bg-[#F1EDE6]'
             }`}
             title={`Dengarkan QS. ${activeSurah.nameLatin} ayat ${currentQ.ayahNumber}`}
           >
-            <Volume2 className="w-3.5 h-3.5 text-[#E9C46A]" />
+            <Volume2 className="w-3.5 h-3.5 text-[#D3A253]" />
             <span>{isPlayingPhrase ? 'Memutar Ayat...' : 'Dengarkan Ayat Contoh'}</span>
           </button>
 
@@ -261,8 +261,8 @@ export const TajwidQuizGame: React.FC = () => {
                 onClick={() => setQuizAudioSpeed(s)}
                 className={`px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
                   quizAudioSpeed === s
-                    ? 'bg-[#52796F] text-white shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-[#52796F]'
+                    ? 'bg-[#246579] text-white shadow-2xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-[#246579]'
                 }`}
               >
                 {s}x
@@ -272,7 +272,7 @@ export const TajwidQuizGame: React.FC = () => {
         </div>
 
         {/* Question sentence */}
-        <h3 className="text-sm sm:text-base font-bold text-[#2F3E46] dark:text-white max-w-lg mx-auto leading-relaxed">
+        <h3 className="text-sm sm:text-base font-bold text-[#293640] dark:text-white max-w-lg mx-auto leading-relaxed">
           {currentQ.question}
         </h3>
       </div>
@@ -293,10 +293,10 @@ export const TajwidQuizGame: React.FC = () => {
               disabled={isAnswered}
               className={`w-full p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3 ${
                 showSuccess
-                  ? 'bg-[#84A98C] text-white border-[#52796F] shadow-sm ring-2 ring-[#84A98C]/30'
+                  ? 'bg-[#477F8D] text-white border-[#246579] shadow-sm ring-2 ring-[#477F8D]/30'
                   : showFailure
                   ? 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-300'
-                  : 'bg-white dark:bg-slate-800 text-[#2F3E46] dark:text-white border-slate-200 dark:border-slate-700 hover:border-[#84A98C]'
+                  : 'bg-white dark:bg-slate-800 text-[#293640] dark:text-white border-slate-200 dark:border-slate-700 hover:border-[#477F8D]'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -327,7 +327,7 @@ export const TajwidQuizGame: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className={`p-5 rounded-3xl border space-y-3 text-center sm:text-left ${
               isCorrect
-                ? 'bg-gradient-to-r from-[#D8EADB] to-[#F0F7F2] dark:from-[#133230] dark:to-[#1E3A34] border-[#84A98C]'
+                ? 'bg-gradient-to-r from-[#E2EEF0] to-[#F4F8F8] dark:from-[#123744] dark:to-[#193E4B] border-[#477F8D]'
                 : 'bg-amber-50 dark:bg-amber-950/50 border-amber-300'
             }`}
           >
@@ -335,7 +335,7 @@ export const TajwidQuizGame: React.FC = () => {
               <div
                 className={`p-2 rounded-xl shrink-0 ${
                   isCorrect
-                    ? 'bg-[#52796F] text-white'
+                    ? 'bg-[#246579] text-white'
                     : 'bg-amber-600 text-white'
                 }`}
               >
@@ -343,10 +343,10 @@ export const TajwidQuizGame: React.FC = () => {
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-xs text-[#2F3E46] dark:text-white">
+                <p className="font-bold text-xs text-[#293640] dark:text-white">
                   {isCorrect ? 'Jawaban Benar! (+35 XP)' : 'Pelajari Hikmah Tajwid Ini:'}
                 </p>
-                <p className="text-xs text-[#354F52] dark:text-[#CBD5E1] mt-1 leading-relaxed">
+                <p className="text-xs text-[#174C60] dark:text-[#CBD5E1] mt-1 leading-relaxed">
                   {currentQ.explanation}
                 </p>
               </div>
@@ -355,7 +355,7 @@ export const TajwidQuizGame: React.FC = () => {
             <div className="pt-2 flex justify-center sm:justify-end">
               <button
                 onClick={handleNextQuestion}
-                className="inline-flex items-center gap-1.5 px-5 py-2 bg-[#52796F] hover:bg-[#354F52] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-5 py-2 bg-[#246579] hover:bg-[#174C60] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors cursor-pointer"
               >
                 <span>Soal Tajwid Berikutnya</span>
                 <ArrowRight className="w-4 h-4" />

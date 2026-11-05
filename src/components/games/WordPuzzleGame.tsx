@@ -111,10 +111,10 @@ export const WordPuzzleGame: React.FC = () => {
       {/* Game Instruction & Top Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/70 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
         <div>
-          <span className="text-[11px] font-semibold text-[#84A98C] uppercase tracking-wider block">
+          <span className="text-[11px] font-semibold text-[#477F8D] uppercase tracking-wider block">
             Game 1 · Susun Ayat (Word Puzzle)
           </span>
-          <p className="text-xs text-[#52796F] dark:text-[#94A3B8] mt-0.5">
+          <p className="text-xs text-[#246579] dark:text-[#94A3B8] mt-0.5">
             Susun kepingan kata Arab berikut secara berurutan sesuai bunyi ayat yang benar.
           </p>
         </div>
@@ -125,8 +125,8 @@ export const WordPuzzleGame: React.FC = () => {
             onClick={() => playMurottal(selectedAyah)}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
               isPlayingAudio && currentPlayingAyahId === selectedAyah.id
-                ? 'bg-[#E9C46A] text-[#1D3557]'
-                : 'bg-[#52796F]/10 text-[#52796F] dark:bg-[#52796F]/30 dark:text-[#84A98C] hover:bg-[#52796F]/20'
+                ? 'bg-[#D3A253] text-[#173B4E]'
+                : 'bg-[#246579]/10 text-[#246579] dark:bg-[#246579]/30 dark:text-[#477F8D] hover:bg-[#246579]/20'
             }`}
             title="Dengarkan Murottal Ayat"
           >
@@ -155,8 +155,8 @@ export const WordPuzzleGame: React.FC = () => {
       </div>
 
       {/* Assembled Sentence Box (Drop Zone) */}
-      <div className="relative min-h-[140px] bg-gradient-to-b from-[#FDFBF7] to-[#F4EFEA] dark:from-[#0F1E21] dark:to-[#16272B] rounded-3xl p-6 border-2 border-dashed border-[#C5A059]/40 flex flex-col justify-between shadow-xs">
-        <div className="flex items-center justify-between text-xs text-[#84A98C] mb-3">
+      <div className="relative min-h-[140px] bg-gradient-to-b from-[#F8F6F1] to-[#F1EDE6] dark:from-[#102731] dark:to-[#152E38] rounded-3xl p-6 border-2 border-dashed border-[#BE9452]/40 flex flex-col justify-between shadow-xs">
+        <div className="flex items-center justify-between text-xs text-[#477F8D] mb-3">
           <span>Susunan Kata (Klik kata untuk membatalkan):</span>
           <span>{selectedWords.length} / {targetWords.length} kata</span>
         </div>
@@ -179,7 +179,7 @@ export const WordPuzzleGame: React.FC = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
                 onClick={() => handleRemoveWord(word)}
-                className={`group relative cursor-pointer px-4 py-2 bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm border hover:border-red-400 dark:hover:border-red-400 transition-all text-[#1D3557] dark:text-[#E9C46A] ${hintIndex === idx && word.arabic !== targetWords[idx].arabic ? 'border-amber-500 ring-2 ring-amber-400' : 'border-[#84A98C]/40'}`}
+                className={`group relative cursor-pointer px-4 py-2 bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm border hover:border-red-400 dark:hover:border-red-400 transition-all text-[#173B4E] dark:text-[#D3A253] ${hintIndex === idx && word.arabic !== targetWords[idx].arabic ? 'border-amber-500 ring-2 ring-amber-400' : 'border-[#477F8D]/40'}`}
               >
                 <span
                   className="font-arabic font-medium block"
@@ -196,8 +196,8 @@ export const WordPuzzleGame: React.FC = () => {
         </div>
 
         {/* Sentence Meaning Preview */}
-        <div className="mt-4 pt-3 border-t border-[#84A98C]/20 text-center">
-          <p className="text-xs text-[#52796F] dark:text-[#94A3B8]">
+        <div className="mt-4 pt-3 border-t border-[#477F8D]/20 text-center">
+          <p className="text-xs text-[#246579] dark:text-[#94A3B8]">
             "{selectedAyah.translationId}"
           </p>
         </div>
@@ -216,7 +216,7 @@ export const WordPuzzleGame: React.FC = () => {
 
       {/* Available Word Chips Pool */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-[#52796F] dark:text-[#94A3B8]">
+        <div className="flex items-center justify-between text-xs text-[#246579] dark:text-[#94A3B8]">
           <span>Kepingan Kata Acak:</span>
           <span>Tip: Klik tanda buku di kata untuk melihat artinya!</span>
         </div>
@@ -231,7 +231,7 @@ export const WordPuzzleGame: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleSelectWord(word)}
-                className={`px-4 py-2.5 rounded-2xl bg-[#F4EFEA] dark:bg-[#16272B] hover:bg-[#EAE3D9] dark:hover:bg-[#1E3A34] text-[#2F3E46] dark:text-[#F1F5F9] border hover:border-[#84A98C] shadow-xs cursor-pointer transition-colors ${hintIndex === selectedWords.length && word.arabic === targetWords[hintIndex]?.arabic ? 'border-amber-500 ring-2 ring-amber-400' : 'border-[#C5A059]/40'}`}
+                className={`px-4 py-2.5 rounded-2xl bg-[#F1EDE6] dark:bg-[#152E38] hover:bg-[#E8E1D6] dark:hover:bg-[#193E4B] text-[#293640] dark:text-[#F1F5F9] border hover:border-[#477F8D] shadow-xs cursor-pointer transition-colors ${hintIndex === selectedWords.length && word.arabic === targetWords[hintIndex]?.arabic ? 'border-amber-500 ring-2 ring-amber-400' : 'border-[#BE9452]/40'}`}
               >
                 <span
                   className="font-arabic font-medium block"
@@ -251,7 +251,7 @@ export const WordPuzzleGame: React.FC = () => {
                   e.stopPropagation();
                   inspectWord(word);
                 }}
-                className="absolute -top-1.5 -left-1.5 p-1 bg-white dark:bg-slate-700 text-[#52796F] hover:text-[#1D3557] rounded-full shadow-xs border border-slate-200 dark:border-slate-600 opacity-60 hover:opacity-100 transition-opacity"
+                className="absolute -top-1.5 -left-1.5 p-1 bg-white dark:bg-slate-700 text-[#246579] hover:text-[#173B4E] rounded-full shadow-xs border border-slate-200 dark:border-slate-600 opacity-60 hover:opacity-100 transition-opacity"
                 title="Lihat arti kata ini"
               >
                 <BookOpen className="w-3 h-3" />
@@ -268,34 +268,34 @@ export const WordPuzzleGame: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="p-5 bg-gradient-to-r from-[#D8EADB] to-[#F0F7F2] dark:from-[#133230] dark:to-[#1E3A34] border border-[#84A98C] rounded-3xl shadow-md text-center space-y-3"
+            className="p-5 bg-gradient-to-r from-[#E2EEF0] to-[#F4F8F8] dark:from-[#123744] dark:to-[#193E4B] border border-[#477F8D] rounded-3xl shadow-md text-center space-y-3"
           >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#52796F] text-white shadow-sm">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#246579] text-white shadow-sm">
               <CheckCircle2 className="w-6 h-6" />
             </div>
 
             <div>
-              <h4 className="text-base font-bold text-[#2F3E46] dark:text-white flex items-center justify-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[#E9C46A]" />
+              <h4 className="text-base font-bold text-[#293640] dark:text-white flex items-center justify-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#D3A253]" />
                 <span>Masya Allah, Susunan Ayat Tepat!</span>
               </h4>
-              <p className="text-xs text-[#52796F] dark:text-[#A8D5BA] mt-1">
-                Kamu mendapatkan <span className="font-bold text-[#E76F51]">+40 XP</span> dan menumbuhkan tanaman di Taman Surga!
+              <p className="text-xs text-[#246579] dark:text-[#A7CDD3] mt-1">
+                Kamu mendapatkan <span className="font-bold text-[#B87845]">+40 XP</span> dan menumbuhkan tanaman di Taman Surga!
               </p>
             </div>
 
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 onClick={() => playMurottal(selectedAyah)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-800 text-[#2F3E46] dark:text-white rounded-xl text-xs font-semibold shadow-xs hover:bg-slate-50 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-800 text-[#293640] dark:text-white rounded-xl text-xs font-semibold shadow-xs hover:bg-slate-50 transition-colors"
               >
-                <Volume2 className="w-4 h-4 text-[#52796F]" />
+                <Volume2 className="w-4 h-4 text-[#246579]" />
                 <span>Dengar Pelafalan Murottal</span>
               </button>
 
               <button
                 onClick={handleNextAyah}
-                className="flex items-center gap-1.5 px-5 py-2 bg-[#52796F] hover:bg-[#354F52] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+                className="flex items-center gap-1.5 px-5 py-2 bg-[#246579] hover:bg-[#174C60] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
               >
                 <span>{selectedAyah.id === activeSurah.ayahs[activeSurah.ayahs.length - 1].id ? 'Ulangi dari Ayat 1' : 'Lanjut Ayat Berikutnya'}</span>
                 <ArrowRight className="w-4 h-4" />

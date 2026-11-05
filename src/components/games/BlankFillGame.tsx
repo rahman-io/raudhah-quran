@@ -104,10 +104,10 @@ export const BlankFillGame: React.FC = () => {
       {/* Game Instruction Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/70 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
         <div>
-          <span className="text-[11px] font-semibold text-[#84A98C] uppercase tracking-wider block">
+          <span className="text-[11px] font-semibold text-[#477F8D] uppercase tracking-wider block">
             Game 2 · Tebak Lanjutan (Blank Fill)
           </span>
-          <p className="text-xs text-[#52796F] dark:text-[#94A3B8] mt-0.5">
+          <p className="text-xs text-[#246579] dark:text-[#94A3B8] mt-0.5">
             Dengarkan atau baca ayatnya, lalu tebak kata Arab yang hilang pada tanda titik-titik.
           </p>
         </div>
@@ -118,8 +118,8 @@ export const BlankFillGame: React.FC = () => {
             onClick={() => playMurottal(selectedAyah)}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
               isPlayingAudio && currentPlayingAyahId === selectedAyah.id
-                ? 'bg-[#E9C46A] text-[#1D3557]'
-                : 'bg-[#52796F]/10 text-[#52796F] dark:bg-[#52796F]/30 dark:text-[#84A98C] hover:bg-[#52796F]/20'
+                ? 'bg-[#D3A253] text-[#173B4E]'
+                : 'bg-[#246579]/10 text-[#246579] dark:bg-[#246579]/30 dark:text-[#477F8D] hover:bg-[#246579]/20'
             }`}
           >
             <Volume2 className="w-4 h-4" />
@@ -137,7 +137,7 @@ export const BlankFillGame: React.FC = () => {
       </div>
 
       {/* Main Ayah Display with Blank Box */}
-      <div className="relative bg-gradient-to-b from-[#FDFBF7] to-[#F4EFEA] dark:from-[#0F1E21] dark:to-[#16272B] rounded-3xl p-6 sm:p-8 border border-[#C5A059]/40 shadow-xs text-center space-y-4">
+      <div className="relative bg-gradient-to-b from-[#F8F6F1] to-[#F1EDE6] dark:from-[#102731] dark:to-[#152E38] rounded-3xl p-6 sm:p-8 border border-[#BE9452]/40 shadow-xs text-center space-y-4">
         {/* Arabic Ayah with Blank */}
         <div
           dir="rtl"
@@ -148,8 +148,8 @@ export const BlankFillGame: React.FC = () => {
               return isCorrect ? (
                 <motion.span
                   key={`blank_correct_${idx}`}
-                  initial={{ scale: 0.8, backgroundColor: '#E9C46A' }}
-                  animate={{ scale: 1, backgroundColor: '#84A98C' }}
+                  initial={{ scale: 0.8, backgroundColor: '#D3A253' }}
+                  animate={{ scale: 1, backgroundColor: '#477F8D' }}
                   className="font-arabic font-bold text-white px-4 py-1.5 rounded-2xl shadow-sm inline-block"
                   style={{ fontSize: `${Math.max(fontSize * 1.1, 30)}px` }}
                 >
@@ -159,10 +159,10 @@ export const BlankFillGame: React.FC = () => {
                 <motion.span
                   key={`blank_slot_${idx}`}
                   animate={{
-                    borderColor: isCorrect === false ? '#EF4444' : '#C5A059',
+                    borderColor: isCorrect === false ? '#EF4444' : '#BE9452',
                     boxShadow: isCorrect === false ? '0 0 12px rgba(239, 68, 68, 0.4)' : '0 0 8px rgba(197, 160, 89, 0.3)'
                   }}
-                  className="inline-block px-5 py-2 rounded-2xl border-2 border-dashed border-[#C5A059] bg-[#EAE3D9]/60 dark:bg-slate-800/80 text-[#84A98C] font-semibold text-lg"
+                  className="inline-block px-5 py-2 rounded-2xl border-2 border-dashed border-[#BE9452] bg-[#E8E1D6]/60 dark:bg-slate-800/80 text-[#477F8D] font-semibold text-lg"
                 >
                   [ ... ؟ ... ]
                 </motion.span>
@@ -172,7 +172,7 @@ export const BlankFillGame: React.FC = () => {
             return (
               <span
                 key={`word_${word.id}_${idx}`}
-                className="font-arabic text-[#1D3557] dark:text-[#E2E8F0] select-text"
+                className="font-arabic text-[#173B4E] dark:text-[#E2E8F0] select-text"
                 style={{ fontSize: `${fontSize}px` }}
               >
                 {word.arabic}
@@ -182,7 +182,7 @@ export const BlankFillGame: React.FC = () => {
         </div>
 
         {/* Translation with Blank highlighted */}
-        <div className="pt-3 border-t border-[#84A98C]/20 text-xs text-[#52796F] dark:text-[#94A3B8] leading-relaxed max-w-xl mx-auto">
+        <div className="pt-3 border-t border-[#477F8D]/20 text-xs text-[#246579] dark:text-[#94A3B8] leading-relaxed max-w-xl mx-auto">
           "{selectedAyah.translationId}"
         </div>
 
@@ -200,7 +200,7 @@ export const BlankFillGame: React.FC = () => {
 
       {/* 3 Choice Buttons */}
       <div className="space-y-2">
-        <p className="text-xs text-[#52796F] dark:text-[#94A3B8] text-center font-medium">
+        <p className="text-xs text-[#246579] dark:text-[#94A3B8] text-center font-medium">
           Pilihlah kata yang tepat untuk mengisi kekosongan di atas:
         </p>
 
@@ -219,10 +219,10 @@ export const BlankFillGame: React.FC = () => {
                 disabled={isCorrect === true}
                 className={`p-4 rounded-2xl border text-center transition-all cursor-pointer shadow-xs ${
                   isThisCorrect
-                    ? 'bg-[#84A98C] text-white border-[#52796F] shadow-md'
+                    ? 'bg-[#477F8D] text-white border-[#246579] shadow-md'
                     : isThisWrong
                     ? 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-300'
-                    : 'bg-white dark:bg-slate-800 hover:bg-[#FDFBF7] dark:hover:bg-slate-700/80 text-[#2F3E46] dark:text-white border-slate-200 dark:border-slate-700'
+                    : 'bg-white dark:bg-slate-800 hover:bg-[#F8F6F1] dark:hover:bg-slate-700/80 text-[#293640] dark:text-white border-slate-200 dark:border-slate-700'
                 }`}
               >
                 <span
@@ -234,7 +234,7 @@ export const BlankFillGame: React.FC = () => {
                 <span className="text-[11px] opacity-75 font-sans block">
                   {opt.transliteration}
                 </span>
-                <span className="text-[10px] text-[#52796F] dark:text-[#A8D5BA] font-medium block mt-1">
+                <span className="text-[10px] text-[#246579] dark:text-[#A7CDD3] font-medium block mt-1">
                   "{opt.translation}"
                 </span>
               </motion.button>
@@ -249,22 +249,22 @@ export const BlankFillGame: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-5 bg-gradient-to-r from-[#D8EADB] to-[#F0F7F2] dark:from-[#133230] dark:to-[#1E3A34] border border-[#84A98C] rounded-3xl text-center space-y-3"
+            className="p-5 bg-gradient-to-r from-[#E2EEF0] to-[#F4F8F8] dark:from-[#123744] dark:to-[#193E4B] border border-[#477F8D] rounded-3xl text-center space-y-3"
           >
-            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#52796F] text-white">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#246579] text-white">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[#2F3E46] dark:text-white">
+              <h4 className="text-sm font-bold text-[#293640] dark:text-white">
                 Tebakanmu Tepat Sekali! (+35 XP)
               </h4>
-              <p className="text-xs text-[#52796F] dark:text-[#CBD5E1] mt-0.5">
+              <p className="text-xs text-[#246579] dark:text-[#CBD5E1] mt-0.5">
                 {selectedAyah.tadabbur.hikmah}
               </p>
             </div>
             <button
               onClick={handleNextAyah}
-              className="inline-flex items-center gap-1.5 px-5 py-2 bg-[#52796F] hover:bg-[#354F52] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-5 py-2 bg-[#246579] hover:bg-[#174C60] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors cursor-pointer"
             >
               <span>{selectedAyah.id === activeSurah.ayahs[activeSurah.ayahs.length - 1].id ? 'Ulangi dari Ayat 1' : 'Lanjut ke Ayat Selanjutnya'}</span>
               <ArrowRight className="w-4 h-4" />

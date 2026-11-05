@@ -15,47 +15,47 @@ export const TamanSurga: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full overflow-hidden rounded-3xl border border-[#84A98C]/30 bg-gradient-to-b from-[#E8F3EE] via-[#FDFBF7] to-[#D8EADB] dark:from-[#1E293B] dark:via-[#16272B] dark:to-[#0F1E21] p-4 sm:p-6 shadow-sm">
+    <div className="relative w-full overflow-hidden rounded-3xl border border-[#477F8D]/30 bg-gradient-to-b from-[#EDF5F5] via-[#F8F6F1] to-[#E2EEF0] dark:from-[#1E293B] dark:via-[#152E38] dark:to-[#102731] p-4 sm:p-6 shadow-sm">
       {/* Header Info */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 z-10 relative">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-[#52796F]/10 dark:bg-[#52796F]/30 text-[#52796F] dark:text-[#84A98C]">
+            <div className="p-1.5 rounded-lg bg-[#246579]/10 dark:bg-[#246579]/30 text-[#246579] dark:text-[#477F8D]">
               <Sprout className="w-4 h-4" />
             </div>
-            <h3 className="font-bold text-base sm:text-lg text-[#2F3E46] dark:text-[#F1F5F9]">
+            <h3 className="font-bold text-base sm:text-lg text-[#293640] dark:text-[#F1F5F9]">
               Taman Surga (Raudhah)
             </h3>
           </div>
-          <p className="text-xs text-[#52796F] dark:text-[#94A3B8] mt-0.5">
+          <p className="text-xs text-[#246579] dark:text-[#94A3B8] mt-0.5">
             Setiap ayat yang kau pelajari dan hafal menumbuhkan pohon & bunga abadi di tamanmu.
           </p>
         </div>
 
         {/* Stats Pill */}
-        <div className="flex items-center gap-3 bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-[#84A98C]/20 text-xs">
-          <div className="flex items-center gap-1.5 text-[#52796F] dark:text-[#84A98C] font-semibold">
-            <Trophy className="w-3.5 h-3.5 text-[#E9C46A]" />
+        <div className="flex items-center gap-3 bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-[#477F8D]/20 text-xs">
+          <div className="flex items-center gap-1.5 text-[#246579] dark:text-[#477F8D] font-semibold">
+            <Trophy className="w-3.5 h-3.5 text-[#D3A253]" />
             <span>{gardenPlants.length} Tanaman Mekar</span>
           </div>
-          <span className="text-[#84A98C]">•</span>
-          <div className="text-[#2F3E46] dark:text-[#CBD5E1]">
-            <span className="font-bold text-[#E76F51]">{memorizedAyahIds.length}</span> Ayat Dihafal
+          <span className="text-[#477F8D]">•</span>
+          <div className="text-[#293640] dark:text-[#CBD5E1]">
+            <span className="font-bold text-[#B87845]">{memorizedAyahIds.length}</span> Ayat Dihafal
           </div>
         </div>
       </div>
 
       {/* 2D Canvas Scene of The Garden */}
-      <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden border border-[#84A98C]/20 bg-gradient-to-b from-[#D4ECE1] via-[#E6F3EC] to-[#BDDFC9] dark:from-[#162C30] dark:via-[#193539] dark:to-[#112428] select-none shadow-inner">
+      <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden border border-[#477F8D]/20 bg-gradient-to-b from-[#D6EAEB] via-[#E5F1F0] to-[#B8D9DA] dark:from-[#173542] dark:via-[#1B3F4C] dark:to-[#102C37] select-none shadow-inner">
         {/* Sky Background Elements */}
         {/* Soft Glowing Sun or Crescent */}
         <motion.div
           animate={{ scale: [1, 1.05, 1], opacity: [0.85, 1, 0.85] }}
           transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-          className="absolute top-4 right-8 w-14 h-14 rounded-full bg-[#E9C46A]/40 blur-lg pointer-events-none"
+          className="absolute top-4 right-8 w-14 h-14 rounded-full bg-[#D3A253]/40 blur-lg pointer-events-none"
         />
-        <div className="absolute top-6 right-10 w-9 h-9 rounded-full bg-gradient-to-tr from-[#E9C46A] to-[#FFF3B0] shadow-sm flex items-center justify-center">
-          <Sparkles className="w-4 h-4 text-[#C5A059] opacity-80" />
+        <div className="absolute top-6 right-10 w-9 h-9 rounded-full bg-gradient-to-tr from-[#D3A253] to-[#F7E4AF] shadow-sm flex items-center justify-center">
+          <Sparkles className="w-4 h-4 text-[#BE9452] opacity-80" />
         </div>
 
         {/* Soft Drift Clouds */}
@@ -69,7 +69,7 @@ export const TamanSurga: React.FC = () => {
 
         {/* Rolling Hills (Layer 1 - Distant) */}
         <svg
-          className="absolute bottom-0 w-full h-44 text-[#A8D5BA]/50 dark:text-[#183B38]/60 pointer-events-none"
+          className="absolute bottom-0 w-full h-44 text-[#A7CDD3]/50 dark:text-[#1B444F]/60 pointer-events-none"
           viewBox="0 0 500 150"
           preserveAspectRatio="none"
         >
@@ -78,7 +78,7 @@ export const TamanSurga: React.FC = () => {
 
         {/* Rolling Hills (Layer 2 - Midground) */}
         <svg
-          className="absolute bottom-0 w-full h-36 text-[#84A98C]/60 dark:text-[#1E4D48]/80 pointer-events-none"
+          className="absolute bottom-0 w-full h-36 text-[#477F8D]/60 dark:text-[#245563]/80 pointer-events-none"
           viewBox="0 0 500 150"
           preserveAspectRatio="none"
         >
@@ -98,15 +98,15 @@ export const TamanSurga: React.FC = () => {
           />
           <defs>
             <linearGradient id="riverGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#A8DADC" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#457B9D" stopOpacity="0.8" />
+              <stop offset="0%" stopColor="#A6D3DD" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#427E98" stopOpacity="0.8" />
             </linearGradient>
           </defs>
         </svg>
 
         {/* Rolling Hills (Layer 3 - Foreground Meadow) */}
         <svg
-          className="absolute bottom-0 w-full h-28 text-[#52796F]/90 dark:text-[#133230] pointer-events-none"
+          className="absolute bottom-0 w-full h-28 text-[#246579]/90 dark:text-[#123744] pointer-events-none"
           viewBox="0 0 500 150"
           preserveAspectRatio="none"
         >
@@ -132,7 +132,7 @@ export const TamanSurga: React.FC = () => {
               {/* Plant Vector by Type */}
               <div className="relative transform group-hover:scale-110 transition-transform duration-200">
                 {/* Glow ring on hover */}
-                <div className="absolute -inset-1 rounded-full bg-[#E9C46A]/40 blur-xs opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute -inset-1 rounded-full bg-[#D3A253]/40 blur-xs opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 {plant.type === 'olive_tree' && (
                   <svg className="w-16 h-20 drop-shadow-md" viewBox="0 0 80 100" fill="none">
@@ -143,9 +143,9 @@ export const TamanSurga: React.FC = () => {
                     <circle cx="28" cy="42" r="16" fill="#75997C" />
                     <circle cx="52" cy="42" r="16" fill="#4D6B53" />
                     {/* Olives */}
-                    <circle cx="34" cy="36" r="3" fill="#2D3B30" />
-                    <circle cx="46" cy="44" r="3" fill="#2D3B30" />
-                    <circle cx="42" cy="28" r="3" fill="#2D3B30" />
+                    <circle cx="34" cy="36" r="3" fill="#2B4249" />
+                    <circle cx="46" cy="44" r="3" fill="#2B4249" />
+                    <circle cx="42" cy="28" r="3" fill="#2B4249" />
                   </svg>
                 )}
 
@@ -171,12 +171,12 @@ export const TamanSurga: React.FC = () => {
                     <path d="M25 48 C25 38 24 30 25 24" stroke="#40916C" strokeWidth="2.5" strokeLinecap="round" />
                     <path d="M25 36 C20 34 16 34 14 36 C18 38 22 38 25 36 Z" fill="#52B788" />
                     {/* Petals */}
-                    <circle cx="25" cy="18" r="6" fill="#FDFBF7" stroke="#E9C46A" strokeWidth="1.5" />
-                    <circle cx="18" cy="22" r="5" fill="#FDFBF7" stroke="#E9C46A" strokeWidth="1.5" />
-                    <circle cx="32" cy="22" r="5" fill="#FDFBF7" stroke="#E9C46A" strokeWidth="1.5" />
-                    <circle cx="21" cy="28" r="5" fill="#FDFBF7" stroke="#E9C46A" strokeWidth="1.5" />
-                    <circle cx="29" cy="28" r="5" fill="#FDFBF7" stroke="#E9C46A" strokeWidth="1.5" />
-                    <circle cx="25" cy="23" r="3.5" fill="#E9C46A" />
+                    <circle cx="25" cy="18" r="6" fill="#F8F6F1" stroke="#D3A253" strokeWidth="1.5" />
+                    <circle cx="18" cy="22" r="5" fill="#F8F6F1" stroke="#D3A253" strokeWidth="1.5" />
+                    <circle cx="32" cy="22" r="5" fill="#F8F6F1" stroke="#D3A253" strokeWidth="1.5" />
+                    <circle cx="21" cy="28" r="5" fill="#F8F6F1" stroke="#D3A253" strokeWidth="1.5" />
+                    <circle cx="29" cy="28" r="5" fill="#F8F6F1" stroke="#D3A253" strokeWidth="1.5" />
+                    <circle cx="25" cy="23" r="3.5" fill="#D3A253" />
                   </svg>
                 )}
 
@@ -195,8 +195,8 @@ export const TamanSurga: React.FC = () => {
                     <path d="M38 95 L40 50 L42 95 Z" fill="#5D4037" />
                     <ellipse cx="40" cy="35" rx="22" ry="26" fill="#3A5A40" />
                     <ellipse cx="40" cy="30" rx="16" ry="18" fill="#588157" />
-                    <circle cx="35" cy="35" r="2.5" fill="#F4A261" />
-                    <circle cx="45" cy="28" r="2.5" fill="#F4A261" />
+                    <circle cx="35" cy="35" r="2.5" fill="#E3B973" />
+                    <circle cx="45" cy="28" r="2.5" fill="#E3B973" />
                   </svg>
                 )}
 
@@ -228,7 +228,7 @@ export const TamanSurga: React.FC = () => {
               left: `${15 + i * 14}%`,
               top: `${40 + (i % 3) * 15}%`
             }}
-            className="absolute w-2 h-2 rounded-full bg-[#E9C46A] blur-[1px] pointer-events-none"
+            className="absolute w-2 h-2 rounded-full bg-[#D3A253] blur-[1px] pointer-events-none"
           />
         ))}
       </div>
@@ -240,15 +240,15 @@ export const TamanSurga: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="mt-3 p-3 bg-white/95 dark:bg-[#1E293B]/95 rounded-2xl border border-[#84A98C]/30 flex items-center justify-between gap-3 text-xs"
+            className="mt-3 p-3 bg-white/95 dark:bg-[#1E293B]/95 rounded-2xl border border-[#477F8D]/30 flex items-center justify-between gap-3 text-xs"
           >
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-[#52796F]/10 dark:bg-[#52796F]/30 flex items-center justify-center text-[#52796F] dark:text-[#84A98C] font-bold">
-                <Heart className="w-4 h-4 text-[#E76F51]" />
+              <div className="w-8 h-8 rounded-full bg-[#246579]/10 dark:bg-[#246579]/30 flex items-center justify-center text-[#246579] dark:text-[#477F8D] font-bold">
+                <Heart className="w-4 h-4 text-[#B87845]" />
               </div>
               <div>
-                <p className="font-bold text-[#2F3E46] dark:text-[#F1F5F9]">{selectedPlant.name}</p>
-                <p className="text-[#52796F] dark:text-[#94A3B8] text-[11px]">
+                <p className="font-bold text-[#293640] dark:text-[#F1F5F9]">{selectedPlant.name}</p>
+                <p className="text-[#246579] dark:text-[#94A3B8] text-[11px]">
                   Tumbuh dari hafalan Surat {selectedPlant.surahName} ayat {selectedPlant.ayahNumber}
                 </p>
               </div>
@@ -256,7 +256,7 @@ export const TamanSurga: React.FC = () => {
 
             <button
               onClick={() => setSelectedPlant(null)}
-              className="text-[#52796F] hover:text-[#2F3E46] dark:hover:text-white px-2.5 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-medium"
+              className="text-[#246579] hover:text-[#293640] dark:hover:text-white px-2.5 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-medium"
             >
               Tutup
             </button>

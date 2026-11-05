@@ -166,17 +166,17 @@ export const MemoryMatchGame: React.FC = () => {
       {/* Game Instruction Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/70 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
         <div>
-          <span className="text-[11px] font-semibold text-[#84A98C] uppercase tracking-wider block">
+          <span className="text-[11px] font-semibold text-[#477F8D] uppercase tracking-wider block">
             Game 5 · Kartu Pasangan Tadabbur (Memory Match)
           </span>
-          <p className="text-xs text-[#52796F] dark:text-[#94A3B8] mt-0.5">
+          <p className="text-xs text-[#246579] dark:text-[#94A3B8] mt-0.5">
             Buka dua kartu dan pasangkan antara lafaz kata Arab dengan arti Indonesianya yang sesuai.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="text-xs text-[#52796F] dark:text-[#94A3B8] font-semibold">
-            Pasangan: <span className="text-[#E9C46A] font-bold">{matchedPairsCount}</span> / 4 · Langkah: <span className="tabular-nums">{movesCount}</span>
+          <div className="text-xs text-[#246579] dark:text-[#94A3B8] font-semibold">
+            Pasangan: <span className="text-[#D3A253] font-bold">{matchedPairsCount}</span> / 4 · Langkah: <span className="tabular-nums">{movesCount}</span>
           </div>
 
           <button
@@ -190,7 +190,7 @@ export const MemoryMatchGame: React.FC = () => {
       </div>
 
       {/* 2D Memory Grid (4x2 cards) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 p-4 sm:p-6 bg-gradient-to-b from-[#FDFBF7] to-[#F4EFEA] dark:from-[#0F1E21] dark:to-[#16272B] rounded-3xl border border-[#C5A059]/40 shadow-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 p-4 sm:p-6 bg-gradient-to-b from-[#F8F6F1] to-[#F1EDE6] dark:from-[#102731] dark:to-[#152E38] rounded-3xl border border-[#BE9452]/40 shadow-xs">
         {cards.map((card) => {
           return (
             <motion.div
@@ -203,10 +203,10 @@ export const MemoryMatchGame: React.FC = () => {
               <div
                 className={`w-full h-full rounded-2xl border transition-all duration-300 flex flex-col items-center justify-center p-3 text-center ${
                   card.isMatched
-                    ? 'bg-[#84A98C] text-white border-[#52796F] shadow-sm'
+                    ? 'bg-[#477F8D] text-white border-[#246579] shadow-sm'
                     : card.isFlipped
-                    ? 'bg-white dark:bg-slate-800 border-[#C5A059] shadow-md ring-2 ring-[#C5A059]/30'
-                    : 'bg-gradient-to-br from-[#52796F] to-[#2F3E46] text-[#E9C46A] border-[#84A98C]/30 shadow-xs hover:shadow-md'
+                    ? 'bg-white dark:bg-slate-800 border-[#BE9452] shadow-md ring-2 ring-[#BE9452]/30'
+                    : 'bg-gradient-to-br from-[#246579] to-[#293640] text-[#D3A253] border-[#477F8D]/30 shadow-xs hover:shadow-md'
                 }`}
               >
                 {/* When Flipped or Matched: Show Content */}
@@ -214,7 +214,7 @@ export const MemoryMatchGame: React.FC = () => {
                   card.type === 'arabic' ? (
                     <div>
                       <p
-                        className="font-arabic font-bold text-[#1D3557] dark:text-[#E9C46A] leading-tight"
+                        className="font-arabic font-bold text-[#173B4E] dark:text-[#D3A253] leading-tight"
                         style={{
                           fontSize: `${Math.max(fontSize * 0.85, 24)}px`,
                           color: card.isMatched ? '#FFFFFF' : undefined
@@ -230,10 +230,10 @@ export const MemoryMatchGame: React.FC = () => {
                     </div>
                   ) : (
                     <div>
-                      <span className={`text-[9px] uppercase tracking-wider block font-semibold mb-1 ${card.isMatched ? 'text-white/80' : 'text-[#84A98C]'}`}>
+                      <span className={`text-[9px] uppercase tracking-wider block font-semibold mb-1 ${card.isMatched ? 'text-white/80' : 'text-[#477F8D]'}`}>
                         Arti Kata:
                       </span>
-                      <p className={`text-xs font-bold leading-snug ${card.isMatched ? 'text-white' : 'text-[#2F3E46] dark:text-white'}`}>
+                      <p className={`text-xs font-bold leading-snug ${card.isMatched ? 'text-white' : 'text-[#293640] dark:text-white'}`}>
                         "{card.content}"
                       </p>
                     </div>
@@ -241,8 +241,8 @@ export const MemoryMatchGame: React.FC = () => {
                 ) : (
                   /* Back of Card: Islamic Geometric Emblem */
                   <div className="flex flex-col items-center justify-center space-y-1 opacity-80 group-hover:opacity-100">
-                    <span className="font-arabic text-2xl text-[#E9C46A]">۝</span>
-                    <span className="text-[10px] font-semibold text-[#FDFBF7] tracking-wider uppercase">
+                    <span className="font-arabic text-2xl text-[#D3A253]">۝</span>
+                    <span className="text-[10px] font-semibold text-[#F8F6F1] tracking-wider uppercase">
                       Raudhah
                     </span>
                   </div>
@@ -259,24 +259,24 @@ export const MemoryMatchGame: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-5 bg-gradient-to-r from-[#D8EADB] to-[#F0F7F2] dark:from-[#133230] dark:to-[#1E3A34] border border-[#84A98C] rounded-3xl text-center space-y-3 shadow-md"
+            className="p-5 bg-gradient-to-r from-[#E2EEF0] to-[#F4F8F8] dark:from-[#123744] dark:to-[#193E4B] border border-[#477F8D] rounded-3xl text-center space-y-3 shadow-md"
           >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#52796F] text-white">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#246579] text-white">
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-base font-bold text-[#2F3E46] dark:text-white flex items-center justify-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[#E9C46A]" />
+              <h4 className="text-base font-bold text-[#293640] dark:text-white flex items-center justify-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#D3A253]" />
                 <span>Luar Biasa, Seluruh Pasangan Terbuka!</span>
               </h4>
-              <p className="text-xs text-[#52796F] dark:text-[#A8D5BA] mt-1">
-                Kamu menyelesaikan memori tadabbur dalam <span className="font-bold text-[#E76F51]">{movesCount} langkah</span> dan meraih <span className="font-bold text-[#E76F51]">+45 XP</span>!
+              <p className="text-xs text-[#246579] dark:text-[#A7CDD3] mt-1">
+                Kamu menyelesaikan memori tadabbur dalam <span className="font-bold text-[#B87845]">{movesCount} langkah</span> dan meraih <span className="font-bold text-[#B87845]">+45 XP</span>!
               </p>
             </div>
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 onClick={initGame}
-                className="flex items-center gap-1.5 px-5 py-2 bg-[#52796F] hover:bg-[#354F52] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-5 py-2 bg-[#246579] hover:bg-[#174C60] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors cursor-pointer"
               >
                 <span>Mainkan Putaran Baru</span>
                 <RotateCcw className="w-3.5 h-3.5" />

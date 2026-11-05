@@ -42,19 +42,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-md bg-[#FDFBF7] dark:bg-[#1E293B] border border-[#84A98C]/40 rounded-3xl p-6 shadow-xl text-[#2F3E46] dark:text-[#E2E8F0] space-y-5"
+            className="relative w-full max-w-md bg-[#F8F6F1] dark:bg-[#1E293B] border border-[#477F8D]/40 rounded-3xl p-6 shadow-xl text-[#293640] dark:text-[#E2E8F0] space-y-5"
           >
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-[#52796F]/10 dark:bg-[#52796F]/30 text-[#52796F] dark:text-[#84A98C]">
+              <div className="p-2 rounded-xl bg-[#246579]/10 dark:bg-[#246579]/30 text-[#246579] dark:text-[#477F8D]">
                 <Sliders className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-bold text-sm text-[#2F3E46] dark:text-white">
+                <h3 className="font-bold text-sm text-[#293640] dark:text-white">
                   Pengaturan Aplikasi
                 </h3>
-                <p className="text-[11px] text-[#52796F] dark:text-[#94A3B8]">
+                <p className="text-[11px] text-[#246579] dark:text-[#94A3B8]">
                   Sesuaikan kenyamanan membaca dan belajar
                 </p>
               </div>
@@ -70,7 +70,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
           {/* Mode Switcher */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-[#52796F] dark:text-[#94A3B8] block">
+            <label className="text-xs font-semibold text-[#246579] dark:text-[#94A3B8] block">
               Pilihan Mode Pengguna:
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -81,15 +81,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 }}
                 className={`p-3.5 rounded-2xl border text-left transition-all ${
                   mode === 'ceria'
-                    ? 'border-[#52796F] bg-white dark:bg-slate-800 ring-2 ring-[#52796F]/20 shadow-xs'
+                    ? 'border-[#246579] bg-white dark:bg-slate-800 ring-2 ring-[#246579]/20 shadow-xs'
                     : 'border-slate-200 dark:border-slate-700 opacity-60 hover:opacity-100'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-lg">🐣</span>
-                  {mode === 'ceria' && <Check className="w-4 h-4 text-[#52796F]" />}
+                  {mode === 'ceria' && <Check className="w-4 h-4 text-[#246579]" />}
                 </div>
-                <p className="font-bold text-xs text-[#2F3E46] dark:text-white">Mode Ceria</p>
+                <p className="font-bold text-xs text-[#293640] dark:text-white">Mode Ceria</p>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
                   Anak & Remaja · Maskot Hud-hud & XP
                 </p>
@@ -102,15 +102,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 }}
                 className={`p-3.5 rounded-2xl border text-left transition-all ${
                   mode === 'sakinah'
-                    ? 'border-[#C5A059] bg-white dark:bg-slate-800 ring-2 ring-[#C5A059]/20 shadow-xs'
+                    ? 'border-[#BE9452] bg-white dark:bg-slate-800 ring-2 ring-[#BE9452]/20 shadow-xs'
                     : 'border-slate-200 dark:border-slate-700 opacity-60 hover:opacity-100'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-lg">🏮</span>
-                  {mode === 'sakinah' && <Check className="w-4 h-4 text-[#C5A059]" />}
+                  {mode === 'sakinah' && <Check className="w-4 h-4 text-[#BE9452]" />}
                 </div>
-                <p className="font-bold text-xs text-[#2F3E46] dark:text-white">Mode Sakinah</p>
+                <p className="font-bold text-xs text-[#293640] dark:text-white">Mode Sakinah</p>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
                   Dewasa & Lansia · Tenang & Huruf Besar
                 </p>
@@ -121,11 +121,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           {/* Arabic Font Size Control (Crucial for elderly!) */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-[#52796F] dark:text-[#94A3B8] flex items-center gap-1.5">
+              <span className="font-semibold text-[#246579] dark:text-[#94A3B8] flex items-center gap-1.5">
                 <Type className="w-4 h-4" />
                 <span>Ukuran Teks Arab:</span>
               </span>
-              <span className="font-bold tabular-nums text-[#1D3557] dark:text-white">{fontSize}px</span>
+              <span className="font-bold tabular-nums text-[#173B4E] dark:text-white">{fontSize}px</span>
             </div>
 
             <div className="flex items-center gap-3">
@@ -143,7 +143,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 step="2"
                 value={fontSize}
                 onChange={(e) => setFontSize(Number(e.target.value))}
-                className="w-full accent-[#52796F] cursor-pointer"
+                className="w-full accent-[#246579] cursor-pointer"
               />
 
               <button
@@ -155,9 +155,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             </div>
 
             {/* Arabic Sample Preview */}
-            <div className="p-3 bg-[#F4EFEA] dark:bg-slate-900 rounded-xl text-center overflow-x-hidden">
+            <div className="p-3 bg-[#F1EDE6] dark:bg-slate-900 rounded-xl text-center overflow-x-hidden">
               <p
-                className="font-arabic text-[#1D3557] dark:text-[#E9C46A] truncate"
+                className="font-arabic text-[#173B4E] dark:text-[#D3A253] truncate"
                 style={{ fontSize: `${fontSize}px` }}
               >
                 بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
@@ -169,7 +169,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700 text-xs">
             {/* Audio Speed */}
             <div className="flex items-center justify-between">
-              <span className="font-medium text-[#52796F] dark:text-[#94A3B8]">
+              <span className="font-medium text-[#246579] dark:text-[#94A3B8]">
                 Kecepatan Bacaan Murottal:
               </span>
               <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
@@ -177,7 +177,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   onClick={() => setReciterSpeed(0.8)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
                     reciterSpeed === 0.8
-                      ? 'bg-[#52796F] text-white'
+                      ? 'bg-[#246579] text-white'
                       : 'text-slate-600 dark:text-slate-300'
                   }`}
                 >
@@ -187,7 +187,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   onClick={() => setReciterSpeed(1.0)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
                     reciterSpeed === 1.0
-                      ? 'bg-[#52796F] text-white'
+                      ? 'bg-[#246579] text-white'
                       : 'text-slate-600 dark:text-slate-300'
                   }`}
                 >
@@ -198,7 +198,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
             {/* Sound Effects Toggle */}
             <div className="flex items-center justify-between">
-              <span className="font-medium text-[#52796F] dark:text-[#94A3B8]">
+              <span className="font-medium text-[#246579] dark:text-[#94A3B8]">
                 Efek Suara Mikro (SFX):
               </span>
               <button

@@ -4,8 +4,8 @@
   "description": "Aplikasi gamifikasi hafalan dan tadabbur Al-Qur'an 2D interaktif dan menenangkan.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#FDFBF7",
-  "theme_color": "#2F3E46",
+  "background_color": "#F7F4EF",
+  "theme_color": "#246579",
   "icons": [
     {
       "src": "./icon.svg",

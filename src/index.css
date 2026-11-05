@@ -5,7 +5,24 @@
   :root {
     --font-arabic: 'Amiri', 'Scheherazade New', serif;
     --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --raudhah-teal: #246579;
+    --raudhah-gold: #D3A253;
+    --raudhah-cream: #F7F4EF;
   }
+}
+
+.raudhah-ui {
+  background-image: radial-gradient(circle at 100% 0%, rgba(36, 101, 121, 0.055), transparent 34%),
+    radial-gradient(circle at 0% 42%, rgba(211, 162, 83, 0.055), transparent 34%);
+}
+
+.raudhah-ui .rounded-3xl {
+  border-radius: 1.375rem;
+}
+
+.raudhah-ui button:focus-visible {
+  outline: 2px solid var(--raudhah-gold);
+  outline-offset: 3px;
 }
 
 .font-arabic {
@@ -30,9 +47,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(82, 121, 111, 0.2);
+  background: rgba(36, 101, 121, 0.25);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(82, 121, 111, 0.35);
+  background: rgba(36, 101, 121, 0.45);
 }
