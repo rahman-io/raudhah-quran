@@ -23,12 +23,12 @@ const corrections: Record<number, Record<number, Record<number, string>>> = {
     5: { 1: 'حَفَظَ', 3: 'خَطَيَ' },
   },
   11: {
-    1: { 1: 'لَ نَ اَ', 2: 'أَ' },
-    2: { 1: 'لَ أَ = لَأَ = لَاَ' },
+    1: { 1: 'لَنَاَ' },
+    2: { 1: 'لَ اَ = لَاَ = لَاَ' },
     3: { 0: 'جَ لَ لَ', 2: 'لَأَجَلَ' },
-    4: { 0: 'لَسَأَلَ', 2: 'لَنَبَأَ' },
+    4: { 2: 'لَنَبَاَ' },
     5: { 1: 'لَأَكَلَ' },
-    7: { 0: 'سَأَلَكَ', 1: 'لَلَأَمَ' },
+    7: { 1: 'لَلَاَمَ' },
   },
   12: {
     2: { 3: 'لَأَخَذَ' },
@@ -132,10 +132,8 @@ function phonetic(arabic: string, pageNumber: number): string {
     for (let index = 0; index < letters.length; index++) {
       const [letter, ...marks] = Array.from(letters[index]);
       const vowel = marks.join('');
-      const previous = index > 0 ? Array.from(letters[index - 1]) : [];
       if (pageNumber >= 14 && (letter === 'ا' || letter === 'ى')
-        && sounds.length && (vowel === '' || (letter === 'ا' && vowel === 'َ'
-          && previous[0] === 'ل' && previous.length === 1))) {
+        && sounds.length && vowel === '') {
         sounds[sounds.length - 1] += 'A';
         continue;
       }
@@ -179,8 +177,14 @@ export function iqro2PagesFromBook(existingPages: IqroPage[]): IqroPage[] {
           // also look connected on the interactive cards.
           || (number === 1 && index >= 2 && index <= 4
             ? item.arabic.replace(/\s+/gu, '') : item.arabic);
-        const printed = !correction && number >= 3
-          ? source.replace(/(^|[\s=]|[وف]َ)اَ/gu, '$1أَ') : source;
+        // The PDF marks short, independently read alif on pages 11–13;
+        // from page 14, alif after lam makes the preceding vowel long.
+        // Keep the printed alif (ا), never invent a hamza (أ) or its fathah.
+        const printed = number >= 11 && number <= 13
+          ? source.replace(/لَأَ|لاَ/gu, 'لَاَ')
+          : number >= 14
+            ? source.replace(/لَأَ|لَاَ|لاَ/gu, 'لَا')
+            : source;
         return correctedItem(item, printed);
       }),
     }));
@@ -191,11 +195,11 @@ export function iqro2PagesFromBook(existingPages: IqroPage[]): IqroPage[] {
       rows = [
         ...rows.slice(0, 3),
         { ...rows[3], items: [
-          correctedItem(first, 'لَأَمَنَعَ'),
-          correctedItem(third, 'لَأَثَرَ'),
+          correctedItem(first, 'لَامَنَعَ'),
+          correctedItem(third, 'لَاثَرَ'),
         ] },
         { id: 'j2_p16_r4b', items: [
-          correctedItem(second, 'لَأَخَكَ'),
+          correctedItem(second, 'لَاخَكَ'),
           correctedItem(fourth, 'فَهَمَنَ'),
         ] },
         ...rows.slice(4),
@@ -203,7 +207,7 @@ export function iqro2PagesFromBook(existingPages: IqroPage[]): IqroPage[] {
     }
 
     if (number === 17) {
-      const glyphs = ['ثَ', 'شَ', 'أَ', 'عَ', 'أَ', 'حَ', 'هَ', 'قَ', 'خَ', 'غَ', 'ذَ', 'ظَ', 'ضَ'];
+      const glyphs = ['ثَ', 'شَ', 'اَ', 'عَ', 'اَ', 'حَ', 'هَ', 'قَ', 'خَ', 'غَ', 'ذَ', 'ظَ', 'ضَ'];
       rows[0] = {
         ...rows[0],
         items: glyphs.map((glyph, index) => ({
@@ -218,7 +222,7 @@ export function iqro2PagesFromBook(existingPages: IqroPage[]): IqroPage[] {
     }
 
     if (number === 29) {
-      const glyphs = ['أَ', 'عَا', 'هَا', 'حَا', 'خَا', 'قَا', 'غَا', '---غَى'];
+      const glyphs = ['اَ', 'عَا', 'هَا', 'حَا', 'خَا', 'قَا', 'غَا', '---غَى'];
       rows[5] = {
         ...rows[5],
         items: glyphs.map((glyph, index) => ({

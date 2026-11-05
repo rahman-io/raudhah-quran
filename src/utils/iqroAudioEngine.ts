@@ -53,8 +53,7 @@ function iqro2QamarSyllables(item: IqroItem): { url: string; long: boolean }[] |
     const letter = Array.from(token)[0];
     const vowel = token.slice(letter.length)
       || (letter === 'ل' && /^اَ?$/u.test(tokens[i + 1] || '') ? 'َ' : '');
-    if ((letter === 'ا' || letter === 'ى') && previousFathah
-      && (!vowel || (letter === 'ا' && vowel === 'َ' && item.isLong))) {
+    if ((letter === 'ا' || letter === 'ى') && previousFathah && !vowel) {
       syllables[syllables.length - 1].long = true;
       previousFathah = false;
       continue;
