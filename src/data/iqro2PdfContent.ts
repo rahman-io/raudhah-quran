@@ -3,26 +3,29 @@ import type { IqroItem, IqroPage } from './iqroData';
 // Exercise corrections checked against the printed Iqro 2 pages (PDF pages
 // 3–32). The keys are book page, printed row, and card from right to left.
 const corrections: Record<number, Record<number, Record<number, string>>> = {
-  1: { 4: { 0: 'بَتَ', 2: 'تَتَ' } },
+  1: {
+    4: { 0: 'بَتَ', 2: 'تَتَ' },
+    6: { 1: 'بَاَتَ', 3: 'تَاَتَ' },
+  },
   2: {
     6: { 2: 'نَبَاَ', 3: 'نَبَأَ' },
     8: { 3: 'نَوَنَ' },
   },
-  3: { 8: { 2: 'سَ يَ' } },
+  3: { 6: { 2: 'يَاَبَ' }, 8: { 2: 'سَ يَ' } },
   5: { 8: { 1: 'شَأَ' } },
   6: { 6: { 0: 'غَيَرَ', 1: 'تَغَفَ' } },
   7: { 1: { 0: 'غَأَعَ' } },
-  8: { 8: { 2: 'فَرَشَ' } },
+  8: { 2: { 1: 'قَ فَ لَ = قَفَلَ' }, 8: { 2: 'فَرَشَ' } },
   9: { 1: { 0: 'سَأَلَ' }, 7: { 3: 'حَيَثَ' } },
   10: {
     1: { 0: 'كَ تَ بَ = كَتَبَ' },
     2: { 0: 'سَ كَ تَ = سَكَتَ = سَكَتَ' },
-    5: { 1: 'حَفَظَ' },
+    5: { 1: 'حَفَظَ', 3: 'خَطَيَ' },
   },
   11: {
-    1: { 2: 'أَ' },
+    1: { 1: 'لَ نَ اَ', 2: 'أَ' },
     2: { 1: 'لَ أَ = لَأَ = لَاَ' },
-    3: { 2: 'لَأَجَلَ' },
+    3: { 0: 'جَ لَ لَ', 2: 'لَأَجَلَ' },
     4: { 0: 'لَسَأَلَ', 2: 'لَنَبَأَ' },
     5: { 1: 'لَأَكَلَ' },
     7: { 0: 'سَأَلَكَ', 1: 'لَلَأَمَ' },
@@ -30,7 +33,7 @@ const corrections: Record<number, Record<number, Record<number, string>>> = {
   12: {
     2: { 3: 'لَأَخَذَ' },
     3: { 3: 'لَأَسَدَ' },
-    4: { 3: 'لَأَمَرَ' },
+    4: { 2: 'ظَلَمَاَ', 3: 'لَأَمَرَ' },
     5: { 3: 'لَأَقَمَ' },
     6: { 3: 'لَأَذَنَ' },
     7: { 3: 'لَأَلَلَ' },
@@ -38,7 +41,7 @@ const corrections: Record<number, Record<number, Record<number, string>>> = {
   },
   13: {
     2: { 0: 'شَ هَ دَ = شَهَدَ' },
-    3: { 3: 'لَأَفَ' },
+    3: { 2: 'سَهَيَ', 3: 'لَأَفَ' },
     4: { 3: 'لَأَخَذَ' },
     5: { 3: 'لَأَجَزَ' },
     6: { 3: 'لَأَفَلَ' },
@@ -52,6 +55,7 @@ const corrections: Record<number, Record<number, Record<number, string>>> = {
   },
   19: {
     4: { 3: 'تَخَذَا' },
+    6: { 1: 'زَكَأَ' },
     8: { 0: 'لَأَخَذَ', 2: 'لَأَصَبَا' },
   },
   20: {
@@ -63,6 +67,7 @@ const corrections: Record<number, Record<number, Record<number, string>>> = {
   21: {
     1: { 0: '---َ = ---َا', 1: 'بَ = بَا' },
     7: { 2: 'الَأَفَ', 3: 'مَأَبَ' },
+    8: { 1: 'وَخَطَأَ' },
   },
   22: {
     1: { 0: 'سَبَحَا = سَبَحَى' },
@@ -103,7 +108,7 @@ const corrections: Record<number, Record<number, Record<number, string>>> = {
     4: { 3: 'ذَاظَ' },
   },
   30: {
-    1: { 2: 'صَالَحَا' },
+    1: { 2: 'صَاقَا' },
     2: { 0: 'تَوَابَ' },
     4: { 0: 'غَلَظَ', 3: 'قَالَ بَلَى' },
     5: { 3: 'لَأَطَاعَ' },
@@ -113,21 +118,35 @@ const corrections: Record<number, Record<number, Record<number, string>>> = {
 
 const letterNames: Record<string, string> = {
   'ا': 'A', 'أ': 'A', 'إ': 'I', 'ء': 'A', 'آ': 'AA', 'ى': 'AA',
-  'ب': 'BA', 'ت': 'TA', 'ث': 'TSA', 'ج': 'JA', 'ح': 'HA', 'خ': 'KHO',
-  'د': 'DA', 'ذ': 'DZA', 'ر': 'RO', 'ز': 'ZA', 'س': 'SA', 'ش': 'SYA',
-  'ص': 'SO', 'ض': 'DHO', 'ط': 'TO', 'ظ': 'ZHO', 'ع': "'A", 'غ': 'GHO',
-  'ف': 'FA', 'ق': 'QO', 'ك': 'KA', 'ل': 'LA', 'م': 'MA', 'ن': 'NA',
+  'ب': 'BA', 'ت': 'TA', 'ث': 'TSA', 'ج': 'JA', 'ح': 'HA', 'خ': 'KHA',
+  'د': 'DA', 'ذ': 'DZA', 'ر': 'RA', 'ز': 'ZA', 'س': 'SA', 'ش': 'SYA',
+  'ص': 'SHA', 'ض': 'DHA', 'ط': 'THA', 'ظ': 'ZHA', 'ع': "'A", 'غ': 'GHA',
+  'ف': 'FA', 'ق': 'QA', 'ك': 'KA', 'ل': 'LA', 'م': 'MA', 'ن': 'NA',
   'و': 'WA', 'ه': 'HA', 'ي': 'YA',
 };
 
-function phonetic(arabic: string): string {
-  return arabic.replace(/[ا-يآأإءى][َُِّْ]*[اى](?![َُِّْ])/gu, (syllable) => {
-    const letter = Array.from(syllable)[0];
-    return `${letterNames[letter] || letter}A`;
-  }).replace(/[ا-يآأإءى][َُِّْ]*/gu, (syllable) => {
-    const letter = Array.from(syllable)[0];
-    return letterNames[letter] || letter;
-  }).replace(/ {2,}/gu, ' ');
+function phonetic(arabic: string, pageNumber: number): string {
+  return arabic.split('=').map((part) => {
+    const letters = part.match(/[ء-يآأإى][ًَُِ]*/gu) || [];
+    const sounds: string[] = [];
+    for (let index = 0; index < letters.length; index++) {
+      const [letter, ...marks] = Array.from(letters[index]);
+      const vowel = marks.join('');
+      const previous = index > 0 ? Array.from(letters[index - 1]) : [];
+      if (pageNumber >= 14 && (letter === 'ا' || letter === 'ى')
+        && sounds.length && (vowel === '' || (letter === 'ا' && vowel === 'َ'
+          && previous[0] === 'ل' && previous.length === 1))) {
+        sounds[sounds.length - 1] += 'A';
+        continue;
+      }
+      let sound = letterNames[letter] || letter;
+      if (vowel === 'ِ' || vowel === 'ُ') {
+        sound = sound.replace(/A$/u, vowel === 'ِ' ? 'I' : 'U');
+      }
+      sounds.push(sound);
+    }
+    return sounds.join(' - ');
+  }).join(' = ');
 }
 
 function correctedItem(item: IqroItem, printed: string): IqroItem {
@@ -143,7 +162,7 @@ function correctedItem(item: IqroItem, printed: string): IqroItem {
         ? `/audio/iqro/verified/${index}-1.wav` : null;
     }) : null;
   return {
-    ...item, arabic: printed, latin: phonetic(printed),
+    ...item, arabic: printed,
     ...(audioUrls?.every((url): url is string => url !== null) ? { audioUrls } : {}),
   };
 }
@@ -154,12 +173,13 @@ export function iqro2PagesFromBook(existingPages: IqroPage[]): IqroPage[] {
     let rows = page.rows.map((row, index) => ({
       ...row,
       items: row.items.map((item, itemIndex) => {
-        const source = corrections[number]?.[index + 1]?.[itemIndex]
+        const correction = corrections[number]?.[index + 1]?.[itemIndex];
+        const source = correction
           // The first printed page introduces connected letters; they must
           // also look connected on the interactive cards.
           || (number === 1 && index >= 2 && index <= 4
             ? item.arabic.replace(/\s+/gu, '') : item.arabic);
-        const printed = number >= 3
+        const printed = !correction && number >= 3
           ? source.replace(/(^|[\s=]|[وف]َ)اَ/gu, '$1أَ') : source;
         return correctedItem(item, printed);
       }),
@@ -187,7 +207,7 @@ export function iqro2PagesFromBook(existingPages: IqroPage[]): IqroPage[] {
       rows[0] = {
         ...rows[0],
         items: glyphs.map((glyph, index) => ({
-          id: `printed_letter_${index}`, arabic: glyph, latin: phonetic(glyph),
+          id: `printed_letter_${index}`, arabic: glyph, latin: phonetic(glyph, number),
         })),
       };
     }
@@ -203,7 +223,7 @@ export function iqro2PagesFromBook(existingPages: IqroPage[]): IqroPage[] {
         ...rows[5],
         items: glyphs.map((glyph, index) => ({
           id: `printed_letter_${index}`, arabic: glyph,
-          latin: index === 7 ? 'GHAA' : phonetic(glyph),
+          latin: index === 7 ? 'GHAA' : phonetic(glyph, number),
         })),
       };
     }
@@ -213,7 +233,12 @@ export function iqro2PagesFromBook(existingPages: IqroPage[]): IqroPage[] {
     rows = rows.map((row) => ({ ...row, items: row.items.map((item) => {
       const isLong = number >= 14 && (/[ب-يءَأإ]َ[اى]/u.test(item.arabic)
         || /لاَ|آ/u.test(item.arabic));
-      return item.isLong === isLong ? item : { ...item, isLong };
+      return {
+        ...item,
+        latin: item.arabic === '---َ = ---َا' ? 'A = AA'
+          : /ـ|\.{2,}|---/u.test(item.arabic) ? item.latin : phonetic(item.arabic, number),
+        isLong,
+      };
     }) }));
 
     return number === 24
