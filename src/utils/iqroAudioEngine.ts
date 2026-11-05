@@ -37,6 +37,43 @@ function iqro1QamarUrl(syllable: string): string | null {
   return id ? `/audio/iqro/qamar/${id}.mp3` : null;
 }
 
+// Iqro 2 uses the same individual Qamar recordings as Iqro 1. Read the
+// result of an equals example once, and split connected writing into its
+// actual pronounced letters rather than sending a whole word to TTS.
+function iqro2QamarSyllables(item: IqroItem): { url: string; long: boolean }[] | null {
+  const parts = item.arabic.split('=');
+  const result = (parts[parts.length - 1].includes('...') ? parts[0] : parts[parts.length - 1])
+    .replace(/[ـ.\-]/gu, '');
+  const tokens = result.match(/[ء-يآأإى][ًَُِ]*/gu) || [];
+  const syllables: { url: string; long: boolean }[] = [];
+  let previousFathah = false;
+
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    const letter = Array.from(token)[0];
+    const vowel = token.slice(letter.length)
+      || (letter === 'ل' && /^اَ?$/u.test(tokens[i + 1] || '') ? 'َ' : '');
+    if ((letter === 'ا' || letter === 'ى') && previousFathah
+      && (!vowel || (letter === 'ا' && vowel === 'َ' && item.isLong))) {
+      syllables[syllables.length - 1].long = true;
+      previousFathah = false;
+      continue;
+    }
+    // This single legacy card encodes the printed final hamza as اً.
+    const spokenVowel = letter === 'ا' && vowel === 'ً' ? 'َ' : vowel;
+    const url = spokenVowel === 'ِ' && letter === 'ه' ? '/audio/iqro/qamar/hi.mp3'
+      : spokenVowel === 'ِ' && letter === 'ي' ? '/audio/iqro/qamar/yi.mp3'
+        : iqro1QamarUrl(`${letter === 'آ' ? 'أ' : letter}َ`);
+    if (!url || (spokenVowel && !['َ', 'ِ'].includes(spokenVowel)) || (!spokenVowel && !['ا', 'آ', 'ى'].includes(letter))) {
+      return null;
+    }
+    syllables.push({ url, long: letter === 'آ' });
+    previousFathah = spokenVowel === 'َ';
+  }
+
+  return syllables.length ? syllables : null;
+}
+
 function recordedSyllableUrl(syllable: string): string | null {
   const chars = Array.from(syllable);
   if (chars.length !== 2) return null;
@@ -55,6 +92,7 @@ export function getIqroRecordedUrls(item: IqroItem, level?: number): string[] | 
     const urls = spoken.map(iqro1QamarUrl);
     return urls.length && urls.every((url): url is string => url !== null) ? urls : null;
   }
+  if (level === 2) return iqro2QamarSyllables(item)?.map(({ url }) => url) || null;
   const urls = syllables.map(recordedSyllableUrl);
   if (urls.every((url): url is string => url !== null)) return urls;
   if (item.audioUrls?.length) return item.audioUrls;
@@ -237,6 +275,38 @@ export function playIqroItem(
 ): void {
   stopIqroAudio();
   const generation = playbackGeneration;
+  if (level === 2) {
+    const syllables = iqro2QamarSyllables(item);
+    if (!syllables) {
+      // Never substitute a different letter, AI voice, or a fabricated vowel.
+      onEnd?.();
+      return;
+    }
+    if (syllables.some(({ long }) => long)) {
+      // HTML Audio preserves the reciter's pitch while lengthening only the
+      // syllable followed by a mad alif; the rest stay at their normal pace.
+      let index = 0;
+      const playNext = () => {
+        if (generation !== playbackGeneration) return;
+        if (index === syllables.length) {
+          onEnd?.();
+          return;
+        }
+        const { url, long } = syllables[index++];
+        playHumanQariAudio(url, long ? Math.max(0.4, speed * 0.55) : speed, () => {
+          if (generation === playbackGeneration) {
+            activeSequentialTimer = setTimeout(playNext, 35);
+          }
+        });
+      };
+      playNext();
+    } else if (syllables.length > 1) {
+      playSequentialAudio(syllables.map(({ url }) => url), speed, onEnd);
+    } else {
+      playHumanQariAudio(syllables[0].url, speed, onEnd);
+    }
+    return;
+  }
   const recordedUrls = getIqroRecordedUrls(item, level);
 
   // Exact recordings take priority, including multi-letter cards. AI can

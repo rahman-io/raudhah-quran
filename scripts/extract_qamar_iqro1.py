@@ -50,11 +50,18 @@ CLIPS = [
     ("م", "04030", 1.71, 2.16),
 ]
 
+# The two kasrah syllables printed in Iqro 2 use the same reader and the
+# same letter-group recordings as the fathah clips above.
+IQRO2_KASRA = [
+    ("هِ", "04004", "hi", 3.58, 4.20),
+    ("يِ", "04013", "yi", 3.28, 3.96),
+]
+
 
 def extract(apk: Path, only: str | None = None) -> None:
     if not zipfile.is_zipfile(apk):
         raise SystemExit(f"Bukan APK/ZIP valid: {apk}")
-    if only and only not in {audio_id for _, audio_id, _, _ in CLIPS} | {"gho"}:
+    if only and only not in {audio_id for _, audio_id, _, _ in CLIPS} | {"gho"} | {name for _, _, name, _, _ in IQRO2_KASRA}:
         raise SystemExit(f"Tidak ada rekaman huruf dengan ID {only}")
     OUTPUT.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(apk) as archive, tempfile.TemporaryDirectory() as scratch:
@@ -136,6 +143,31 @@ def extract(apk: Path, only: str | None = None) -> None:
                 check=True,
             )
             print(f"{letter}َ: {output_id}.mp3 ({end-start:.2f}s)")
+
+        for letter, audio_id, output_id, start, end in IQRO2_KASRA:
+            if only and only not in {audio_id, output_id}:
+                continue
+            source = scratch / "source.mp3"
+            source.write_bytes(archive.read(f"assets/www/book/Audio/default/{audio_id}.mp3"))
+            decoded = scratch / "source.wav"
+            subprocess.run(["mpg123", "-q", "-w", str(decoded), str(source)], check=True)
+            with wave.open(str(decoded), "rb") as wav:
+                rate = wav.getframerate()
+                wav.setpos(round(start * rate))
+                samples = array("h")
+                samples.frombytes(wav.readframes(round((end - start) * rate)))
+                params = wav.getparams()
+            fade = round(0.02 * rate) * params.nchannels
+            for i in range(fade):
+                samples[i] = round(samples[i] * (i + 1) / fade)
+                pos = len(samples) - fade + i
+                samples[pos] = round(samples[pos] * (1 - (i + 1) / fade))
+            cut = scratch / "cut.wav"
+            with wave.open(str(cut), "wb") as wav:
+                wav.setparams(params)
+                wav.writeframes(samples.tobytes())
+            subprocess.run(["lame", "--silent", "-V", "6", str(cut), str(OUTPUT / f"{output_id}.mp3")], check=True)
+            print(f"{letter}: {output_id}.mp3 ({end-start:.2f}s)")
 
 
 if __name__ == "__main__":

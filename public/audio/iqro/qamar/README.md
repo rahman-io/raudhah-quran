@@ -11,3 +11,5 @@ License: [Creative Commons Attribution-ShareAlike 4.0 International](https://cre
 Regenerate the excerpts from a local copy of the APK with `python3 scripts/extract_qamar_iqro1.py qamar-nooraniya.apk` (requires `mpg123` and `lame`). The exact source IDs and cut times are recorded in that script.
 
 The غَ card uses `gho.mp3`, cut from source `04007.mp3`. Its previous clip, `04006.mp3`, belongs to the neighboring ح group on the source page. Other cards retain their existing recordings.
+
+Iqro 2 reuses these fathah clips for connected letters and mad examples. Its two printed kasrah syllables use `hi.mp3` and `yi.mp3`, excerpted from the same speaker's `04004.mp3` and `04013.mp3` source recordings. Regenerate either with `python3 scripts/extract_qamar_iqro1.py qamar-nooraniya.apk hi` or `yi`.
