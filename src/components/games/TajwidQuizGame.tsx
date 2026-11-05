@@ -9,6 +9,7 @@ import { playPronunciation } from '../../utils/tajwidAudio';
 interface TajwidQuestion {
   id: string;
   surahNumber: number;
+  ayahNumber: number;
   highlightPhrase: string;
   question: string;
   options: { label: string; text: string; isCorrect: boolean }[];
@@ -20,6 +21,7 @@ const TAJWID_QUESTIONS_BANK: TajwidQuestion[] = [
   {
     id: 'tq_114_1',
     surahNumber: 114,
+    ayahNumber: 1,
     highlightPhrase: 'النَّاسِ',
     question: 'Pada lafaz "النَّاسِ", apa hukum bacaan Alif Lam (ال) tersebut?',
     options: [
@@ -33,6 +35,7 @@ const TAJWID_QUESTIONS_BANK: TajwidQuestion[] = [
   {
     id: 'tq_114_4',
     surahNumber: 114,
+    ayahNumber: 4,
     highlightPhrase: 'مِن شَرِّ',
     question: 'Hukum bacaan Nun Sukun bertemu huruf Syin (ش) pada "مِن شَرِّ" adalah...',
     options: [
@@ -46,6 +49,7 @@ const TAJWID_QUESTIONS_BANK: TajwidQuestion[] = [
   {
     id: 'tq_113_1',
     surahNumber: 113,
+    ayahNumber: 1,
     highlightPhrase: 'الْفَلَقِ',
     question: 'Ketika berhenti (waqaf) pada kata "الْفَلَقِ", huruf Qaf (ق) dibaca dengan hukum...',
     options: [
@@ -59,6 +63,7 @@ const TAJWID_QUESTIONS_BANK: TajwidQuestion[] = [
   {
     id: 'tq_112_1',
     surahNumber: 112,
+    ayahNumber: 1,
     highlightPhrase: 'أَحَدٌ',
     question: 'Saat berhenti (waqaf) pada kata "أَحَدٌ", huruf Dal dibaca dengan...',
     options: [
@@ -72,6 +77,7 @@ const TAJWID_QUESTIONS_BANK: TajwidQuestion[] = [
   {
     id: 'tq_108_1',
     surahNumber: 108,
+    ayahNumber: 1,
     highlightPhrase: 'إِنَّا',
     question: 'Huruf Nun yang bertasydid (نَّ) pada kata "إِنَّا" wajib dibaca dengan hukum...',
     options: [
@@ -85,6 +91,7 @@ const TAJWID_QUESTIONS_BANK: TajwidQuestion[] = [
   {
     id: 'tq_1_2',
     surahNumber: 1,
+    ayahNumber: 2,
     highlightPhrase: 'الْحَمْدُ',
     question: 'Alif Lam pada lafaz "الْحَمْدُ" dibaca terang dan jelas, dinamakan...',
     options: [
@@ -93,6 +100,34 @@ const TAJWID_QUESTIONS_BANK: TajwidQuestion[] = [
       { label: 'C', text: 'Tafkhim', isCorrect: false }
     ],
     explanation: 'Huruf Alif Lam bertemu huruf Ha (ح) yang merupakan huruf Qamariyah, sehingga bunyi "L" wajib dibaca jelas (Izhar).',
+    category: 'Al-Qamariyah/Syamsiyah'
+  },
+  {
+    id: 'tq_103_1',
+    surahNumber: 103,
+    ayahNumber: 1,
+    highlightPhrase: 'الْعَصْرِ',
+    question: 'Bagaimana cara membaca Alif Lam pada lafaz "الْعَصْرِ"?',
+    options: [
+      { label: 'A', text: 'Alif Lam Qamariyah (lam dibaca jelas)', isCorrect: true },
+      { label: 'B', text: 'Alif Lam Syamsiyah (lam dilebur)', isCorrect: false },
+      { label: 'C', text: 'Ikhfa Haqiqi', isCorrect: false }
+    ],
+    explanation: 'Lam sukun bertemu huruf Ain (ع), salah satu huruf Qamariyah, sehingga lam dibaca jelas.',
+    category: 'Al-Qamariyah/Syamsiyah'
+  },
+  {
+    id: 'tq_94_5',
+    surahNumber: 94,
+    ayahNumber: 5,
+    highlightPhrase: 'الْعُسْرِ',
+    question: 'Apa hukum Alif Lam pada lafaz "الْعُسْرِ"?',
+    options: [
+      { label: 'A', text: 'Alif Lam Qamariyah (lam dibaca jelas)', isCorrect: true },
+      { label: 'B', text: 'Alif Lam Syamsiyah (lam dilebur)', isCorrect: false },
+      { label: 'C', text: 'Qalqalah Sughra', isCorrect: false }
+    ],
+    explanation: 'Lam sukun bertemu huruf Ain (ع), sehingga bunyi lam pada Alif Lam dibaca jelas.',
     category: 'Al-Qamariyah/Syamsiyah'
   }
 ];
@@ -106,13 +141,14 @@ export const TajwidQuizGame: React.FC = () => {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
 
-  // Filter questions matching current surah, or fallback to full bank
+  // All supported surahs have their own question; do not quiz another surah.
   const relevantQuestions = TAJWID_QUESTIONS_BANK.filter(
     (q) => q.surahNumber === activeSurah.number
   );
-  const activeQuestions = relevantQuestions.length > 0 ? relevantQuestions : TAJWID_QUESTIONS_BANK;
+  const activeQuestions = relevantQuestions;
 
   const currentQ = activeQuestions[questionIndex % activeQuestions.length];
+  const quizAyah = activeSurah.ayahs.find((ayah) => ayah.ayahNumber === currentQ.ayahNumber);
 
   useEffect(() => {
     resetQuestion();
@@ -128,10 +164,11 @@ export const TajwidQuizGame: React.FC = () => {
     setIsPlayingPhrase(false);
   };
 
-  const handlePlayQuizPhrase = (phrase: string) => {
+  const handlePlayQuizPhrase = () => {
+    if (!quizAyah) return;
     sounds.playWordClick();
     setIsPlayingPhrase(true);
-    playPronunciation(phrase, quizAudioSpeed, () => setIsPlayingPhrase(false));
+    playPronunciation(quizAyah.audioUrl, quizAudioSpeed, () => setIsPlayingPhrase(false));
   };
 
   const handleSelectOption = (idx: number, isOptCorrect: boolean) => {
@@ -199,20 +236,20 @@ export const TajwidQuizGame: React.FC = () => {
           </p>
         </div>
 
-        {/* Audio Talaqqi Pronunciation & Speed Control */}
+        {/* Recitation of the ayah containing this tajwid example */}
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button
             type="button"
-            onClick={() => handlePlayQuizPhrase(currentQ.highlightPhrase)}
+            onClick={handlePlayQuizPhrase}
             className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
               isPlayingPhrase
                 ? 'bg-[#E9C46A] text-[#1D3557] border-[#C5A059] shadow-xs'
                 : 'bg-white dark:bg-slate-800 text-[#52796F] dark:text-[#A8D5BA] border-slate-200 dark:border-slate-700 hover:bg-[#F4EFEA]'
             }`}
-            title="Dengarkan pelafalan murni lafaz ini"
+            title={`Dengarkan QS. ${activeSurah.nameLatin} ayat ${currentQ.ayahNumber}`}
           >
             <Volume2 className="w-3.5 h-3.5 text-[#E9C46A]" />
-            <span>{isPlayingPhrase ? 'Memutar Suara...' : 'Dengarkan Lafaz'}</span>
+            <span>{isPlayingPhrase ? 'Memutar Ayat...' : 'Dengarkan Ayat Contoh'}</span>
           </button>
 
           <div className="flex items-center gap-1 bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl p-1 text-[11px]">

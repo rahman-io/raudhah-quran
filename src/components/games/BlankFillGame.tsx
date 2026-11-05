@@ -39,20 +39,21 @@ export const BlankFillGame: React.FC = () => {
 
   const setupRound = () => {
     const words = selectedAyah.words;
-    if (words.length <= 1) {
-      setBlankIndex(0);
-    } else {
-      // Pick middle or ending word to be the blank
-      const idx = Math.min(Math.floor(words.length / 2) + (Math.random() > 0.5 ? 1 : 0), words.length - 1);
-      setBlankIndex(idx);
-    }
+    // The answer must come from the same position that is hidden in the ayah.
+    const nextBlankIndex = words.length <= 1 ? 0 :
+      Math.min(Math.floor(words.length / 2) + (Math.random() > 0.5 ? 1 : 0), words.length - 1);
+    setBlankIndex(nextBlankIndex);
 
     setSelectedAnswer(null);
     setIsCorrect(null);
     setShowHint(false);
 
     // Prepare distractors
-    const correct = words[Math.min(Math.floor(words.length / 2), words.length - 1)] || words[0];
+    const correct = words[nextBlankIndex];
+    if (!correct) {
+      setOptions([]);
+      return;
+    }
 
     // Gather potential distractors from other ayahs in this surah or other surahs
     const otherWords: QuranWord[] = [];
@@ -93,7 +94,8 @@ export const BlankFillGame: React.FC = () => {
     if (currentIndex < activeSurah.ayahs.length - 1) {
       setSelectedAyah(activeSurah.ayahs[currentIndex + 1]);
     } else {
-      setupRound();
+      setSelectedAyah(activeSurah.ayahs[0]);
+      if (currentIndex === 0) setupRound();
     }
   };
 
@@ -191,7 +193,7 @@ export const BlankFillGame: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="p-3 bg-amber-50 dark:bg-amber-950/50 rounded-xl border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 inline-block text-left"
           >
-            <span className="font-bold">Petunjuk:</span> Kata yang hilang bermakna <span className="font-bold">"{targetWord.translation}"</span> ({targetWord.transliteration}).
+            <span className="font-bold">Petunjuk:</span> Kata yang hilang bermakna <span className="font-bold">"{targetWord.translation}"</span>.
           </motion.div>
         )}
       </div>
@@ -264,7 +266,7 @@ export const BlankFillGame: React.FC = () => {
               onClick={handleNextAyah}
               className="inline-flex items-center gap-1.5 px-5 py-2 bg-[#52796F] hover:bg-[#354F52] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors cursor-pointer"
             >
-              <span>Lanjut ke Ayat Selanjutnya</span>
+              <span>{selectedAyah.id === activeSurah.ayahs[activeSurah.ayahs.length - 1].id ? 'Ulangi dari Ayat 1' : 'Lanjut ke Ayat Selanjutnya'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>

@@ -696,6 +696,66 @@ export const SURAHS_DATA: Surah[] = [
         ]
       },
       {
+        id: '94:2',
+        surahNumber: 94,
+        ayahNumber: 2,
+        globalAyahNumber: 6097,
+        arabicText: 'وَوَضَعْنَا عَنْكَ وِزْرَكَ',
+        transliteration: 'Wa waḍa‘nā ‘anka wizrak',
+        translationId: 'Dan Kami pun telah menurunkan beban darimu,',
+        audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6097.mp3',
+        tadabbur: {
+          title: 'Beban yang Diringankan',
+          hikmah: 'Allah mengingatkan Nabi Muhammad bahwa Dia telah meringankan bebannya.',
+          amal: 'Mohonlah pertolongan Allah ketika menghadapi beban yang berat.'
+        },
+        words: [
+          { id: '94:2:1', arabic: 'وَوَضَعْنَا', transliteration: 'Wa waḍa‘nā', translation: 'Dan Kami telah menurunkan', rootWord: 'و-ض-ع', grammarType: 'Fi\'il (Kata Kerja)' },
+          { id: '94:2:2', arabic: 'عَنْكَ', transliteration: '‘Anka', translation: 'Darimu', rootWord: 'ع-ن', grammarType: 'Harf (Kata Sambung/Huruf)' },
+          { id: '94:2:3', arabic: 'وِزْرَكَ', transliteration: 'Wizraka', translation: 'Bebanmu', rootWord: 'و-ز-ر', grammarType: 'Isim (Kata Benda/Nama)' }
+        ]
+      },
+      {
+        id: '94:3',
+        surahNumber: 94,
+        ayahNumber: 3,
+        globalAyahNumber: 6098,
+        arabicText: 'الَّذِي أَنْقَضَ ظَهْرَكَ',
+        transliteration: 'Allażī anqaḍa ẓahrak',
+        translationId: 'yang memberatkan punggungmu,',
+        audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6098.mp3',
+        tadabbur: {
+          title: 'Pertolongan dalam Kesulitan',
+          hikmah: 'Allah mengetahui beban yang berat dalam menjalankan amanah.',
+          amal: 'Ingatlah untuk meminta pertolongan Allah saat menghadapi kesulitan.'
+        },
+        words: [
+          { id: '94:3:1', arabic: 'الَّذِي', transliteration: 'Allażī', translation: 'Yang', rootWord: 'ل-ذ-ي', grammarType: 'Isim (Kata Benda/Nama)' },
+          { id: '94:3:2', arabic: 'أَنْقَضَ', transliteration: 'Anqaḍa', translation: 'Memberatkan', rootWord: 'ن-ق-ض', grammarType: 'Fi\'il (Kata Kerja)' },
+          { id: '94:3:3', arabic: 'ظَهْرَكَ', transliteration: 'Ẓahraka', translation: 'Punggungmu', rootWord: 'ظ-ه-ر', grammarType: 'Isim (Kata Benda/Nama)' }
+        ]
+      },
+      {
+        id: '94:4',
+        surahNumber: 94,
+        ayahNumber: 4,
+        globalAyahNumber: 6099,
+        arabicText: 'وَرَفَعْنَا لَكَ ذِكْرَكَ',
+        transliteration: 'Wa rafa‘nā laka żikrak',
+        translationId: 'dan Kami tinggikan sebutan (nama)mu bagimu.',
+        audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6099.mp3',
+        tadabbur: {
+          title: 'Nama yang Ditinggikan',
+          hikmah: 'Allah meninggikan sebutan Nabi Muhammad.',
+          amal: 'Berselawatlah untuk Nabi Muhammad hari ini.'
+        },
+        words: [
+          { id: '94:4:1', arabic: 'وَرَفَعْنَا', transliteration: 'Wa rafa‘nā', translation: 'Dan Kami tinggikan', rootWord: 'ر-ف-ع', grammarType: 'Fi\'il (Kata Kerja)' },
+          { id: '94:4:2', arabic: 'لَكَ', transliteration: 'Laka', translation: 'Bagimu', rootWord: 'ل-ك', grammarType: 'Harf (Kata Sambung/Huruf)' },
+          { id: '94:4:3', arabic: 'ذِكْرَكَ', transliteration: 'Żikraka', translation: 'Sebutanmu', rootWord: 'ذ-ك-ر', grammarType: 'Isim (Kata Benda/Nama)' }
+        ]
+      },
+      {
         id: '94:5',
         surahNumber: 94,
         ayahNumber: 5,
@@ -735,6 +795,46 @@ export const SURAHS_DATA: Surah[] = [
           { id: '94:6:2', arabic: 'مَعَ', transliteration: 'Ma\'a', translation: 'Beserta', rootWord: 'م-ع', grammarType: 'Harf (Kata Sambung/Huruf)' },
           { id: '94:6:3', arabic: 'الْعُسْرِ', transliteration: 'Al-\'usri', translation: 'Kesulitan itu', rootWord: 'ع-س-ر', grammarType: 'Isim (Kata Benda/Nama)' },
           { id: '94:6:4', arabic: 'يُسْرًا', transliteration: 'Yusrā', translation: 'Kemudahan', rootWord: 'ي-س-ر', grammarType: 'Isim (Kata Benda/Nama)' }
+        ]
+      },
+      {
+        id: '94:7',
+        surahNumber: 94,
+        ayahNumber: 7,
+        globalAyahNumber: 6102,
+        arabicText: 'فَإِذَا فَرَغْتَ فَانْصَبْ',
+        transliteration: 'Fa iżā faraghta fanṣab',
+        translationId: 'Maka apabila engkau telah selesai (dari suatu urusan), tetaplah bekerja keras (untuk urusan yang lain),',
+        audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6102.mp3',
+        tadabbur: {
+          title: 'Terus Berbuat Baik',
+          hikmah: 'Setelah menyelesaikan suatu urusan, lanjutkan usaha dan ibadah dengan sungguh-sungguh.',
+          amal: 'Selesaikan satu urusan baik, lalu kerjakan urusan baik berikutnya.'
+        },
+        words: [
+          { id: '94:7:1', arabic: 'فَإِذَا', transliteration: 'Fa iżā', translation: 'Maka apabila', rootWord: 'إ-ذ', grammarType: 'Harf (Kata Sambung/Huruf)' },
+          { id: '94:7:2', arabic: 'فَرَغْتَ', transliteration: 'Faraghta', translation: 'Engkau telah selesai', rootWord: 'ف-ر-غ', grammarType: 'Fi\'il (Kata Kerja)' },
+          { id: '94:7:3', arabic: 'فَانْصَبْ', transliteration: 'Fanṣab', translation: 'Maka bersungguh-sungguhlah', rootWord: 'ن-ص-ب', grammarType: 'Fi\'il (Kata Kerja)' }
+        ]
+      },
+      {
+        id: '94:8',
+        surahNumber: 94,
+        ayahNumber: 8,
+        globalAyahNumber: 6103,
+        arabicText: 'وَإِلَىٰ رَبِّكَ فَارْغَبْ',
+        transliteration: 'Wa ilā rabbika farghab',
+        translationId: 'dan hanya kepada Tuhanmulah engkau berharap.',
+        audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6103.mp3',
+        tadabbur: {
+          title: 'Harapan kepada Allah',
+          hikmah: 'Hanya kepada Allah kita menaruh harapan dan memohon pertolongan.',
+          amal: 'Sampaikan harapanmu kepada Allah melalui doa.'
+        },
+        words: [
+          { id: '94:8:1', arabic: 'وَإِلَىٰ', transliteration: 'Wa ilā', translation: 'Dan hanya kepada', rootWord: 'إ-ل-ى', grammarType: 'Harf (Kata Sambung/Huruf)' },
+          { id: '94:8:2', arabic: 'رَبِّكَ', transliteration: 'Rabbika', translation: 'Tuhanmu', rootWord: 'ر-ب-ب', grammarType: 'Isim (Kata Benda/Nama)' },
+          { id: '94:8:3', arabic: 'فَارْغَبْ', transliteration: 'Farghab', translation: 'Maka berharaplah', rootWord: 'ر-غ-ب', grammarType: 'Fi\'il (Kata Kerja)' }
         ]
       }
     ]

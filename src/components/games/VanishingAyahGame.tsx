@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Volume2, Eye, EyeOff, CheckCircle2, RotateCcw, ArrowRight, Sparkles, Award } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
@@ -23,6 +23,13 @@ export const VanishingAyahGame: React.FC = () => {
   const [stage, setStage] = useState<Stage>(100);
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
   const [assessmentGiven, setAssessmentGiven] = useState<string | null>(null);
+  const [rewardedAyahIds, setRewardedAyahIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setStage(100);
+    setIsRevealed(false);
+    setAssessmentGiven(null);
+  }, [selectedAyah.id]);
 
   const resetStage = (newStage: Stage) => {
     sounds.playWordClick();
@@ -37,14 +44,21 @@ export const VanishingAyahGame: React.FC = () => {
   };
 
   const handleRateMastery = (rating: 'belum' | 'cukup' | 'mutqin') => {
+    if (assessmentGiven || (rating === 'mutqin' && stage !== 0)) return;
     setAssessmentGiven(rating);
     if (rating === 'mutqin') {
       sounds.playAyahComplete();
-      addXP(50, 'Hafalan Mutqin');
+      if (!rewardedAyahIds.includes(selectedAyah.id)) {
+        addXP(50, 'Hafalan Mutqin');
+        setRewardedAyahIds((ids) => [...ids, selectedAyah.id]);
+      }
       markAyahMemorized(selectedAyah.id);
     } else if (rating === 'cukup') {
       sounds.playCorrectDing();
-      addXP(25, 'Hafalan Cukup');
+      if (!rewardedAyahIds.includes(selectedAyah.id)) {
+        addXP(25, 'Hafalan Cukup');
+        setRewardedAyahIds((ids) => [...ids, selectedAyah.id]);
+      }
     } else {
       sounds.playGentleRetry();
     }
@@ -52,12 +66,10 @@ export const VanishingAyahGame: React.FC = () => {
 
   const handleNextAyah = () => {
     const currentIndex = activeSurah.ayahs.findIndex((a) => a.id === selectedAyah.id);
-    if (currentIndex < activeSurah.ayahs.length - 1) {
-      setSelectedAyah(activeSurah.ayahs[currentIndex + 1]);
-      setStage(100);
-      setIsRevealed(false);
-      setAssessmentGiven(null);
-    }
+    setSelectedAyah(activeSurah.ayahs[currentIndex < activeSurah.ayahs.length - 1 ? currentIndex + 1 : 0]);
+    setStage(100);
+    setIsRevealed(false);
+    setAssessmentGiven(null);
   };
 
   return (
@@ -162,7 +174,7 @@ export const VanishingAyahGame: React.FC = () => {
                 }`}
                 style={{ fontSize: `${fontSize}px` }}
               >
-                {word.arabic}
+                {shouldHide ? '•••' : word.arabic}
               </motion.span>
             );
           })}
@@ -205,10 +217,12 @@ export const VanishingAyahGame: React.FC = () => {
 
           <button
             onClick={() => handleRateMastery('mutqin')}
+            disabled={stage !== 0 || assessmentGiven !== null}
+            title={stage !== 0 ? 'Selesaikan tahap 0% Mandiri sebelum menilai hafalan mutqin' : undefined}
             className={`px-5 py-2 text-xs font-bold rounded-xl border shadow-xs transition-all ${
               assessmentGiven === 'mutqin'
                 ? 'bg-[#52796F] text-white border-[#354F52]'
-                : 'bg-[#E9C46A] hover:bg-[#F4A261] text-[#1D3557] border-[#C5A059]'
+                : 'bg-[#E9C46A] hover:bg-[#F4A261] text-[#1D3557] border-[#C5A059] disabled:opacity-50 disabled:cursor-not-allowed'
             }`}
           >
             Mutqin! Hafal Tanpa Teks (+50 XP)
@@ -225,7 +239,7 @@ export const VanishingAyahGame: React.FC = () => {
               onClick={handleNextAyah}
               className="inline-flex items-center gap-1.5 px-5 py-2 bg-[#52796F] hover:bg-[#354F52] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors cursor-pointer"
             >
-              <span>Lanjut ke Ayat Selanjutnya</span>
+              <span>{selectedAyah.id === activeSurah.ayahs[activeSurah.ayahs.length - 1].id ? 'Ulangi dari Ayat 1' : 'Lanjut ke Ayat Selanjutnya'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>

@@ -31,10 +31,13 @@ export const AudioSambungGame: React.FC = () => {
   }, [selectedAyah.id]);
 
   const currentAyahIdx = activeSurah.ayahs.findIndex((a) => a.id === selectedAyah.id);
-  const isLastAyah = currentAyahIdx >= activeSurah.ayahs.length - 1;
-  const targetNextAyah = isLastAyah
-    ? activeSurah.ayahs[0] // If last ayah, challenge targets loop back or review
-    : activeSurah.ayahs[currentAyahIdx + 1];
+  const isLastAyah = currentAyahIdx === activeSurah.ayahs.length - 1;
+  // At the end of a surah, use the previous ayah as the prompt; the first
+  // ayah is never the "continuation" of the last ayah.
+  const promptAyah = isLastAyah && currentAyahIdx > 0
+    ? activeSurah.ayahs[currentAyahIdx - 1] : selectedAyah;
+  const targetNextAyah = isLastAyah ? selectedAyah : activeSurah.ayahs[currentAyahIdx + 1];
+  const isLastRound = targetNextAyah.id === activeSurah.ayahs[activeSurah.ayahs.length - 1].id;
 
   const setupRound = () => {
     setSelectedAnswerId(null);
@@ -44,7 +47,7 @@ export const AudioSambungGame: React.FC = () => {
     const pool: Ayah[] = [];
     SURAHS_DATA.forEach((s) => {
       s.ayahs.forEach((a) => {
-        if (a.id !== targetNextAyah.id && a.id !== selectedAyah.id) {
+        if (a.id !== targetNextAyah.id && a.id !== promptAyah.id) {
           pool.push(a);
         }
       });
@@ -55,7 +58,7 @@ export const AudioSambungGame: React.FC = () => {
     setOptions(roundOptions);
 
     // Autoplay the prompt ayah audio softly
-    playMurottal(selectedAyah);
+    playMurottal(promptAyah);
   };
 
   const handleSelectOption = (opt: Ayah) => {
@@ -75,11 +78,7 @@ export const AudioSambungGame: React.FC = () => {
   };
 
   const handleNextRound = () => {
-    if (!isLastAyah) {
-      setSelectedAyah(activeSurah.ayahs[currentAyahIdx + 1]);
-    } else {
-      setupRound();
-    }
+    setSelectedAyah(isLastRound ? activeSurah.ayahs[0] : targetNextAyah);
   };
 
   return (
@@ -96,15 +95,15 @@ export const AudioSambungGame: React.FC = () => {
         </div>
 
         <button
-          onClick={() => playMurottal(selectedAyah)}
+          onClick={() => playMurottal(promptAyah)}
           className={`flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl transition-colors shadow-xs ${
-            isPlayingAudio && currentPlayingAyahId === selectedAyah.id
+            isPlayingAudio && currentPlayingAyahId === promptAyah.id
               ? 'bg-[#E9C46A] text-[#1D3557]'
               : 'bg-[#52796F] text-white hover:bg-[#354F52]'
           }`}
         >
           <Volume2 className="w-4 h-4" />
-          <span>{isPlayingAudio && currentPlayingAyahId === selectedAyah.id ? 'Sedang Memutar...' : 'Putar Ulang Audio'}</span>
+          <span>{isPlayingAudio && currentPlayingAyahId === promptAyah.id ? 'Sedang Memutar...' : 'Putar Ulang Audio'}</span>
         </button>
       </div>
 
@@ -112,7 +111,7 @@ export const AudioSambungGame: React.FC = () => {
       <div className="bg-gradient-to-b from-[#FDFBF7] to-[#F4EFEA] dark:from-[#0F1E21] dark:to-[#16272B] rounded-3xl p-6 border border-[#C5A059]/40 text-center space-y-4 shadow-xs">
         <div className="flex items-center justify-center gap-2 text-xs text-[#84A98C] font-semibold">
           <Music2 className="w-4 h-4 text-[#E9C46A]" />
-          <span>Ayat Pembuka: QS. {activeSurah.nameLatin} Ayat {selectedAyah.ayahNumber}</span>
+          <span>Ayat Pembuka: QS. {activeSurah.nameLatin} Ayat {promptAyah.ayahNumber}</span>
         </div>
 
         {/* Big Arabic Text of Prompt Ayah */}
@@ -120,11 +119,11 @@ export const AudioSambungGame: React.FC = () => {
           className="font-arabic text-[#1D3557] dark:text-[#E9C46A] leading-relaxed my-2"
           style={{ fontSize: `${fontSize}px` }}
         >
-          {selectedAyah.arabicText}
+          {promptAyah.arabicText}
         </p>
 
         <p className="text-xs text-[#52796F] dark:text-[#CBD5E1] max-w-lg mx-auto">
-          "{selectedAyah.translationId}"
+          "{promptAyah.translationId}"
         </p>
 
         {/* Audio Pulse Ring Animation */}
@@ -133,7 +132,7 @@ export const AudioSambungGame: React.FC = () => {
             <motion.div
               key={i}
               animate={{
-                scaleY: isPlayingAudio && currentPlayingAyahId === selectedAyah.id ? [0.4, 1.8, 0.4] : 0.4
+                scaleY: isPlayingAudio && currentPlayingAyahId === promptAyah.id ? [0.4, 1.8, 0.4] : 0.4
               }}
               transition={{ repeat: Infinity, duration: 0.6 + i * 0.15, ease: 'easeInOut' }}
               className="w-1.5 h-6 bg-[#52796F] dark:bg-[#84A98C] rounded-full"
@@ -235,7 +234,7 @@ export const AudioSambungGame: React.FC = () => {
               onClick={handleNextRound}
               className="inline-flex items-center gap-1.5 px-5 py-2 bg-[#52796F] hover:bg-[#354F52] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors cursor-pointer"
             >
-              <span>Lanjut ke Ayat Selanjutnya</span>
+              <span>{isLastRound ? 'Ulangi dari Ayat 1' : 'Lanjut ke Ayat Selanjutnya'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>

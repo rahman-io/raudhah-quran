@@ -37,11 +37,15 @@ export const WordPuzzleGame: React.FC = () => {
   const targetWords = useMemo(() => selectedAyah.words, [selectedAyah]);
 
   const resetPuzzle = () => {
-    const shuffled = [...selectedAyah.words].sort(() => Math.random() - 0.5);
+    const shuffled = [...selectedAyah.words];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
     // If by chance random sort matches original, shuffle again
     if (
       shuffled.length > 1 &&
-      shuffled.map((w) => w.id).join('') === selectedAyah.words.map((w) => w.id).join('')
+      shuffled.every((word, index) => word.id === selectedAyah.words[index].id)
     ) {
       shuffled.reverse();
     }
@@ -53,8 +57,10 @@ export const WordPuzzleGame: React.FC = () => {
   };
 
   const handleSelectWord = (word: QuranWord) => {
+    if (isCompleted) return;
     sounds.playWordClick();
     setIsWrongOrder(false);
+    setHintIndex(null);
 
     const nextSelected = [...selectedWords, word];
     setSelectedWords(nextSelected);
@@ -62,7 +68,7 @@ export const WordPuzzleGame: React.FC = () => {
 
     // Check if sentence is completed
     if (nextSelected.length === targetWords.length) {
-      const isCorrect = nextSelected.every((w, idx) => w.id === targetWords[idx].id);
+      const isCorrect = nextSelected.every((w, idx) => w.arabic === targetWords[idx].arabic);
       if (isCorrect) {
         setIsCompleted(true);
         sounds.playCorrectDing();
@@ -76,25 +82,18 @@ export const WordPuzzleGame: React.FC = () => {
   };
 
   const handleRemoveWord = (word: QuranWord) => {
+    if (isCompleted) return;
     sounds.playWordClick();
     setIsWrongOrder(false);
+    setHintIndex(null);
     setSelectedWords((prev) => prev.filter((w) => w.id !== word.id));
     setAvailableWords((prev) => [...prev, word]);
   };
 
   const handleProvideHint = () => {
-    const nextIdx = selectedWords.length;
-    if (nextIdx < targetWords.length) {
-      const correctWord = targetWords[nextIdx];
-      setHintIndex(nextIdx);
-      sounds.playWordClick();
-
-      // If correct word is in available pool, pick it
-      const foundInAvailable = availableWords.find((w) => w.id === correctWord.id);
-      if (foundInAvailable) {
-        handleSelectWord(foundInAvailable);
-      }
-    }
+    const wrongIndex = selectedWords.findIndex((word, index) => word.arabic !== targetWords[index].arabic);
+    setHintIndex(wrongIndex >= 0 ? wrongIndex : selectedWords.length);
+    sounds.playWordClick();
   };
 
   const handleNextAyah = () => {
@@ -102,7 +101,8 @@ export const WordPuzzleGame: React.FC = () => {
     if (currentIndex < activeSurah.ayahs.length - 1) {
       setSelectedAyah(activeSurah.ayahs[currentIndex + 1]);
     } else {
-      resetPuzzle();
+      setSelectedAyah(activeSurah.ayahs[0]);
+      if (currentIndex === 0) resetPuzzle();
     }
   };
 
@@ -136,7 +136,7 @@ export const WordPuzzleGame: React.FC = () => {
 
           <button
             onClick={handleProvideHint}
-            disabled={isCompleted || availableWords.length === 0}
+            disabled={isCompleted}
             className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors disabled:opacity-50"
             title="Beri Petunjuk Kata Selanjutnya"
           >
@@ -179,7 +179,7 @@ export const WordPuzzleGame: React.FC = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
                 onClick={() => handleRemoveWord(word)}
-                className="group relative cursor-pointer px-4 py-2 bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm border border-[#84A98C]/40 hover:border-red-400 dark:hover:border-red-400 transition-all text-[#1D3557] dark:text-[#E9C46A]"
+                className={`group relative cursor-pointer px-4 py-2 bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm border hover:border-red-400 dark:hover:border-red-400 transition-all text-[#1D3557] dark:text-[#E9C46A] ${hintIndex === idx && word.arabic !== targetWords[idx].arabic ? 'border-amber-500 ring-2 ring-amber-400' : 'border-[#84A98C]/40'}`}
               >
                 <span
                   className="font-arabic font-medium block"
@@ -231,7 +231,7 @@ export const WordPuzzleGame: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleSelectWord(word)}
-                className="px-4 py-2.5 rounded-2xl bg-[#F4EFEA] dark:bg-[#16272B] hover:bg-[#EAE3D9] dark:hover:bg-[#1E3A34] text-[#2F3E46] dark:text-[#F1F5F9] border border-[#C5A059]/40 hover:border-[#84A98C] shadow-xs cursor-pointer transition-colors"
+                className={`px-4 py-2.5 rounded-2xl bg-[#F4EFEA] dark:bg-[#16272B] hover:bg-[#EAE3D9] dark:hover:bg-[#1E3A34] text-[#2F3E46] dark:text-[#F1F5F9] border hover:border-[#84A98C] shadow-xs cursor-pointer transition-colors ${hintIndex === selectedWords.length && word.arabic === targetWords[hintIndex]?.arabic ? 'border-amber-500 ring-2 ring-amber-400' : 'border-[#C5A059]/40'}`}
               >
                 <span
                   className="font-arabic font-medium block"
@@ -297,7 +297,7 @@ export const WordPuzzleGame: React.FC = () => {
                 onClick={handleNextAyah}
                 className="flex items-center gap-1.5 px-5 py-2 bg-[#52796F] hover:bg-[#354F52] text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
               >
-                <span>Lanjut Ayat Berikutnya</span>
+                <span>{selectedAyah.id === activeSurah.ayahs[activeSurah.ayahs.length - 1].id ? 'Ulangi dari Ayat 1' : 'Lanjut Ayat Berikutnya'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

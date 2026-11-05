@@ -30,10 +30,14 @@ export const MemoryMatchGame: React.FC = () => {
   const [matchedPairsCount, setMatchedPairsCount] = useState<number>(0);
   const [movesCount, setMovesCount] = useState<number>(0);
   const hasRewardedRef = useRef<boolean>(false);
+  const pendingFlipRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize board whenever selectedAyah changes
   useEffect(() => {
     initGame();
+    return () => {
+      if (pendingFlipRef.current) clearTimeout(pendingFlipRef.current);
+    };
   }, [selectedAyah.id]);
 
   // Award XP and play celebration when all pairs are matched
@@ -48,11 +52,13 @@ export const MemoryMatchGame: React.FC = () => {
   const initGame = () => {
     hasRewardedRef.current = false;
     // Select up to 4 words from current ayah (or pad from activeSurah if short)
-    let wordsPool: QuranWord[] = [...selectedAyah.words];
+    let wordsPool: QuranWord[] = selectedAyah.words.filter((word, index, words) =>
+      words.findIndex((candidate) => candidate.arabic === word.arabic || candidate.translation.toLowerCase() === word.translation.toLowerCase()) === index
+    );
     if (wordsPool.length < 4) {
       activeSurah.ayahs.forEach((a) => {
         a.words.forEach((w) => {
-          if (!wordsPool.some((p) => p.arabic === w.arabic) && wordsPool.length < 4) {
+          if (!wordsPool.some((p) => p.arabic === w.arabic || p.translation.toLowerCase() === w.translation.toLowerCase()) && wordsPool.length < 4) {
             wordsPool.push(w);
           }
         });
@@ -85,7 +91,13 @@ export const MemoryMatchGame: React.FC = () => {
     });
 
     // Shuffle cards
-    const shuffled = generatedCards.sort(() => Math.random() - 0.5);
+    for (let i = generatedCards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [generatedCards[i], generatedCards[j]] = [generatedCards[j], generatedCards[i]];
+    }
+    const shuffled = generatedCards;
+    if (pendingFlipRef.current) clearTimeout(pendingFlipRef.current);
+    pendingFlipRef.current = null;
     setCards(shuffled);
     setFlippedCardIds([]);
     setIsProcessing(false);
@@ -118,7 +130,7 @@ export const MemoryMatchGame: React.FC = () => {
 
       if (firstCard && firstCard.pairKey === secondCard.pairKey && firstCard.type !== secondCard.type) {
         // MATCH!
-        setTimeout(() => {
+        pendingFlipRef.current = setTimeout(() => {
           sounds.playCorrectDing();
           setCards((prev) =>
             prev.map((c) =>
@@ -133,7 +145,7 @@ export const MemoryMatchGame: React.FC = () => {
         }, 400);
       } else {
         // NO MATCH -> flip back smoothly
-        setTimeout(() => {
+        pendingFlipRef.current = setTimeout(() => {
           sounds.playGentleRetry();
           setCards((prev) =>
             prev.map((c) =>
