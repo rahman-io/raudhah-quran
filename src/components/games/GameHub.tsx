@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Puzzle, HelpCircle, EyeOff, CheckCircle2, Music2, Layers, Award } from 'lucide-react';
+import { Puzzle, HelpCircle, EyeOff, CheckCircle2, Music2, Layers, Award, PenLine } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { GameType } from '../../types/quran';
 import { SURAHS_DATA } from '../../data/quranData';
@@ -10,6 +10,7 @@ import { VanishingAyahGame } from './VanishingAyahGame';
 import { AudioSambungGame } from './AudioSambungGame';
 import { MemoryMatchGame } from './MemoryMatchGame';
 import { TajwidQuizGame } from './TajwidQuizGame';
+import { WriteAyahGame } from './WriteAyahGame';
 import { HudHudMascot } from '../mascot/HudHudMascot';
 import { LenteraSakinah } from '../mascot/LenteraSakinah';
 import { sounds } from '../../utils/soundEffects';
@@ -117,7 +118,7 @@ export const GameHub: React.FC = () => {
         })}
       </div>
 
-      {/* 6 Game Mode Selector Tabs (Scrollable on small screens) */}
+      {/* Game Mode Selector Tabs (Scrollable on small screens) */}
       <div className="flex items-center gap-1.5 p-1.5 bg-[#F4EFEA] dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-x-auto scrollbar-thin">
         <button
           onClick={() => handleSelectGame('word-puzzle')}
@@ -190,6 +191,18 @@ export const GameHub: React.FC = () => {
           <Award className="w-3.5 h-3.5 text-[#C5A059]" />
           <span>6. Kuis Tajwid</span>
         </button>
+
+        <button
+          onClick={() => handleSelectGame('write-ayah')}
+          className={`py-2 px-3 text-xs font-semibold rounded-xl whitespace-nowrap shrink-0 transition-all flex items-center gap-1.5 cursor-pointer ${
+            activeGame === 'write-ayah'
+              ? 'bg-white dark:bg-slate-700 text-[#1D3557] dark:text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+          }`}
+        >
+          <PenLine className="w-3.5 h-3.5 text-[#52796F]" />
+          <span>7. Tulis Ayat</span>
+        </button>
       </div>
 
       {/* Active Game Area */}
@@ -200,6 +213,7 @@ export const GameHub: React.FC = () => {
         {activeGame === 'audio-sambung' && <AudioSambungGame />}
         {activeGame === 'memory-match' && <MemoryMatchGame />}
         {activeGame === 'tajwid-quiz' && <TajwidQuizGame />}
+        {activeGame === 'write-ayah' && <WriteAyahGame />}
       </div>
     </div>
   );

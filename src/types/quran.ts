@@ -45,7 +45,8 @@ export type GameType =
   | 'vanishing-ayah'
   | 'audio-sambung'
   | 'memory-match'
-  | 'tajwid-quiz';
+  | 'tajwid-quiz'
+  | 'write-ayah';
 
 export interface GardenPlant {
   id: string;
