@@ -18,9 +18,38 @@ export const WriteAyahGame: React.FC = () => {
   const [showPattern, setShowPattern] = useState(false);
   const [assessment, setAssessment] = useState<WritingAssessment | null>(null);
   const patternCanvas = useRef<HTMLCanvasElement | null>(null);
+  const writingSurface = useRef<SVGSVGElement | null>(null);
   const strokeNumber = useRef(0);
   const activePointer = useRef<number | null>(null);
   const activeStroke = useRef<number | null>(null);
+
+  useEffect(() => {
+    const finishStroke = (event: PointerEvent) => {
+      if (activePointer.current !== event.pointerId) return;
+      activePointer.current = null;
+      activeStroke.current = null;
+      if (writingSurface.current?.hasPointerCapture(event.pointerId)) {
+        writingSurface.current.releasePointerCapture(event.pointerId);
+      }
+    };
+    const cancelStroke = () => {
+      const pointerId = activePointer.current;
+      activePointer.current = null;
+      activeStroke.current = null;
+      if (pointerId !== null && writingSurface.current?.hasPointerCapture(pointerId)) {
+        writingSurface.current.releasePointerCapture(pointerId);
+      }
+    };
+    window.addEventListener('pointerup', finishStroke);
+    window.addEventListener('pointercancel', finishStroke);
+    window.addEventListener('blur', cancelStroke);
+    return () => {
+      window.removeEventListener('pointerup', finishStroke);
+      window.removeEventListener('pointercancel', finishStroke);
+      window.removeEventListener('blur', cancelStroke);
+      cancelStroke();
+    };
+  }, []);
 
   useEffect(() => {
     setWordIndex(0);
@@ -66,8 +95,7 @@ export const WriteAyahGame: React.FC = () => {
 
   const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
     if (step === 'review' || step === 'complete' || assessment?.isCorrect || activePointer.current !== null) return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
+    if (event.pointerType !== 'touch') event.currentTarget.setPointerCapture(event.pointerId);
     activePointer.current = event.pointerId;
     const id = ++strokeNumber.current;
     activeStroke.current = id;
@@ -92,7 +120,7 @@ export const WriteAyahGame: React.FC = () => {
 
   const handlePointerEnd = (event: React.PointerEvent<SVGSVGElement>) => {
     if (activePointer.current !== event.pointerId) return;
-    handlePointerMove(event);
+    if (event.type === 'pointerup') handlePointerMove(event);
     activePointer.current = null;
     activeStroke.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
@@ -185,9 +213,10 @@ export const WriteAyahGame: React.FC = () => {
           <div className="relative mx-auto w-full max-w-[640px] overflow-hidden rounded-2xl border-2 border-dashed border-[#BE9452]/60 bg-[#F8F6F1] dark:bg-[#152E38]">
             <canvas ref={patternCanvas} width={WIDTH} height={HEIGHT} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" />
             <svg
+              ref={writingSurface}
               viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
               className="block w-full select-none"
-              style={{ aspectRatio: `${WIDTH} / ${HEIGHT}`, touchAction: 'none', cursor: step === 'review' ? 'default' : 'crosshair' }}
+              style={{ aspectRatio: `${WIDTH} / ${HEIGHT}`, touchAction: step === 'review' || assessment?.isCorrect ? 'pan-y' : 'none', cursor: step === 'review' ? 'default' : 'crosshair' }}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerEnd}
