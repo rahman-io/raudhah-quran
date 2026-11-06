@@ -1,0 +1,57 @@
+.garden-scene {
+  background-position: center 51%;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.garden-plant-sprite {
+  animation: garden-sway 5.4s ease-in-out infinite;
+  transform-origin: center 92%;
+}
+
+.garden-butterfly-flight {
+  animation: garden-float 9s ease-in-out infinite;
+}
+
+.garden-butterfly {
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  animation: garden-flap 0.56s steps(1, end) infinite;
+}
+
+.garden-firefly {
+  animation: garden-glimmer 4.4s ease-in-out infinite;
+}
+
+@keyframes garden-sway {
+  0%, 100% { transform: rotate(-1.8deg); }
+  50% { transform: rotate(2.2deg); }
+}
+
+@keyframes garden-float {
+  0%, 100% { transform: translate3d(-4px, 3px, 0) rotate(-5deg); }
+  35% { transform: translate3d(28px, -13px, 0) rotate(7deg); }
+  70% { transform: translate3d(52px, 4px, 0) rotate(-3deg); }
+}
+
+@keyframes garden-flap {
+  0%, 100% { background-position: 0% 0%; }
+  25% { background-position: 33.333% 0%; }
+  50% { background-position: 66.667% 0%; }
+  75% { background-position: 100% 0%; }
+}
+
+@keyframes garden-glimmer {
+  0%, 100% { opacity: 0.25; transform: translateY(4px) scale(0.65); }
+  45% { opacity: 0.9; transform: translateY(-12px) scale(1.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden-plant-sprite,
+  .garden-butterfly-flight,
+  .garden-butterfly,
+  .garden-firefly {
+    animation: none;
+  }
+}

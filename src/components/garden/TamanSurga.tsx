@@ -1,13 +1,31 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Sprout, Info, Trophy, Heart } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { Heart, Sparkles, Sprout, Trophy } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
-import { GardenPlant } from '../../types/quran';
+import { INITIAL_PLANTS_CATALOG } from '../../data/quranData';
+import type { GardenPlant } from '../../types/quran';
 import { sounds } from '../../utils/soundEffects';
+import './garden.css';
+
+const ASSET_ROOT = `${import.meta.env.BASE_URL}assets/garden/`;
+const PLANT_FRAMES: Record<GardenPlant['type'], { column: number; row: number }> = {
+  olive_tree: { column: 0, row: 0 },
+  date_palm: { column: 1, row: 0 },
+  sidr_tree: { column: 2, row: 0 },
+  jasmine_flower: { column: 0, row: 1 },
+  lotus_flower: { column: 1, row: 1 },
+  pomegranate: { column: 2, row: 1 }
+};
 
 export const TamanSurga: React.FC = () => {
-  const { gardenPlants, memorizedAyahIds, mode } = useQuranGame();
+  const { gardenPlants, memorizedAyahIds } = useQuranGame();
   const [selectedPlant, setSelectedPlant] = useState<GardenPlant | null>(null);
+  const reduceMotion = useReducedMotion();
+  const nextPlant = INITIAL_PLANTS_CATALOG.find((item) => item.requiredAyahs > memorizedAyahIds.length);
+  const previousMilestone = INITIAL_PLANTS_CATALOG.filter((item) => item.requiredAyahs <= memorizedAyahIds.length).at(-1)?.requiredAyahs ?? 0;
+  const progress = nextPlant
+    ? Math.min(100, Math.max(0, (memorizedAyahIds.length - previousMilestone) / (nextPlant.requiredAyahs - previousMilestone) * 100))
+    : 100;
 
   const handlePlantClick = (plant: GardenPlant) => {
     sounds.playWordClick();
@@ -15,254 +33,127 @@ export const TamanSurga: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full overflow-hidden rounded-3xl border border-[#477F8D]/30 bg-gradient-to-b from-[#EDF5F5] via-[#F8F6F1] to-[#E2EEF0] dark:from-[#1E293B] dark:via-[#152E38] dark:to-[#102731] p-4 sm:p-6 shadow-sm">
-      {/* Header Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 z-10 relative">
+    <section className="relative w-full overflow-hidden rounded-3xl border border-[#D9E4DF] bg-[#F8F6F1] p-3 shadow-sm dark:border-[#2D5052] dark:bg-[#152E38] sm:p-5 lg:p-6" aria-label="Taman Surga Raudhah">
+      <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-[#246579]/10 dark:bg-[#246579]/30 text-[#246579] dark:text-[#477F8D]">
-              <Sprout className="w-4 h-4" />
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E1EEE8] text-[#246579] dark:bg-[#246579]/30 dark:text-[#A7CDD3]">
+              <Sprout className="h-5 w-5" />
+            </span>
+            <div>
+              <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-[#A57839] dark:text-[#E9CF99]">Hafalan yang bertumbuh</span>
+              <h3 className="text-lg font-bold tracking-tight text-[#173B4E] dark:text-white sm:text-xl">Taman Surga (Raudhah)</h3>
             </div>
-            <h3 className="font-bold text-base sm:text-lg text-[#293640] dark:text-[#F1F5F9]">
-              Taman Surga (Raudhah)
-            </h3>
           </div>
-          <p className="text-xs text-[#246579] dark:text-[#94A3B8] mt-0.5">
+          <p className="mt-2 text-xs leading-relaxed text-[#477F8D] dark:text-[#B5D8D8] sm:text-sm">
             Setiap ayat yang kau pelajari dan hafal menumbuhkan pohon & bunga abadi di tamanmu.
           </p>
         </div>
 
-        {/* Stats Pill */}
-        <div className="flex items-center gap-3 bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-[#477F8D]/20 text-xs">
-          <div className="flex items-center gap-1.5 text-[#246579] dark:text-[#477F8D] font-semibold">
-            <Trophy className="w-3.5 h-3.5 text-[#D3A253]" />
-            <span>{gardenPlants.length} Tanaman Mekar</span>
-          </div>
-          <span className="text-[#477F8D]">•</span>
-          <div className="text-[#293640] dark:text-[#CBD5E1]">
-            <span className="font-bold text-[#B87845]">{memorizedAyahIds.length}</span> Ayat Dihafal
-          </div>
+        <div className="flex w-fit max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border border-[#D8E3DE] bg-white px-3.5 py-2 text-xs shadow-sm dark:border-[#456667] dark:bg-[#1C3B45]">
+          <span className="flex items-center gap-1.5 font-semibold text-[#246579] dark:text-[#D0E9E5]">
+            <Trophy className="h-4 w-4 text-[#C99547]" /> {gardenPlants.length} Tanaman Mekar
+          </span>
+          <span className="hidden text-[#A3B5B0] sm:inline">•</span>
+          <span className="font-medium text-[#53696C] dark:text-[#CFDCDC]"><strong className="text-[#A8753D] dark:text-[#E9CF99]">{memorizedAyahIds.length}</strong> Ayat Dihafal</span>
         </div>
       </div>
 
-      {/* 2D Canvas Scene of The Garden */}
-      <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden border border-[#477F8D]/20 bg-gradient-to-b from-[#D6EAEB] via-[#E5F1F0] to-[#B8D9DA] dark:from-[#173542] dark:via-[#1B3F4C] dark:to-[#102C37] select-none shadow-inner">
-        {/* Sky Background Elements */}
-        {/* Soft Glowing Sun or Crescent */}
-        <motion.div
-          animate={{ scale: [1, 1.05, 1], opacity: [0.85, 1, 0.85] }}
-          transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-          className="absolute top-4 right-8 w-14 h-14 rounded-full bg-[#D3A253]/40 blur-lg pointer-events-none"
-        />
-        <div className="absolute top-6 right-10 w-9 h-9 rounded-full bg-gradient-to-tr from-[#D3A253] to-[#F7E4AF] shadow-sm flex items-center justify-center">
-          <Sparkles className="w-4 h-4 text-[#BE9452] opacity-80" />
+      <div
+        className="garden-scene relative h-[350px] w-full overflow-hidden rounded-2xl border border-[#BACFC4] bg-[#B8D9D0] shadow-inner dark:border-[#476462] sm:h-[420px] lg:h-[480px]"
+        style={{ backgroundImage: `url("${ASSET_ROOT}meadow.webp")` }}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-[#174C60]/20 dark:from-[#0C2736]/20 dark:to-[#071E28]/35" />
+
+        <div className="pointer-events-none absolute left-3 top-3 max-w-[65%] rounded-xl border border-white/70 bg-[#F8F6F1]/85 px-3 py-2 text-[11px] font-medium text-[#174C60] shadow-sm backdrop-blur-sm dark:border-white/15 dark:bg-[#153842]/85 dark:text-[#E0F1ED] sm:left-5 sm:top-5 sm:text-xs">
+          <Sparkles className="mr-1 inline h-3.5 w-3.5 text-[#BE9452]" /> Sentuh tanaman untuk melihat kisah hafalanmu
         </div>
 
-        {/* Soft Drift Clouds */}
-        <motion.div
-          animate={{ x: [-20, 30, -20] }}
-          transition={{ repeat: Infinity, duration: 24, ease: 'easeInOut' }}
-          className="absolute top-8 left-12 opacity-60 pointer-events-none"
-        >
-          <div className="w-20 h-6 bg-white/70 rounded-full blur-[1px]" />
-        </motion.div>
+        {[{ left: '18%', top: '25%', delay: '0s' }, { left: '68%', top: '31%', delay: '-3s' }].map((butterfly, index) => (
+          <div key={index} className="garden-butterfly-flight pointer-events-none absolute z-[2]" style={{ left: butterfly.left, top: butterfly.top, animationDelay: butterfly.delay }} aria-hidden="true">
+            <span className="garden-butterfly block h-14 w-11 sm:h-[72px] sm:w-[54px]" style={{ backgroundImage: `url("${ASSET_ROOT}butterfly.webp")` }} />
+          </div>
+        ))}
 
-        {/* Rolling Hills (Layer 1 - Distant) */}
-        <svg
-          className="absolute bottom-0 w-full h-44 text-[#A7CDD3]/50 dark:text-[#1B444F]/60 pointer-events-none"
-          viewBox="0 0 500 150"
-          preserveAspectRatio="none"
-        >
-          <path d="M0,80 C150,40 300,110 500,50 L500,150 L0,150 Z" fill="currentColor" />
-        </svg>
-
-        {/* Rolling Hills (Layer 2 - Midground) */}
-        <svg
-          className="absolute bottom-0 w-full h-36 text-[#477F8D]/60 dark:text-[#245563]/80 pointer-events-none"
-          viewBox="0 0 500 150"
-          preserveAspectRatio="none"
-        >
-          <path d="M0,100 C120,40 280,120 500,70 L500,150 L0,150 Z" fill="currentColor" />
-        </svg>
-
-        {/* River of Light (Sungai Kautsar) flowing gently */}
-        <svg
-          className="absolute bottom-0 w-full h-24 pointer-events-none"
-          viewBox="0 0 500 100"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M210,100 C230,65 240,40 255,20 C270,40 280,65 300,100 Z"
-            fill="url(#riverGradient)"
-            opacity="0.85"
-          />
-          <defs>
-            <linearGradient id="riverGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#A6D3DD" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#427E98" stopOpacity="0.8" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-        {/* Rolling Hills (Layer 3 - Foreground Meadow) */}
-        <svg
-          className="absolute bottom-0 w-full h-28 text-[#246579]/90 dark:text-[#123744] pointer-events-none"
-          viewBox="0 0 500 150"
-          preserveAspectRatio="none"
-        >
-          <path d="M0,110 C180,70 340,110 500,85 L500,150 L0,150 Z" fill="currentColor" />
-        </svg>
-
-        {/* Planted Items Rendering */}
         {gardenPlants.map((plant, index) => {
+          const { column, row } = PLANT_FRAMES[plant.type];
+          const isFlower = plant.type === 'jasmine_flower' || plant.type === 'lotus_flower';
           return (
-            <motion.div
-              key={`${plant.id}_${index}`}
-              initial={{ scale: 0, opacity: 0, y: 15 }}
-              animate={{ scale: plant.scale, opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.5, type: 'spring' }}
-              style={{
-                left: `${plant.x}%`,
-                bottom: `${100 - plant.y}%`,
-                transform: 'translate(-50%, 50%)'
-              }}
-              className="absolute cursor-pointer z-10 group"
-              onClick={() => handlePlantClick(plant)}
+            <div
+              key={plant.id}
+              className="absolute -translate-x-1/2 -translate-y-full"
+              style={{ left: `${plant.x}%`, top: `${plant.y}%`, zIndex: Math.round(plant.y) + 5 }}
             >
-              {/* Plant Vector by Type */}
-              <div className="relative transform group-hover:scale-110 transition-transform duration-200">
-                {/* Glow ring on hover */}
-                <div className="absolute -inset-1 rounded-full bg-[#D3A253]/40 blur-xs opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                {plant.type === 'olive_tree' && (
-                  <svg className="w-16 h-20 drop-shadow-md" viewBox="0 0 80 100" fill="none">
-                    {/* Trunk */}
-                    <path d="M38 95 C38 75 35 60 40 45 C45 60 42 75 44 95 Z" fill="#6B4F3A" />
-                    {/* Foliage */}
-                    <circle cx="40" cy="38" r="24" fill="#608066" />
-                    <circle cx="28" cy="42" r="16" fill="#75997C" />
-                    <circle cx="52" cy="42" r="16" fill="#4D6B53" />
-                    {/* Olives */}
-                    <circle cx="34" cy="36" r="3" fill="#2B4249" />
-                    <circle cx="46" cy="44" r="3" fill="#2B4249" />
-                    <circle cx="42" cy="28" r="3" fill="#2B4249" />
-                  </svg>
-                )}
-
-                {plant.type === 'date_palm' && (
-                  <svg className="w-18 h-22 drop-shadow-md" viewBox="0 0 90 110" fill="none">
-                    {/* Palm Trunk */}
-                    <path d="M42 105 C40 70 43 50 46 35 C48 50 46 70 47 105 Z" fill="#8D6E63" stroke="#5D4037" strokeWidth="1" />
-                    {/* Palm Fronds */}
-                    <path d="M46 35 C30 20 10 30 5 45 C20 40 35 36 46 35 Z" fill="#2D6A4F" />
-                    <path d="M46 35 C62 20 82 30 87 45 C72 40 57 36 46 35 Z" fill="#40916C" />
-                    <path d="M46 35 C42 12 48 5 46 0 C44 12 44 25 46 35 Z" fill="#52B788" />
-                    <path d="M46 35 C25 35 15 50 12 65 C26 55 38 45 46 35 Z" fill="#1B4332" />
-                    <path d="M46 35 C67 35 77 50 80 65 C66 55 54 45 46 35 Z" fill="#2D6A4F" />
-                    {/* Date Clusters */}
-                    <circle cx="43" cy="40" r="3.5" fill="#D4A373" />
-                    <circle cx="49" cy="40" r="3.5" fill="#C58A55" />
-                  </svg>
-                )}
-
-                {(plant.type === 'jasmine_flower' || plant.type === 'lotus_flower') && (
-                  <svg className="w-10 h-10 drop-shadow-sm" viewBox="0 0 50 50" fill="none">
-                    {/* Stem */}
-                    <path d="M25 48 C25 38 24 30 25 24" stroke="#40916C" strokeWidth="2.5" strokeLinecap="round" />
-                    <path d="M25 36 C20 34 16 34 14 36 C18 38 22 38 25 36 Z" fill="#52B788" />
-                    {/* Petals */}
-                    <circle cx="25" cy="18" r="6" fill="#F8F6F1" stroke="#D3A253" strokeWidth="1.5" />
-                    <circle cx="18" cy="22" r="5" fill="#F8F6F1" stroke="#D3A253" strokeWidth="1.5" />
-                    <circle cx="32" cy="22" r="5" fill="#F8F6F1" stroke="#D3A253" strokeWidth="1.5" />
-                    <circle cx="21" cy="28" r="5" fill="#F8F6F1" stroke="#D3A253" strokeWidth="1.5" />
-                    <circle cx="29" cy="28" r="5" fill="#F8F6F1" stroke="#D3A253" strokeWidth="1.5" />
-                    <circle cx="25" cy="23" r="3.5" fill="#D3A253" />
-                  </svg>
-                )}
-
-                {plant.type === 'pomegranate' && (
-                  <svg className="w-14 h-18 drop-shadow-md" viewBox="0 0 70 90" fill="none">
-                    <path d="M33 85 C33 65 31 52 35 40 C38 52 36 65 37 85 Z" fill="#795548" />
-                    <circle cx="35" cy="35" r="20" fill="#588157" />
-                    {/* Ruby Fruit */}
-                    <circle cx="28" cy="38" r="5" fill="#C1121F" />
-                    <circle cx="40" cy="32" r="4.5" fill="#780000" />
-                  </svg>
-                )}
-
-                {plant.type === 'sidr_tree' && (
-                  <svg className="w-16 h-22 drop-shadow-md" viewBox="0 0 80 100" fill="none">
-                    <path d="M38 95 L40 50 L42 95 Z" fill="#5D4037" />
-                    <ellipse cx="40" cy="35" rx="22" ry="26" fill="#3A5A40" />
-                    <ellipse cx="40" cy="30" rx="16" ry="18" fill="#588157" />
-                    <circle cx="35" cy="35" r="2.5" fill="#E3B973" />
-                    <circle cx="45" cy="28" r="2.5" fill="#E3B973" />
-                  </svg>
-                )}
-
-                {/* Floating label */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/75 text-white text-[10px] font-medium px-2 py-0.5 rounded-full pointer-events-none">
+              <motion.button
+                type="button"
+                onClick={() => handlePlantClick(plant)}
+                title={plant.name}
+                aria-label={`Lihat ${plant.name}, tumbuh dari hafalan Surah ${plant.surahName} ayat ${plant.ayahNumber}`}
+                initial={reduceMotion ? false : { scale: 0, opacity: 0, y: 12 }}
+                animate={{ scale: plant.scale, opacity: 1, y: 0 }}
+                transition={{ delay: reduceMotion ? 0 : Math.min(index * 0.08, 0.6), duration: reduceMotion ? 0 : 0.6, type: 'spring' }}
+                className="garden-plant group relative block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D3A253]"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`garden-plant-sprite block bg-no-repeat drop-shadow-[0_9px_8px_rgba(22,49,35,0.32)] transition-[filter] duration-300 group-hover:brightness-110 ${isFlower ? 'h-[clamp(76px,10vw,120px)] w-[clamp(76px,10vw,120px)]' : 'h-[clamp(92px,16vw,184px)] w-[clamp(92px,16vw,184px)]'}`}
+                  style={{
+                    backgroundImage: `url("${ASSET_ROOT}plants.webp")`,
+                    backgroundSize: '300% 200%',
+                    backgroundPosition: `${column * 50}% ${row * 100}%`,
+                    animationDelay: `${-index * 0.7}s`
+                  }}
+                />
+                <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#173B4E]/90 px-2 py-1 text-[10px] font-semibold text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
                   {plant.name}
-                </div>
-              </div>
-            </motion.div>
+                </span>
+              </motion.button>
+            </div>
           );
         })}
 
-        {/* Ambient sparkling fireflies / light orbs */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{
-              y: [0, -18, 0],
-              x: [0, (i % 2 === 0 ? 12 : -12), 0],
-              opacity: [0.2, 0.9, 0.2]
-            }}
-            transition={{
-              repeat: Infinity,
-              duration: 3 + i * 0.7,
-              delay: i * 0.5,
-              ease: 'easeInOut'
-            }}
-            style={{
-              left: `${15 + i * 14}%`,
-              top: `${40 + (i % 3) * 15}%`
-            }}
-            className="absolute w-2 h-2 rounded-full bg-[#D3A253] blur-[1px] pointer-events-none"
-          />
+        {[12, 26, 45, 58, 76, 87].map((left, index) => (
+          <span key={left} className="garden-firefly pointer-events-none absolute z-[1] h-1.5 w-1.5 rounded-full bg-[#FFE1A0] shadow-[0_0_12px_4px_rgba(255,213,132,0.6)]" style={{ left: `${left}%`, top: `${40 + index % 3 * 12}%`, animationDelay: `${-index * 0.65}s` }} aria-hidden="true" />
         ))}
+
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#174C60]/35 to-transparent" />
       </div>
 
-      {/* Selected Plant Detail Modal / Bar */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {selectedPlant && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            key={selectedPlant.id}
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="mt-3 p-3 bg-white/95 dark:bg-[#1E293B]/95 rounded-2xl border border-[#477F8D]/30 flex items-center justify-between gap-3 text-xs"
+            className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-[#D3A253]/45 bg-white/95 p-3 text-xs shadow-sm dark:bg-[#1C3B45]"
           >
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-[#246579]/10 dark:bg-[#246579]/30 flex items-center justify-center text-[#246579] dark:text-[#477F8D] font-bold">
-                <Heart className="w-4 h-4 text-[#B87845]" />
-              </div>
-              <div>
-                <p className="font-bold text-[#293640] dark:text-[#F1F5F9]">{selectedPlant.name}</p>
-                <p className="text-[#246579] dark:text-[#94A3B8] text-[11px]">
-                  Tumbuh dari hafalan Surat {selectedPlant.surahName} ayat {selectedPlant.ayahNumber}
-                </p>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FAF0D9] text-[#B87845] dark:bg-[#4C5340]"><Heart className="h-4 w-4" /></span>
+              <div className="min-w-0">
+                <p className="font-bold text-[#173B4E] dark:text-white">{selectedPlant.name}</p>
+                <p className="text-[11px] text-[#477F8D] dark:text-[#B5D8D8]">Tumbuh dari hafalan Surat {selectedPlant.surahName} ayat {selectedPlant.ayahNumber}</p>
               </div>
             </div>
-
-            <button
-              onClick={() => setSelectedPlant(null)}
-              className="text-[#246579] hover:text-[#293640] dark:hover:text-white px-2.5 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-medium"
-            >
-              Tutup
-            </button>
+            <button type="button" onClick={() => setSelectedPlant(null)} className="shrink-0 rounded-lg px-2.5 py-2 font-semibold text-[#246579] hover:bg-[#E1EEE8] dark:text-[#B5D8D8] dark:hover:bg-[#246579]/40">Tutup</button>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+
+      <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#E2E5D9] bg-white/85 p-4 shadow-sm dark:border-[#456667] dark:bg-[#1C3B45] sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <div className="min-w-0">
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#A57839] dark:text-[#E9CF99]">{nextPlant ? 'Tanaman berikutnya' : 'Tamanmu mekar'}</span>
+          <p className="mt-1 text-sm font-semibold text-[#173B4E] dark:text-white">
+            {nextPlant ? `${nextPlant.requiredAyahs - memorizedAyahIds.length} ayat lagi untuk ${nextPlant.name}` : 'Seluruh jenis tanaman sudah tumbuh. Terus rawat hafalanmu!'}
+          </p>
+        </div>
+        <div className="w-full shrink-0 sm:w-40">
+          <div className="mb-1 flex justify-between text-[10px] font-semibold text-[#477F8D] dark:text-[#B5D8D8]"><span>Hafalan</span><span>{nextPlant ? `${memorizedAyahIds.length} / ${nextPlant.requiredAyahs}` : 'Lengkap'}</span></div>
+          <div className="h-2 overflow-hidden rounded-full bg-[#E1EEE8] dark:bg-[#245361]" role="progressbar" aria-label="Kemajuan menuju tanaman berikutnya" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+            <div className="h-full rounded-full bg-gradient-to-r from-[#477F8D] to-[#D3A253] transition-[width] duration-700" style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };
