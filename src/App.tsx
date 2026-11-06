@@ -71,11 +71,9 @@ function MainApp() {
 
         {/* View Router */}
         {activeTab === 'games' && (
-          <div className="space-y-8">
+          <div className="space-y-5 sm:space-y-6">
+            <TamanSurga compact />
             <GameHub />
-            <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800">
-              <TamanSurga />
-            </div>
           </div>
         )}
 

@@ -17,7 +17,7 @@ const PLANT_FRAMES: Record<GardenPlant['type'], { column: number; row: number }>
   pomegranate: { column: 2, row: 1 }
 };
 
-export const TamanSurga: React.FC = () => {
+export const TamanSurga: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
   const { gardenPlants, memorizedAyahIds } = useQuranGame();
   const [selectedPlant, setSelectedPlant] = useState<GardenPlant | null>(null);
   const reduceMotion = useReducedMotion();
@@ -33,8 +33,8 @@ export const TamanSurga: React.FC = () => {
   };
 
   return (
-    <section className="relative w-full overflow-hidden rounded-3xl border border-[#D9E4DF] bg-[#F8F6F1] p-3 shadow-sm dark:border-[#2D5052] dark:bg-[#152E38] sm:p-5 lg:p-6" aria-label="Taman Surga Raudhah">
-      <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+    <section className={`relative w-full overflow-hidden rounded-3xl border border-[#D9E4DF] bg-[#F8F6F1] shadow-sm dark:border-[#2D5052] dark:bg-[#152E38] ${compact ? 'p-2.5 sm:p-4' : 'p-3 sm:p-5 lg:p-6'}`} aria-label="Taman Surga Raudhah">
+      <div className={`${compact ? 'mb-2 sm:mb-3' : 'mb-4'} flex flex-col justify-between gap-3 sm:flex-row sm:items-center`}>
         <div>
           <div className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E1EEE8] text-[#246579] dark:bg-[#246579]/30 dark:text-[#A7CDD3]">
@@ -45,7 +45,7 @@ export const TamanSurga: React.FC = () => {
               <h3 className="text-lg font-bold tracking-tight text-[#173B4E] dark:text-white sm:text-xl">Taman Surga (Raudhah)</h3>
             </div>
           </div>
-          <p className="mt-2 text-xs leading-relaxed text-[#477F8D] dark:text-[#B5D8D8] sm:text-sm">
+          <p className={`mt-2 text-xs leading-relaxed text-[#477F8D] dark:text-[#B5D8D8] sm:text-sm ${compact ? 'hidden sm:block' : ''}`}>
             Setiap ayat yang kau pelajari dan hafal menumbuhkan pohon & bunga abadi di tamanmu.
           </p>
         </div>
@@ -60,12 +60,12 @@ export const TamanSurga: React.FC = () => {
       </div>
 
       <div
-        className="garden-scene relative h-[350px] w-full overflow-hidden rounded-2xl border border-[#BACFC4] bg-[#B8D9D0] shadow-inner dark:border-[#476462] sm:h-[420px] lg:h-[480px]"
+        className={`garden-scene relative w-full overflow-hidden rounded-2xl border border-[#BACFC4] bg-[#B8D9D0] shadow-inner dark:border-[#476462] ${compact ? 'h-[190px] sm:h-[270px] lg:h-[320px]' : 'h-[350px] sm:h-[420px] lg:h-[480px]'}`}
         style={{ backgroundImage: `url("${ASSET_ROOT}meadow.webp")` }}
       >
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-[#174C60]/20 dark:from-[#0C2736]/20 dark:to-[#071E28]/35" />
 
-        <div className="pointer-events-none absolute left-3 top-3 max-w-[65%] rounded-xl border border-white/70 bg-[#F8F6F1]/85 px-3 py-2 text-[11px] font-medium text-[#174C60] shadow-sm backdrop-blur-sm dark:border-white/15 dark:bg-[#153842]/85 dark:text-[#E0F1ED] sm:left-5 sm:top-5 sm:text-xs">
+        <div className={`pointer-events-none absolute left-3 top-3 max-w-[65%] rounded-xl border border-white/70 bg-[#F8F6F1]/85 px-3 py-2 text-[11px] font-medium text-[#174C60] shadow-sm backdrop-blur-sm dark:border-white/15 dark:bg-[#153842]/85 dark:text-[#E0F1ED] sm:left-5 sm:top-5 sm:text-xs ${compact ? 'hidden sm:block' : ''}`}>
           <Sparkles className="mr-1 inline h-3.5 w-3.5 text-[#BE9452]" /> Sentuh tanaman untuk melihat kisah hafalanmu
         </div>
 
@@ -96,7 +96,9 @@ export const TamanSurga: React.FC = () => {
               >
                 <span
                   aria-hidden="true"
-                  className={`garden-plant-sprite block bg-no-repeat drop-shadow-[0_9px_8px_rgba(22,49,35,0.32)] transition-[filter] duration-300 group-hover:brightness-110 ${isFlower ? 'h-[clamp(76px,10vw,120px)] w-[clamp(76px,10vw,120px)]' : 'h-[clamp(92px,16vw,184px)] w-[clamp(92px,16vw,184px)]'}`}
+                  className={`garden-plant-sprite block bg-no-repeat drop-shadow-[0_9px_8px_rgba(22,49,35,0.32)] transition-[filter] duration-300 group-hover:brightness-110 ${isFlower
+                    ? compact ? 'h-[clamp(60px,8vw,96px)] w-[clamp(60px,8vw,96px)]' : 'h-[clamp(76px,10vw,120px)] w-[clamp(76px,10vw,120px)]'
+                    : compact ? 'h-[clamp(78px,12vw,132px)] w-[clamp(78px,12vw,132px)]' : 'h-[clamp(92px,16vw,184px)] w-[clamp(92px,16vw,184px)]'}`}
                   style={{
                     backgroundImage: `url("${ASSET_ROOT}plants.webp")`,
                     backgroundSize: '300% 200%',
@@ -140,7 +142,7 @@ export const TamanSurga: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#E2E5D9] bg-white/85 p-4 shadow-sm dark:border-[#456667] dark:bg-[#1C3B45] sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <div className={`${compact ? 'mt-2 p-2.5 sm:p-3' : 'mt-4 p-4'} flex flex-col gap-3 rounded-2xl border border-[#E2E5D9] bg-white/85 shadow-sm dark:border-[#456667] dark:bg-[#1C3B45] sm:flex-row sm:items-center sm:justify-between sm:gap-6`}>
         <div className="min-w-0">
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#A57839] dark:text-[#E9CF99]">{nextPlant ? 'Tanaman berikutnya' : 'Tamanmu mekar'}</span>
           <p className="mt-1 text-sm font-semibold text-[#173B4E] dark:text-white">
