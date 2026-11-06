@@ -1,10 +1,11 @@
 import { Surah, GardenPlant } from '../types/quran';
+import { ADDITIONAL_JUZ30_SURAHS } from './juz30Surahs';
 
 /**
  * Rich offline dataset for Juz 30 and Al-Fatihah with word-by-word breakdowns,
  * authentic harakat, translations, transliterations, grammatical tags, and audio links.
  */
-export const SURAHS_DATA: Surah[] = [
+const BASE_SURAHS_DATA: Surah[] = [
   {
     number: 1,
     nameArabic: 'الفَاتِحَة',
@@ -840,6 +841,9 @@ export const SURAHS_DATA: Surah[] = [
     ]
   }
 ];
+
+export const SURAHS_DATA: Surah[] = [...BASE_SURAHS_DATA, ...ADDITIONAL_JUZ30_SURAHS]
+  .sort((a, b) => b.number - a.number);
 
 export const INITIAL_PLANTS_CATALOG: { type: GardenPlant['type']; name: string; requiredAyahs: number }[] = [
   { type: 'olive_tree', name: 'Pohon Zaitun Berkah (شَجَرَةٍ مُّبَارَكَةٍ)', requiredAyahs: 1 },
