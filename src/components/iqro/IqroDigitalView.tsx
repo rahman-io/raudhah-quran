@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
 import {
   BookOpen,
   Volume2,
@@ -39,7 +40,7 @@ interface IqroDigitalViewProps {
 }
 
 export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
-  const { addXP, celebrateSuccess } = useQuranGame();
+  const { addXP, celebrateSuccess, soundEnabled } = useQuranGame();
   
   // State
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
@@ -55,6 +56,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [quizScore, setQuizScore] = useState<number>(0);
   const [quizCompleted, setQuizCompleted] = useState<boolean>(false);
+  const [playingQuizAudio, setPlayingQuizAudio] = useState(false);
 
   // Completed levels & cards tracking in local storage
   const [completedLevels, setCompletedLevels] = useState<number[]>(() => {
@@ -136,6 +138,8 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
     };
   }, [selectedLevel, activePageIndex]);
 
+  useEffect(() => () => stopIqroAudio(), [isQuizMode]);
+
   const handlePlayItemAudio = (item: IqroItem, rowId: string) => {
     sounds.playWordClick();
     const uniqueKey = `${rowId}_${item.id}`;
@@ -147,6 +151,8 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
   };
 
   const handleLevelChange = (level: number) => {
+    stopIqroAudio();
+    setPlayingQuizAudio(false);
     sounds.playWordClick();
     setSelectedLevel(level);
     setActivePageIndex(0);
@@ -160,6 +166,8 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
       setActivePageIndex((prev) => prev + 1);
     } else {
       // Prompt quiz at end of chapter
+      stopIqroAudio();
+      setPlayingQuizAudio(false);
       setIsQuizMode(true);
       setCurrentQuestionIndex(0);
       setSelectedAnswer(null);
@@ -176,38 +184,74 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
     }
   };
 
+  const playQuizCorrectAudio = () => {
+    const question = quizQuestions[currentQuestionIndex];
+    if (!question || selectedLevel !== 1 || !soundEnabled) return;
+    setPlayingQuizAudio(true);
+    playIqroItem(
+      { id: question.id, arabic: question.questionArabic, latin: question.options[question.correctIndex] },
+      audioSpeed,
+      () => setPlayingQuizAudio(false),
+      false,
+      1
+    );
+  };
+
+  const completeQuiz = (finalScore: number) => {
+    setQuizCompleted(true);
+    if (selectedLevel !== 1 || finalScore >= Math.ceil(iqro1QuizQuestions.length * 0.8)) {
+      sounds.playAyahComplete();
+      celebrateSuccess();
+      addXP(100);
+      if (!completedLevels.includes(selectedLevel)) {
+        setCompletedLevels((prev) => [...prev, selectedLevel]);
+      }
+    }
+  };
+
+  const advanceQuiz = (finalScore: number) => {
+    setSelectedAnswer(null);
+    if (currentQuestionIndex < quizQuestions.length - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
+    } else {
+      completeQuiz(finalScore);
+    }
+  };
+
+  const handleNextQuizQuestion = () => {
+    if (selectedAnswer === null || selectedLevel !== 1) return;
+    stopIqroAudio();
+    setPlayingQuizAudio(false);
+    advanceQuiz(quizScore);
+  };
+
   const handleAnswerQuiz = (optionIdx: number) => {
     if (selectedAnswer !== null) return;
     setSelectedAnswer(optionIdx);
 
-    const questions = quizQuestions;
-    const q = questions[currentQuestionIndex];
-    const isCorrect = q && optionIdx === q.correctIndex;
+    const question = quizQuestions[currentQuestionIndex];
+    const isCorrect = question && optionIdx === question.correctIndex;
 
     if (isCorrect) {
       sounds.playCorrectDing();
       setQuizScore((prev) => prev + 1);
       addXP(selectedLevel === 1 ? 2 : 25);
+      if (selectedLevel === 1) {
+        playQuizCorrectAudio();
+        try {
+          confetti({ particleCount: 16, spread: 38, startVelocity: 18, scalar: 0.7, origin: { x: 0.5, y: 0.58 }, colors: ['#D3A253', '#246579', '#E1EEE8'], disableForReducedMotion: true });
+        } catch {
+          // A blocked canvas should not interrupt the question.
+        }
+      }
     } else {
       sounds.playGentleRetry();
     }
 
-    setTimeout(() => {
-      setSelectedAnswer(null);
-      if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex((prev) => prev + 1);
-      } else {
-        setQuizCompleted(true);
-        if (selectedLevel !== 1 || quizScore + (isCorrect ? 1 : 0) >= Math.ceil(iqro1QuizQuestions.length * 0.8)) {
-          sounds.playAyahComplete();
-          celebrateSuccess();
-          addXP(100);
-          if (!completedLevels.includes(selectedLevel)) {
-            setCompletedLevels((prev) => [...prev, selectedLevel]);
-          }
-        }
-      }
-    }, 1200);
+    // Iqro 1 waits for the learner. Other levels keep their existing timing.
+    if (selectedLevel !== 1) {
+      setTimeout(() => advanceQuiz(quizScore + (isCorrect ? 1 : 0)), 1200);
+    }
   };
 
   return (
@@ -610,6 +654,8 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                   <button
                     type="button"
                     onClick={() => {
+                      stopIqroAudio();
+                      setPlayingQuizAudio(false);
                       setIsQuizMode(true);
                       setCurrentQuestionIndex(0);
                       setSelectedAnswer(null);
@@ -656,7 +702,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                     <div className="space-y-2 text-left">
                       <div className="flex items-center justify-between text-[11px] font-semibold text-[#246579] dark:text-[#A7CDD3]">
                         <span>{currentQuestionIndex < 15 ? 'Tahap Mudah · Kenali Huruf' : currentQuestionIndex < 30 ? 'Tahap Menengah · Huruf dan Urutan' : 'Tahap Sulit · Rangkaian Bacaan'}</span>
-                        <span>{Math.round((currentQuestionIndex + 1) / questions.length * 100)}%</span>
+                        <span>{quizScore} benar · {Math.round((currentQuestionIndex + 1) / questions.length * 100)}%</span>
                       </div>
                       <div className="h-2 overflow-hidden rounded-full bg-[#E1EEE8] dark:bg-slate-700" role="progressbar" aria-label="Progres uji Iqro 1" aria-valuenow={currentQuestionIndex + 1} aria-valuemin={0} aria-valuemax={questions.length}>
                         <div className="h-full rounded-full bg-[#D3A253] transition-[width] duration-300" style={{ width: `${(currentQuestionIndex + 1) / questions.length * 100}%` }} />
@@ -705,9 +751,30 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                     })}
                   </div>
                   {selectedLevel === 1 && selectedAnswer !== null && (
-                    <p role="status" className={`text-xs font-semibold ${selectedAnswer === q.correctIndex ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
-                      {selectedAnswer === q.correctIndex ? 'Jawaban benar!' : `Belum tepat. Jawaban yang benar: ${q.options[q.correctIndex]}.`}
-                    </p>
+                    <div className="space-y-4">
+                      <p role="status" className={`rounded-xl px-4 py-3 text-sm font-semibold ${selectedAnswer === q.correctIndex ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-rose-50 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300'}`}>
+                        {selectedAnswer === q.correctIndex ? 'Benar! Dengarkan bacaannya, lalu lanjut saat siap.' : `Belum tepat. Jawaban yang benar: ${q.options[q.correctIndex]}. Pelajari dan dengarkan sebelum lanjut.`}
+                      </p>
+                      <div className="flex flex-col justify-center gap-2 sm:flex-row">
+                        <button
+                          type="button"
+                          onClick={playQuizCorrectAudio}
+                          disabled={!soundEnabled}
+                          className="flex items-center justify-center gap-2 rounded-xl border border-[#246579] px-4 py-3 text-xs font-bold text-[#246579] transition-colors hover:bg-[#E1EEE8] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#A7CDD3] dark:text-[#A7CDD3] dark:hover:bg-slate-700 cursor-pointer"
+                        >
+                          <Volume2 className="h-4 w-4" />
+                          {playingQuizAudio ? 'Sedang dibaca...' : 'Dengarkan bacaan benar'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleNextQuizQuestion}
+                          className="flex items-center justify-center gap-2 rounded-xl bg-[#246579] px-5 py-3 text-xs font-bold text-white transition-colors hover:bg-[#174C60] cursor-pointer"
+                        >
+                          {currentQuestionIndex === questions.length - 1 ? 'Lihat Hasil Ujian' : 'Lanjut ke Soal Berikutnya'}
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
               );
