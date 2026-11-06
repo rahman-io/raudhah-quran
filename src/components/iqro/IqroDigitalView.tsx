@@ -28,9 +28,11 @@ import { sounds } from '../../utils/soundEffects';
 import { playIqroItem, stopIqroAudio } from '../../utils/iqroAudioEngine';
 import { iqro1PagesFromBook } from '../../data/iqro1PdfContent';
 import { iqro2PagesFromBook } from '../../data/iqro2PdfContent';
+import { createIqro1Quiz } from '../../data/iqro1Quiz';
 
 const iqro1BookPages = iqro1PagesFromBook(IQRO_LEVELS[0].pages);
 const iqro2BookPages = iqro2PagesFromBook(IQRO_LEVELS[1].pages);
+const iqro1QuizQuestions = createIqro1Quiz(iqro1BookPages);
 
 interface IqroDigitalViewProps {
   onGoToQuiz?: () => void;
@@ -78,6 +80,8 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
     ? { ...selectedJilid, pages: iqro1BookPages }
     : selectedLevel === 2 ? { ...selectedJilid, pages: iqro2BookPages } : selectedJilid;
   const currentPage: IqroPage = currentJilid.pages[activePageIndex] || currentJilid.pages[0];
+  const quizQuestions = selectedLevel === 1 ? iqro1QuizQuestions : currentPage.quizQuestions || [];
+  const quizPassed = selectedLevel !== 1 || quizScore >= Math.ceil(iqro1QuizQuestions.length * 0.8);
 
   // Save progress
   useEffect(() => {
@@ -158,6 +162,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
       // Prompt quiz at end of chapter
       setIsQuizMode(true);
       setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
       setQuizScore(0);
       setQuizCompleted(false);
     }
@@ -175,13 +180,14 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
     if (selectedAnswer !== null) return;
     setSelectedAnswer(optionIdx);
 
-    const questions = currentPage.quizQuestions || [];
+    const questions = quizQuestions;
     const q = questions[currentQuestionIndex];
+    const isCorrect = q && optionIdx === q.correctIndex;
 
-    if (q && optionIdx === q.correctIndex) {
+    if (isCorrect) {
       sounds.playCorrectDing();
       setQuizScore((prev) => prev + 1);
-      addXP(25);
+      addXP(selectedLevel === 1 ? 2 : 25);
     } else {
       sounds.playGentleRetry();
     }
@@ -192,11 +198,13 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
         setCurrentQuestionIndex((prev) => prev + 1);
       } else {
         setQuizCompleted(true);
-        sounds.playAyahComplete();
-        celebrateSuccess();
-        addXP(100);
-        if (!completedLevels.includes(selectedLevel)) {
-          setCompletedLevels((prev) => [...prev, selectedLevel]);
+        if (selectedLevel !== 1 || quizScore + (isCorrect ? 1 : 0) >= Math.ceil(iqro1QuizQuestions.length * 0.8)) {
+          sounds.playAyahComplete();
+          celebrateSuccess();
+          addXP(100);
+          if (!completedLevels.includes(selectedLevel)) {
+            setCompletedLevels((prev) => [...prev, selectedLevel]);
+          }
         }
       }
     }, 1200);
@@ -604,13 +612,14 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                     onClick={() => {
                       setIsQuizMode(true);
                       setCurrentQuestionIndex(0);
+                      setSelectedAnswer(null);
                       setQuizScore(0);
                       setQuizCompleted(false);
                     }}
                     className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#2D8192] hover:bg-[#236E80] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all"
                   >
                     <Award className="w-4 h-4" />
-                    <span>Uji Kemampuan Iqro {currentJilid.level}</span>
+                    <span>Uji Kemampuan Iqro {currentJilid.level}{selectedLevel === 1 ? ' · 45 Soal' : ''}</span>
                   </button>
                 </div>
               </div>
@@ -622,7 +631,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
         <div className="bg-white dark:bg-slate-800/90 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 shadow-md space-y-6">
           {!quizCompleted ? (
             (() => {
-              const questions = currentPage.quizQuestions || [
+              const questions = selectedLevel === 1 ? quizQuestions : currentPage.quizQuestions || [
                 {
                   id: 'default_q',
                   questionArabic: 'اَ  بَ',
@@ -642,6 +651,18 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                     </span>
                     <span>Soal {currentQuestionIndex + 1} dari {questions.length}</span>
                   </div>
+
+                  {selectedLevel === 1 && (
+                    <div className="space-y-2 text-left">
+                      <div className="flex items-center justify-between text-[11px] font-semibold text-[#246579] dark:text-[#A7CDD3]">
+                        <span>{currentQuestionIndex < 15 ? 'Tahap Mudah · Kenali Huruf' : currentQuestionIndex < 30 ? 'Tahap Menengah · Huruf dan Urutan' : 'Tahap Sulit · Rangkaian Bacaan'}</span>
+                        <span>{Math.round((currentQuestionIndex + 1) / questions.length * 100)}%</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-[#E1EEE8] dark:bg-slate-700" role="progressbar" aria-label="Progres uji Iqro 1" aria-valuenow={currentQuestionIndex + 1} aria-valuemin={0} aria-valuemax={questions.length}>
+                        <div className="h-full rounded-full bg-[#D3A253] transition-[width] duration-300" style={{ width: `${(currentQuestionIndex + 1) / questions.length * 100}%` }} />
+                      </div>
+                    </div>
+                  )}
 
                   <div className="p-6 rounded-2xl bg-[#F8F6F1] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-3 shadow-inner">
                     <p className="font-arabic text-5xl font-bold text-[#173B4E] dark:text-[#D3A253] my-2">
@@ -683,6 +704,11 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                       );
                     })}
                   </div>
+                  {selectedLevel === 1 && selectedAnswer !== null && (
+                    <p role="status" className={`text-xs font-semibold ${selectedAnswer === q.correctIndex ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
+                      {selectedAnswer === q.correctIndex ? 'Jawaban benar!' : `Belum tepat. Jawaban yang benar: ${q.options[q.correctIndex]}.`}
+                    </p>
+                  )}
                 </div>
               );
             })()
@@ -690,7 +716,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
             /* Quiz Completed View */
             <div className="text-center py-8 space-y-5 max-w-md mx-auto">
               <div className="w-20 h-20 rounded-full bg-[#D3A253]/20 text-[#D3A253] flex items-center justify-center mx-auto shadow-inner">
-                <Trophy className="w-10 h-10 text-[#866421] dark:text-[#D3A253]" />
+                {quizPassed ? <Trophy className="w-10 h-10 text-[#866421] dark:text-[#D3A253]" /> : <RotateCcw className="w-10 h-10 text-[#866421] dark:text-[#D3A253]" />}
               </div>
 
               <div>
@@ -698,23 +724,32 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                   Evaluasi Selesai!
                 </span>
                 <h3 className="text-xl font-extrabold text-[#173B4E] dark:text-white mt-2">
-                  Selamat! Anda Lulus Iqro {currentJilid.level}
+                  {quizPassed ? `Selamat! Anda Lulus Iqro ${currentJilid.level}` : 'Belum Lulus Iqro 1 — Ayo Coba Lagi'}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Skor Anda: <strong>{quizScore} / {(currentPage.quizQuestions || []).length}</strong>. Lencana kelulusan telah ditambahkan ke profil Anda!
+                  Skor Anda: <strong>{quizScore} / {quizQuestions.length}</strong>. {quizPassed ? selectedLevel === 1 ? 'Kelulusan Iqro 1 tersimpan.' : 'Lencana kelulusan telah ditambahkan ke profil Anda!' : `Perlu minimal ${Math.ceil(iqro1QuizQuestions.length * 0.8)} jawaban benar untuk lulus. Ulangi soal dan latih lagi huruf yang belum lancar.`}
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setIsQuizMode(false)}
+                  onClick={() => {
+                    if (quizPassed) {
+                      setIsQuizMode(false);
+                    } else {
+                      setCurrentQuestionIndex(0);
+                      setSelectedAnswer(null);
+                      setQuizScore(0);
+                      setQuizCompleted(false);
+                    }
+                  }}
                   className="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold cursor-pointer"
                 >
-                  Ulangi Pelajaran Halaman
+                  {quizPassed ? 'Ulangi Pelajaran Halaman' : 'Ulangi Ujian Iqro 1'}
                 </button>
 
-                {selectedLevel < 6 && (
+                {quizPassed && selectedLevel < 6 && (
                   <button
                     type="button"
                     onClick={() => handleLevelChange(selectedLevel + 1)}
