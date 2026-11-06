@@ -35,6 +35,36 @@ const iqro1BookPages = iqro1PagesFromBook(IQRO_LEVELS[0].pages);
 const iqro2BookPages = iqro2PagesFromBook(IQRO_LEVELS[1].pages);
 const iqro1QuizQuestions = createIqro1Quiz(iqro1BookPages);
 
+function shuffleItems<T>(items: readonly T[]): T[] {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index--) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function newIqro1QuizSession() {
+  const questions = iqro1QuizQuestions.map((question) => {
+    const choices = shuffleItems(question.options.map((label, index) => ({
+      label,
+      isCorrect: index === question.correctIndex
+    })));
+    return {
+      ...question,
+      options: choices.map(({ label }) => label),
+      correctIndex: choices.findIndex(({ isCorrect }) => isCorrect)
+    };
+  });
+
+  // Keep the three 15-question difficulty stages while varying each session.
+  return [
+    ...shuffleItems(questions.slice(0, 15)),
+    ...shuffleItems(questions.slice(15, 30)),
+    ...shuffleItems(questions.slice(30))
+  ];
+}
+
 interface IqroDigitalViewProps {
   onGoToQuiz?: () => void;
 }
@@ -57,6 +87,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
   const [quizScore, setQuizScore] = useState<number>(0);
   const [quizCompleted, setQuizCompleted] = useState<boolean>(false);
   const [playingQuizAudio, setPlayingQuizAudio] = useState(false);
+  const [iqro1SessionQuestions, setIqro1SessionQuestions] = useState(newIqro1QuizSession);
 
   // Completed levels & cards tracking in local storage
   const [completedLevels, setCompletedLevels] = useState<number[]>(() => {
@@ -82,7 +113,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
     ? { ...selectedJilid, pages: iqro1BookPages }
     : selectedLevel === 2 ? { ...selectedJilid, pages: iqro2BookPages } : selectedJilid;
   const currentPage: IqroPage = currentJilid.pages[activePageIndex] || currentJilid.pages[0];
-  const quizQuestions = selectedLevel === 1 ? iqro1QuizQuestions : currentPage.quizQuestions || [];
+  const quizQuestions = selectedLevel === 1 ? iqro1SessionQuestions : currentPage.quizQuestions || [];
   const quizPassed = selectedLevel !== 1 || quizScore >= Math.ceil(iqro1QuizQuestions.length * 0.8);
 
   // Save progress
@@ -168,6 +199,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
       // Prompt quiz at end of chapter
       stopIqroAudio();
       setPlayingQuizAudio(false);
+      if (selectedLevel === 1) setIqro1SessionQuestions(newIqro1QuizSession());
       setIsQuizMode(true);
       setCurrentQuestionIndex(0);
       setSelectedAnswer(null);
@@ -656,6 +688,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                     onClick={() => {
                       stopIqroAudio();
                       setPlayingQuizAudio(false);
+                      if (selectedLevel === 1) setIqro1SessionQuestions(newIqro1QuizSession());
                       setIsQuizMode(true);
                       setCurrentQuestionIndex(0);
                       setSelectedAnswer(null);
@@ -805,6 +838,7 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
                     if (quizPassed) {
                       setIsQuizMode(false);
                     } else {
+                      setIqro1SessionQuestions(newIqro1QuizSession());
                       setCurrentQuestionIndex(0);
                       setSelectedAnswer(null);
                       setQuizScore(0);
