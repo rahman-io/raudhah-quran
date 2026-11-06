@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import React, { useEffect, useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 import { Sparkles } from 'lucide-react';
 import { sounds } from '../../utils/soundEffects';
 
@@ -16,118 +16,97 @@ const MOTIVATIONAL_MESSAGES = [
   'Pelan-pelan tapi istiqomah, Allah menyukai amal yang kontinu.'
 ];
 
+// The first eight frames are poses.png; the following eight are transitions.png.
+const ANIMATION_FRAMES = {
+  idle: [0, 0, 0, 8, 0, 0, 9, 1, 9, 0, 0, 0, 6, 8, 0, 0, 0, 0],
+  happy: [0, 10, 2, 11, 12, 3, 13, 4, 14, 5, 14, 15, 12, 11, 2, 10, 0],
+  celebrate: [0, 10, 2, 11, 12, 3, 13, 4, 14, 5, 7, 5, 14, 15, 12, 11, 2, 10, 0],
+  thinking: [0, 8, 6, 6, 8, 9, 1, 9, 8, 0]
+} as const;
+
+const SPRITES = [
+  `${import.meta.env.BASE_URL}assets/hudhud/poses.png`,
+  `${import.meta.env.BASE_URL}assets/hudhud/transitions.png`
+];
+
 export const HudHudMascot: React.FC<HudHudMascotProps> = ({
   customMessage,
   mood = 'idle'
 }) => {
   const [messageIndex, setMessageIndex] = useState(0);
+  const [frame, setFrame] = useState(0);
+  const [isGreeting, setIsGreeting] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const currentMood = mood === 'idle' && isGreeting ? 'happy' : mood;
+
+  useEffect(() => {
+    const preload = new Image();
+    preload.src = SPRITES[1];
+  }, []);
+
+  useEffect(() => {
+    if (!isGreeting) return;
+    const timeout = window.setTimeout(() => setIsGreeting(false), 2000);
+    return () => window.clearTimeout(timeout);
+  }, [isGreeting]);
+
+  useEffect(() => {
+    const sequence = ANIMATION_FRAMES[currentMood];
+    setFrame(sequence[0]);
+    if (reduceMotion) return;
+
+    let position = 0;
+    let timer: number | undefined;
+    const start = () => {
+      if (timer !== undefined || document.hidden) return;
+      timer = window.setInterval(() => {
+        position = (position + 1) % sequence.length;
+        setFrame(sequence[position]);
+      }, currentMood === 'idle' ? 210 : 125);
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        window.clearInterval(timer);
+        timer = undefined;
+      } else {
+        start();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    start();
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [currentMood, reduceMotion]);
 
   const handleMascotClick = () => {
     sounds.playWordClick();
     setMessageIndex((prev) => (prev + 1) % MOTIVATIONAL_MESSAGES.length);
+    setIsGreeting(true);
   };
 
   const currentMessage = customMessage || MOTIVATIONAL_MESSAGES[messageIndex];
 
   return (
     <div className="flex items-center gap-3">
-      {/* 2D Animated Bird "Hud-hud" */}
       <motion.button
         type="button"
         onClick={handleMascotClick}
         title="Klik burung Hud-hud untuk nasihat kebaikan!"
-        className="relative group focus:outline-none cursor-pointer shrink-0"
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.95 }}
+        className="relative group shrink-0 cursor-pointer focus:outline-none"
+        whileHover={reduceMotion ? undefined : { scale: 1.05 }}
+        whileTap={reduceMotion ? undefined : { scale: 0.96 }}
       >
-        {/* Glow halo */}
-        <div className="absolute -inset-2 bg-[#D3A253]/20 rounded-full blur-md opacity-70 group-hover:opacity-100 transition-opacity" />
-
-        <svg
-          className="w-16 h-16 md:w-20 md:h-20 drop-shadow-sm select-none"
-          viewBox="0 0 120 120"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Animated Hoopoe Crest (Jambul Mahkota) */}
-          <motion.g
-            animate={{
-              rotate: mood === 'celebrate' ? [0, -10, 5, 0] : [0, -4, 0],
-              originX: '45px',
-              originY: '40px'
-            }}
-            transition={{ repeat: Infinity, duration: 2.8, ease: 'easeInOut' }}
-          >
-            {/* Crest feathers */}
-            <path d="M42 35 C38 18 32 14 30 15 C29 16 33 24 38 36 Z" fill="#D3A253" />
-            <path d="M48 32 C46 12 41 8 38 9 C37 10 41 20 44 33 Z" fill="#E3B973" />
-            <path d="M54 34 C58 14 62 10 65 11 C66 12 60 22 51 36 Z" fill="#D3A253" />
-            {/* Crest black tips */}
-            <circle cx="31" cy="16" r="3" fill="#1C596D" />
-            <circle cx="39" cy="10" r="3" fill="#1C596D" />
-            <circle cx="64" cy="12" r="3" fill="#1C596D" />
-          </motion.g>
-
-          {/* Bird Body */}
-          <motion.ellipse
-            cx="62"
-            cy="70"
-            rx="26"
-            ry="22"
-            fill="#D3A253"
-            stroke="#BE9452"
-            strokeWidth="2"
-            animate={{ y: [0, -2, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-          />
-
-          {/* Soft Cream Breast Feather */}
-          <ellipse cx="68" cy="74" rx="14" ry="15" fill="#F8F6F1" opacity="0.9" />
-
-          {/* Tail Feathers with Stripes */}
-          <path d="M38 74 L14 84 L18 90 L42 78 Z" fill="#1C596D" />
-          <path d="M22 81 L25 87 L29 85 L26 79 Z" fill="#F8F6F1" />
-
-          {/* Head */}
-          <motion.g
-            animate={{ y: [0, -1.5, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-          >
-            <circle cx="56" cy="45" r="16" fill="#E3B973" />
-            {/* Cheek blush */}
-            <circle cx="64" cy="49" r="4.5" fill="#B87845" opacity="0.45" />
-
-            {/* Eye */}
-            <circle cx="60" cy="42" r="3.5" fill="#1C596D" />
-            <circle cx="61.5" cy="40.5" r="1.2" fill="#FFFFFF" />
-
-            {/* Slender curved Beak (Paruh burung Hud-hud khas yang panjang melengkung) */}
-            <path
-              d="M68 44 C82 46 94 53 100 58 C92 56 80 50 68 48 Z"
-              fill="#1C596D"
-            />
-          </motion.g>
-
-          {/* Wing (Animated Flutter) */}
-          <motion.path
-            d="M52 64 C64 64 74 74 68 84 C56 86 46 76 52 64 Z"
-            fill="#2D8192"
-            stroke="#1C596D"
-            strokeWidth="1.5"
-            animate={{
-              rotate: mood === 'celebrate' ? [0, -18, 0] : [0, -5, 0],
-              originX: '52px',
-              originY: '64px'
-            }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-          />
-          {/* Wing white bars */}
-          <path d="M56 70 L66 74" stroke="#F8F6F1" strokeWidth="2" strokeLinecap="round" />
-          <path d="M54 75 L62 79" stroke="#F8F6F1" strokeWidth="2" strokeLinecap="round" />
-
-          {/* Little Feet on Rehal */}
-          <path d="M56 90 L54 98 M68 90 L67 98" stroke="#8D6E63" strokeWidth="2.5" strokeLinecap="round" />
-        </svg>
+        <span
+          aria-hidden="true"
+          className="block h-24 w-24 select-none bg-no-repeat sm:h-28 sm:w-28"
+          style={{
+            backgroundImage: `url("${SPRITES[frame < 8 ? 0 : 1]}")`,
+            backgroundSize: '400% 200%',
+            backgroundPosition: `${(frame % 4) * 100 / 3}% ${Math.floor((frame % 8) / 4) * 100}%`
+          }}
+        />
 
         {/* Mascot badge */}
         <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-[#246579] text-[#F8F6F1] text-[10px] font-semibold px-1.5 py-0.5 rounded-full shadow-xs whitespace-nowrap">
