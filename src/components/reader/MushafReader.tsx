@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2 } from 'lucide-react';
+import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import { loadReaderIndex, loadReaderSurah, ReaderAyah, ReaderIndex, ReaderSurah } from '../../services/quranReaderData';
+import { HafalanSession } from '../hafalan/HafalanSession';
+import { getSavedStage, STAGES } from '../hafalan/hafalanPlan';
 
 const normalizeSearch = (text: string) => text.toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]/g, '');
 // Kerangka konsonan agar ejaan berbeda tetap cocok, mis. "baqoroh" → Al-Baqarah.
@@ -31,6 +33,7 @@ export const MushafReader: React.FC = () => {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const topRef = useRef<HTMLDivElement>(null);
+  const [hafalanAyahIndex, setHafalanAyahIndex] = useState<number | null>(null);
 
   useEffect(() => {
     loadReaderIndex().then(setSurahIndex);
@@ -240,9 +243,10 @@ export const MushafReader: React.FC = () => {
 
       {/* Ayahs List */}
       <div className="space-y-4">
-        {activeSurah.ayahs.map((ayah) => {
+        {activeSurah.ayahs.map((ayah, ayahIndex) => {
           const isPlayingThis = isPlayingAudio && currentPlayingAyahId === ayah.id;
           const isMemorized = memorizedAyahIds.includes(ayah.id);
+          const savedStage = getSavedStage(ayah.id);
 
           return (
             <div
@@ -343,6 +347,25 @@ export const MushafReader: React.FC = () => {
                   </p>
                 </div>
               )}
+
+              {/* Mode Hafalkan: 7 game berurutan untuk ayat ini */}
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => {
+                    if (isPlayingAudio) pauseMurottal();
+                    setHafalanAyahIndex(ayahIndex);
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-full bg-[#246579] hover:bg-[#174C60] text-white shadow-xs transition-colors"
+                  title="Latih ayat ini melalui 7 game penguat hafalan"
+                >
+                  <GraduationCap className="w-4 h-4" />
+                  <span>
+                    {savedStage > 0
+                      ? `Lanjutkan Hafalan (Tahap ${savedStage + 1}/${STAGES.length})`
+                      : isMemorized ? "Muraja'ah dengan 7 Game" : 'Hafalkan Ayat Ini'}
+                  </span>
+                </button>
+              </div>
             </div>
           );
         })}
@@ -350,6 +373,16 @@ export const MushafReader: React.FC = () => {
       </>
         );
       })()}
+
+      {hafalanAyahIndex !== null && loadedSurah && loadedSurah.ayahs[hafalanAyahIndex] && (
+        <HafalanSession
+          key={loadedSurah.ayahs[hafalanAyahIndex].id}
+          surah={loadedSurah}
+          ayahIndex={hafalanAyahIndex}
+          onClose={() => setHafalanAyahIndex(null)}
+          onNextAyah={hafalanAyahIndex < loadedSurah.ayahs.length - 1 ? () => setHafalanAyahIndex(hafalanAyahIndex + 1) : undefined}
+        />
+      )}
     </div>
   );
 };
