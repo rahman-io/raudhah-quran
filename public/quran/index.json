@@ -1,0 +1,1047 @@
+{
+ "source": {
+  "api": "Quran.com API v4",
+  "translation": {
+   "id": 33,
+   "name": "Indonesian Islamic Affairs Ministry",
+   "author": "Unknown"
+  },
+  "transliteration": 57,
+  "wordByWordLanguage": "id",
+  "audio": "Mishary Rashid Alafasy (cdn.islamic.network)",
+  "importedAt": "2026-11-11T18:37:32.370Z",
+  "totals": {
+   "surahs": 114,
+   "ayahs": 6236,
+   "words": 77429
+  }
+ },
+ "surahs": [
+  {
+   "number": 1,
+   "nameArabic": "الفاتحة",
+   "nameLatin": "Al-Fatihah",
+   "translationLatin": "Pembukaan",
+   "numberOfAyahs": 7,
+   "revelationType": "Makkiyah",
+   "bismillahPre": false
+  },
+  {
+   "number": 2,
+   "nameArabic": "البقرة",
+   "nameLatin": "Al-Baqarah",
+   "translationLatin": "Sapi Betina",
+   "numberOfAyahs": 286,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 3,
+   "nameArabic": "آل عمران",
+   "nameLatin": "Ali 'Imran",
+   "translationLatin": "Keluarga Imran",
+   "numberOfAyahs": 200,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 4,
+   "nameArabic": "النساء",
+   "nameLatin": "An-Nisa",
+   "translationLatin": "Wanita",
+   "numberOfAyahs": 176,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 5,
+   "nameArabic": "المائدة",
+   "nameLatin": "Al-Ma'idah",
+   "translationLatin": "Jamuan (Hidangan Makanan)",
+   "numberOfAyahs": 120,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 6,
+   "nameArabic": "الأنعام",
+   "nameLatin": "Al-An'am",
+   "translationLatin": "Binatang Ternak",
+   "numberOfAyahs": 165,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 7,
+   "nameArabic": "الأعراف",
+   "nameLatin": "Al-A'raf",
+   "translationLatin": "Tempat-tempat Tinggi",
+   "numberOfAyahs": 206,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 8,
+   "nameArabic": "الأنفال",
+   "nameLatin": "Al-Anfal",
+   "translationLatin": "Rampasan Perang",
+   "numberOfAyahs": 75,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 9,
+   "nameArabic": "التوبة",
+   "nameLatin": "At-Tawbah",
+   "translationLatin": "Pengampunan",
+   "numberOfAyahs": 129,
+   "revelationType": "Madaniyah",
+   "bismillahPre": false
+  },
+  {
+   "number": 10,
+   "nameArabic": "يونس",
+   "nameLatin": "Yunus",
+   "translationLatin": "Yunus",
+   "numberOfAyahs": 109,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 11,
+   "nameArabic": "هود",
+   "nameLatin": "Hud",
+   "translationLatin": "Hud",
+   "numberOfAyahs": 123,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 12,
+   "nameArabic": "يوسف",
+   "nameLatin": "Yusuf",
+   "translationLatin": "Yusuf",
+   "numberOfAyahs": 111,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 13,
+   "nameArabic": "الرعد",
+   "nameLatin": "Ar-Ra'd",
+   "translationLatin": "Guruh (Petir)",
+   "numberOfAyahs": 43,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 14,
+   "nameArabic": "ابراهيم",
+   "nameLatin": "Ibrahim",
+   "translationLatin": "Ibrahim",
+   "numberOfAyahs": 52,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 15,
+   "nameArabic": "الحجر",
+   "nameLatin": "Al-Hijr",
+   "translationLatin": "Bukit",
+   "numberOfAyahs": 99,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 16,
+   "nameArabic": "النحل",
+   "nameLatin": "An-Nahl",
+   "translationLatin": "Lebah Madu",
+   "numberOfAyahs": 128,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 17,
+   "nameArabic": "الإسراء",
+   "nameLatin": "Al-Isra",
+   "translationLatin": "Perjalanan Malam",
+   "numberOfAyahs": 111,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 18,
+   "nameArabic": "الكهف",
+   "nameLatin": "Al-Kahf",
+   "translationLatin": "Para Penghuni Gua",
+   "numberOfAyahs": 110,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 19,
+   "nameArabic": "مريم",
+   "nameLatin": "Maryam",
+   "translationLatin": "Maryam",
+   "numberOfAyahs": 98,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 20,
+   "nameArabic": "طه",
+   "nameLatin": "Taha",
+   "translationLatin": "Tha-Ha",
+   "numberOfAyahs": 135,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 21,
+   "nameArabic": "الأنبياء",
+   "nameLatin": "Al-Anbya",
+   "translationLatin": "Para Nabi",
+   "numberOfAyahs": 112,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 22,
+   "nameArabic": "الحج",
+   "nameLatin": "Al-Hajj",
+   "translationLatin": "Haji",
+   "numberOfAyahs": 78,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 23,
+   "nameArabic": "المؤمنون",
+   "nameLatin": "Al-Mu'minun",
+   "translationLatin": "Orang-orang Mukmin",
+   "numberOfAyahs": 118,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 24,
+   "nameArabic": "النور",
+   "nameLatin": "An-Nur",
+   "translationLatin": "Cahaya",
+   "numberOfAyahs": 64,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 25,
+   "nameArabic": "الفرقان",
+   "nameLatin": "Al-Furqan",
+   "translationLatin": "Pembeda",
+   "numberOfAyahs": 77,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 26,
+   "nameArabic": "الشعراء",
+   "nameLatin": "Ash-Shu'ara",
+   "translationLatin": "Penyair",
+   "numberOfAyahs": 227,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 27,
+   "nameArabic": "النمل",
+   "nameLatin": "An-Naml",
+   "translationLatin": "Semut",
+   "numberOfAyahs": 93,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 28,
+   "nameArabic": "القصص",
+   "nameLatin": "Al-Qasas",
+   "translationLatin": "Kisah-kisah",
+   "numberOfAyahs": 88,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 29,
+   "nameArabic": "العنكبوت",
+   "nameLatin": "Al-'Ankabut",
+   "translationLatin": "Laba-laba",
+   "numberOfAyahs": 69,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 30,
+   "nameArabic": "الروم",
+   "nameLatin": "Ar-Rum",
+   "translationLatin": "Bangsa Romawi",
+   "numberOfAyahs": 60,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 31,
+   "nameArabic": "لقمان",
+   "nameLatin": "Luqman",
+   "translationLatin": "Luqman",
+   "numberOfAyahs": 34,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 32,
+   "nameArabic": "السجدة",
+   "nameLatin": "As-Sajdah",
+   "translationLatin": "Sujud",
+   "numberOfAyahs": 30,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 33,
+   "nameArabic": "الأحزاب",
+   "nameLatin": "Al-Ahzab",
+   "translationLatin": "Golongan yang Bersekutu",
+   "numberOfAyahs": 73,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 34,
+   "nameArabic": "سبإ",
+   "nameLatin": "Saba",
+   "translationLatin": "Saba\\'",
+   "numberOfAyahs": 54,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 35,
+   "nameArabic": "فاطر",
+   "nameLatin": "Fatir",
+   "translationLatin": "Pencipta",
+   "numberOfAyahs": 45,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 36,
+   "nameArabic": "يس",
+   "nameLatin": "Ya-Sin",
+   "translationLatin": "Yas Sin",
+   "numberOfAyahs": 83,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 37,
+   "nameArabic": "الصافات",
+   "nameLatin": "As-Saffat",
+   "translationLatin": "Barisan-barisan",
+   "numberOfAyahs": 182,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 38,
+   "nameArabic": "ص",
+   "nameLatin": "Sad",
+   "translationLatin": "Shad",
+   "numberOfAyahs": 88,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 39,
+   "nameArabic": "الزمر",
+   "nameLatin": "Az-Zumar",
+   "translationLatin": "Para Rombongan",
+   "numberOfAyahs": 75,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 40,
+   "nameArabic": "غافر",
+   "nameLatin": "Ghafir",
+   "translationLatin": "Sang Maha Pengampun",
+   "numberOfAyahs": 85,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 41,
+   "nameArabic": "فصلت",
+   "nameLatin": "Fussilat",
+   "translationLatin": "Yang Dijelaskan",
+   "numberOfAyahs": 54,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 42,
+   "nameArabic": "الشورى",
+   "nameLatin": "Ash-Shuraa",
+   "translationLatin": "Musyawarah",
+   "numberOfAyahs": 53,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 43,
+   "nameArabic": "الزخرف",
+   "nameLatin": "Az-Zukhruf",
+   "translationLatin": "Perhiasan",
+   "numberOfAyahs": 89,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 44,
+   "nameArabic": "الدخان",
+   "nameLatin": "Ad-Dukhan",
+   "translationLatin": "Kabut",
+   "numberOfAyahs": 59,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 45,
+   "nameArabic": "الجاثية",
+   "nameLatin": "Al-Jathiyah",
+   "translationLatin": "Yang Bertekuk Lutut",
+   "numberOfAyahs": 37,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 46,
+   "nameArabic": "الأحقاف",
+   "nameLatin": "Al-Ahqaf",
+   "translationLatin": "Bukit-bukir Pasir",
+   "numberOfAyahs": 35,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 47,
+   "nameArabic": "محمد",
+   "nameLatin": "Muhammad",
+   "translationLatin": "Muhammad",
+   "numberOfAyahs": 38,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 48,
+   "nameArabic": "الفتح",
+   "nameLatin": "Al-Fath",
+   "translationLatin": "Kemenangan",
+   "numberOfAyahs": 29,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 49,
+   "nameArabic": "الحجرات",
+   "nameLatin": "Al-Hujurat",
+   "translationLatin": "Kamar-kamar",
+   "numberOfAyahs": 18,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 50,
+   "nameArabic": "ق",
+   "nameLatin": "Qaf",
+   "translationLatin": "Qaf",
+   "numberOfAyahs": 45,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 51,
+   "nameArabic": "الذاريات",
+   "nameLatin": "Adh-Dhariyat",
+   "translationLatin": "Angin yang Menerbangkan",
+   "numberOfAyahs": 60,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 52,
+   "nameArabic": "الطور",
+   "nameLatin": "At-Tur",
+   "translationLatin": "Bukit",
+   "numberOfAyahs": 49,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 53,
+   "nameArabic": "النجم",
+   "nameLatin": "An-Najm",
+   "translationLatin": "Bintang",
+   "numberOfAyahs": 62,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 54,
+   "nameArabic": "القمر",
+   "nameLatin": "Al-Qamar",
+   "translationLatin": "Bulan",
+   "numberOfAyahs": 55,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 55,
+   "nameArabic": "الرحمن",
+   "nameLatin": "Ar-Rahman",
+   "translationLatin": "Yang Maha Pemurah",
+   "numberOfAyahs": 78,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 56,
+   "nameArabic": "الواقعة",
+   "nameLatin": "Al-Waqi'ah",
+   "translationLatin": "Hari Kiamat",
+   "numberOfAyahs": 96,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 57,
+   "nameArabic": "الحديد",
+   "nameLatin": "Al-Hadid",
+   "translationLatin": "Besi",
+   "numberOfAyahs": 29,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 58,
+   "nameArabic": "المجادلة",
+   "nameLatin": "Al-Mujadila",
+   "translationLatin": "Wanita yang Menggugat",
+   "numberOfAyahs": 22,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 59,
+   "nameArabic": "الحشر",
+   "nameLatin": "Al-Hashr",
+   "translationLatin": "Pengusiran",
+   "numberOfAyahs": 24,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 60,
+   "nameArabic": "الممتحنة",
+   "nameLatin": "Al-Mumtahanah",
+   "translationLatin": "Wanita yang Diuji",
+   "numberOfAyahs": 13,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 61,
+   "nameArabic": "الصف",
+   "nameLatin": "As-Saf",
+   "translationLatin": "Barisan",
+   "numberOfAyahs": 14,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 62,
+   "nameArabic": "الجمعة",
+   "nameLatin": "Al-Jumu'ah",
+   "translationLatin": "Hari Jum\\'at",
+   "numberOfAyahs": 11,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 63,
+   "nameArabic": "المنافقون",
+   "nameLatin": "Al-Munafiqun",
+   "translationLatin": "Kaum Munafik",
+   "numberOfAyahs": 11,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 64,
+   "nameArabic": "التغابن",
+   "nameLatin": "At-Taghabun",
+   "translationLatin": "Hari Dinampakkan Kesalahan",
+   "numberOfAyahs": 18,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 65,
+   "nameArabic": "الطلاق",
+   "nameLatin": "At-Talaq",
+   "translationLatin": "Perceraian",
+   "numberOfAyahs": 12,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 66,
+   "nameArabic": "التحريم",
+   "nameLatin": "At-Tahrim",
+   "translationLatin": "Mengharamkan",
+   "numberOfAyahs": 12,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 67,
+   "nameArabic": "الملك",
+   "nameLatin": "Al-Mulk",
+   "translationLatin": "Kerajaan",
+   "numberOfAyahs": 30,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 68,
+   "nameArabic": "القلم",
+   "nameLatin": "Al-Qalam",
+   "translationLatin": "Pena",
+   "numberOfAyahs": 52,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 69,
+   "nameArabic": "الحاقة",
+   "nameLatin": "Al-Haqqah",
+   "translationLatin": "Kenyataan (Hari Kiamat)",
+   "numberOfAyahs": 52,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 70,
+   "nameArabic": "المعارج",
+   "nameLatin": "Al-Ma'arij",
+   "translationLatin": "Tempat yang Naik",
+   "numberOfAyahs": 44,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 71,
+   "nameArabic": "نوح",
+   "nameLatin": "Nuh",
+   "translationLatin": "Nuh",
+   "numberOfAyahs": 28,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 72,
+   "nameArabic": "الجن",
+   "nameLatin": "Al-Jinn",
+   "translationLatin": "Jin",
+   "numberOfAyahs": 28,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 73,
+   "nameArabic": "المزمل",
+   "nameLatin": "Al-Muzzammil",
+   "translationLatin": "Orang yang Berselimut",
+   "numberOfAyahs": 20,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 74,
+   "nameArabic": "المدثر",
+   "nameLatin": "Al-Muddaththir",
+   "translationLatin": "Orang yang Berkemul",
+   "numberOfAyahs": 56,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 75,
+   "nameArabic": "القيامة",
+   "nameLatin": "Al-Qiyamah",
+   "translationLatin": "Hari Berbangkit",
+   "numberOfAyahs": 40,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 76,
+   "nameArabic": "الانسان",
+   "nameLatin": "Al-Insan",
+   "translationLatin": "Manusia",
+   "numberOfAyahs": 31,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 77,
+   "nameArabic": "المرسلات",
+   "nameLatin": "Al-Mursalat",
+   "translationLatin": "Malaikat-malaikan yang Diutus",
+   "numberOfAyahs": 50,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 78,
+   "nameArabic": "النبإ",
+   "nameLatin": "An-Naba",
+   "translationLatin": "Berita Besar",
+   "numberOfAyahs": 40,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 79,
+   "nameArabic": "النازعات",
+   "nameLatin": "An-Nazi'at",
+   "translationLatin": "Malaikat yang Mencabut",
+   "numberOfAyahs": 46,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 80,
+   "nameArabic": "عبس",
+   "nameLatin": "'Abasa",
+   "translationLatin": "Ia Bermuka Masam",
+   "numberOfAyahs": 42,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 81,
+   "nameArabic": "التكوير",
+   "nameLatin": "At-Takwir",
+   "translationLatin": "Menggulung",
+   "numberOfAyahs": 29,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 82,
+   "nameArabic": "الإنفطار",
+   "nameLatin": "Al-Infitar",
+   "translationLatin": "Terbelah",
+   "numberOfAyahs": 19,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 83,
+   "nameArabic": "المطففين",
+   "nameLatin": "Al-Mutaffifin",
+   "translationLatin": "Orang-orang Curang",
+   "numberOfAyahs": 36,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 84,
+   "nameArabic": "الإنشقاق",
+   "nameLatin": "Al-Inshiqaq",
+   "translationLatin": "Terbelah",
+   "numberOfAyahs": 25,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 85,
+   "nameArabic": "البروج",
+   "nameLatin": "Al-Buruj",
+   "translationLatin": "Gugusan Bintang",
+   "numberOfAyahs": 22,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 86,
+   "nameArabic": "الطارق",
+   "nameLatin": "At-Tariq",
+   "translationLatin": "Yang Datang di Malam Hari",
+   "numberOfAyahs": 17,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 87,
+   "nameArabic": "الأعلى",
+   "nameLatin": "Al-A'la",
+   "translationLatin": "Yang Paling Tinggi",
+   "numberOfAyahs": 19,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 88,
+   "nameArabic": "الغاشية",
+   "nameLatin": "Al-Ghashiyah",
+   "translationLatin": "Hari Pembalasan",
+   "numberOfAyahs": 26,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 89,
+   "nameArabic": "الفجر",
+   "nameLatin": "Al-Fajr",
+   "translationLatin": "Fajar",
+   "numberOfAyahs": 30,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 90,
+   "nameArabic": "البلد",
+   "nameLatin": "Al-Balad",
+   "translationLatin": "Negeri",
+   "numberOfAyahs": 20,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 91,
+   "nameArabic": "الشمس",
+   "nameLatin": "Ash-Shams",
+   "translationLatin": "Matahari",
+   "numberOfAyahs": 15,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 92,
+   "nameArabic": "الليل",
+   "nameLatin": "Al-Layl",
+   "translationLatin": "Malam",
+   "numberOfAyahs": 21,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 93,
+   "nameArabic": "الضحى",
+   "nameLatin": "Ad-Duhaa",
+   "translationLatin": "Waktu Dhuha",
+   "numberOfAyahs": 11,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 94,
+   "nameArabic": "الشرح",
+   "nameLatin": "Ash-Sharh",
+   "translationLatin": "Melapangkan",
+   "numberOfAyahs": 8,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 95,
+   "nameArabic": "التين",
+   "nameLatin": "At-Tin",
+   "translationLatin": "Buah Tin",
+   "numberOfAyahs": 8,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 96,
+   "nameArabic": "العلق",
+   "nameLatin": "Al-'Alaq",
+   "translationLatin": "Segumpal Darah",
+   "numberOfAyahs": 19,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 97,
+   "nameArabic": "القدر",
+   "nameLatin": "Al-Qadr",
+   "translationLatin": "Kemuliaan",
+   "numberOfAyahs": 5,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 98,
+   "nameArabic": "البينة",
+   "nameLatin": "Al-Bayyinah",
+   "translationLatin": "Pembuktian",
+   "numberOfAyahs": 8,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 99,
+   "nameArabic": "الزلزلة",
+   "nameLatin": "Az-Zalzalah",
+   "translationLatin": "Kegoncangan",
+   "numberOfAyahs": 8,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 100,
+   "nameArabic": "العاديات",
+   "nameLatin": "Al-'Adiyat",
+   "translationLatin": "Berlari Kencang",
+   "numberOfAyahs": 11,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 101,
+   "nameArabic": "القارعة",
+   "nameLatin": "Al-Qari'ah",
+   "translationLatin": "Hari Kiamat",
+   "numberOfAyahs": 11,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 102,
+   "nameArabic": "التكاثر",
+   "nameLatin": "At-Takathur",
+   "translationLatin": "Bermegah-megahan",
+   "numberOfAyahs": 8,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 103,
+   "nameArabic": "العصر",
+   "nameLatin": "Al-'Asr",
+   "translationLatin": "Waktu Sore",
+   "numberOfAyahs": 3,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 104,
+   "nameArabic": "الهمزة",
+   "nameLatin": "Al-Humazah",
+   "translationLatin": "Pengumpat",
+   "numberOfAyahs": 9,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 105,
+   "nameArabic": "الفيل",
+   "nameLatin": "Al-Fil",
+   "translationLatin": "Gajah",
+   "numberOfAyahs": 5,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 106,
+   "nameArabic": "قريش",
+   "nameLatin": "Quraysh",
+   "translationLatin": "Suku Quraisy",
+   "numberOfAyahs": 4,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 107,
+   "nameArabic": "الماعون",
+   "nameLatin": "Al-Ma'un",
+   "translationLatin": "Barang yang Berguna",
+   "numberOfAyahs": 7,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 108,
+   "nameArabic": "الكوثر",
+   "nameLatin": "Al-Kawthar",
+   "translationLatin": "Nikmat Berlimpah",
+   "numberOfAyahs": 3,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 109,
+   "nameArabic": "الكافرون",
+   "nameLatin": "Al-Kafirun",
+   "translationLatin": "Orang-orang Kafir",
+   "numberOfAyahs": 6,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 110,
+   "nameArabic": "النصر",
+   "nameLatin": "An-Nasr",
+   "translationLatin": "Pertolongan",
+   "numberOfAyahs": 3,
+   "revelationType": "Madaniyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 111,
+   "nameArabic": "المسد",
+   "nameLatin": "Al-Masad",
+   "translationLatin": "Gejolak Api (Sabut)",
+   "numberOfAyahs": 5,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 112,
+   "nameArabic": "الإخلاص",
+   "nameLatin": "Al-Ikhlas",
+   "translationLatin": "Ikhlash",
+   "numberOfAyahs": 4,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 113,
+   "nameArabic": "الفلق",
+   "nameLatin": "Al-Falaq",
+   "translationLatin": "Waktu Shubuh",
+   "numberOfAyahs": 5,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  },
+  {
+   "number": 114,
+   "nameArabic": "الناس",
+   "nameLatin": "An-Nas",
+   "translationLatin": "Umat Manusia",
+   "numberOfAyahs": 6,
+   "revelationType": "Makkiyah",
+   "bismillahPre": true
+  }
+ ]
+}
