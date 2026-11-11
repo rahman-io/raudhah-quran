@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /surahs/{surahId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /iqroLevels/{levelId} {
+      allow read: if true;
+      allow write: if false;
+      match /pages/{pageId} {
+        allow read: if true;
+        allow write: if false;
+      }
+    }
+    match /tajwidRules/{ruleId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /badges/{badgeId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /plants/{plantId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /media/{mediaId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      match /iqroProgress/{progressId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

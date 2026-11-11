@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Volume2, VolumeX, CheckCircle2, ArrowRight, Sparkles, Music2 } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
-import { SURAHS_DATA } from '../../data/quranData';
 import { sounds } from '../../utils/soundEffects';
 
 export const AudioSambungGame: React.FC = () => {
   const {
+    surahs,
     selectedAyah,
     activeSurah,
     setSelectedAyah,
@@ -28,7 +28,7 @@ export const AudioSambungGame: React.FC = () => {
   // Setup round
   useEffect(() => {
     setupRound();
-  }, [selectedAyah.id]);
+  }, [selectedAyah, surahs]);
 
   const currentAyahIdx = activeSurah.ayahs.findIndex((a) => a.id === selectedAyah.id);
   const isLastAyah = currentAyahIdx === activeSurah.ayahs.length - 1;
@@ -45,7 +45,7 @@ export const AudioSambungGame: React.FC = () => {
 
     // Pick 2 distractors
     const pool: Ayah[] = [];
-    SURAHS_DATA.forEach((s) => {
+    surahs.forEach((s) => {
       s.ayahs.forEach((a) => {
         if (a.id !== targetNextAyah.id && a.id !== promptAyah.id) {
           pool.push(a);

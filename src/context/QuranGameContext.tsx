@@ -3,8 +3,19 @@ import confetti from 'canvas-confetti';
 import { Ayah, GardenPlant, QuranWord, Surah, UserMode, UserStats } from '../types/quran';
 import { INITIAL_BADGES, INITIAL_PLANTS_CATALOG, SURAHS_DATA } from '../data/quranData';
 import { sounds } from '../utils/soundEffects';
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { firebaseAuth, firebaseConfigured, firestore, signInWithGoogle, signOutFromFirebase } from '../services/firebaseClient';
+import { useFirebaseCollection } from '../services/firebaseContent';
 
 interface QuranGameContextType {
+  surahs: Surah[];
+  firebaseUser: User | null;
+  firebaseConfigured: boolean;
+  syncStatus: 'local' | 'connecting' | 'synced' | 'error';
+  signIn: typeof signInWithGoogle;
+  signOut: typeof signOutFromFirebase;
+  resetProgress: () => Promise<void>;
   mode: UserMode;
   setMode: (mode: UserMode) => void;
   toggleMode: () => void;
@@ -48,6 +59,7 @@ interface QuranGameContextType {
 }
 
 const STORAGE_KEY = 'raudhah_quran_user_v1';
+const OWNER_KEY = 'raudhah_progress_owner_uid';
 
 const defaultStats: UserStats = {
   xp: 0,
@@ -91,8 +103,19 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
     return defaultStats;
   });
 
+  const surahs = useFirebaseCollection<Surah>('surahs', SURAHS_DATA, (s) =>
+    Number.isInteger(s.number) && Array.isArray(s.ayahs) && s.ayahs.every((a) => a.id && a.audioUrl && Array.isArray(a.words))
+  );
+  const badges = useFirebaseCollection('badges', INITIAL_BADGES, (badge) => Boolean(badge.id && badge.title));
+  const plants = useFirebaseCollection('plants', INITIAL_PLANTS_CATALOG, (plant) =>
+    Boolean(plant.type && Number.isInteger(plant.requiredAyahs)));
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [syncStatus, setSyncStatus] = useState<'local' | 'connecting' | 'synced' | 'error'>('local');
+  const [syncReady, setSyncReady] = useState(false);
+  const remoteStats = useRef('');
+  const pendingStatsWrite = useRef(false);
   const [activeSurahNumber, setActiveSurahNumber] = useState<number>(114); // Start with An-Naas
-  const activeSurah = SURAHS_DATA.find((s) => s.number === activeSurahNumber) || SURAHS_DATA[0];
+  const activeSurah = surahs.find((s) => s.number === activeSurahNumber) || surahs[0];
 
   const [selectedAyah, setSelectedAyah] = useState<Ayah>(() => activeSurah.ayahs[0]);
   const [selectedWordForTadabbur, setSelectedWordForTadabbur] = useState<QuranWord | null>(null);
@@ -117,6 +140,90 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
       console.error('Error saving stats:', e);
     }
   }, [stats]);
+
+  useEffect(() => {
+    if (!firebaseAuth) return;
+    return onAuthStateChanged(firebaseAuth, (user) => {
+      setSyncReady(false);
+      pendingStatsWrite.current = false;
+      setFirebaseUser(user);
+      setSyncStatus(user ? 'connecting' : 'local');
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!firebaseUser || !firestore) return;
+    const uid = firebaseUser.uid;
+    const owner = localStorage.getItem(OWNER_KEY);
+    const reference = doc(firestore, 'users', uid);
+    let initialized = false;
+    const unsubscribe = onSnapshot(reference, (snapshot) => {
+      if (snapshot.metadata.hasPendingWrites || snapshot.metadata.fromCache) return;
+      const incoming = snapshot.data()?.stats as UserStats | undefined;
+      if (!initialized) {
+        initialized = true;
+        setStats((local) => {
+          const merged = incoming
+            ? owner && owner !== uid ? { ...defaultStats, ...incoming } : {
+                ...local, ...incoming,
+                xp: Math.max(local.xp, incoming.xp || 0),
+                reviewedCount: Math.max(local.reviewedCount, incoming.reviewedCount || 0),
+                memorizedAyahIds: [...new Set([...(incoming.memorizedAyahIds || []), ...local.memorizedAyahIds])],
+                unlockedBadges: [...new Set([...(incoming.unlockedBadges || []), ...local.unlockedBadges])],
+                gardenPlants: [...new Map([...local.gardenPlants, ...(incoming.gardenPlants || [])].map((plant) => [plant.id, plant])).values()]
+              }
+            : owner && owner !== uid ? { ...defaultStats } : local;
+          remoteStats.current = JSON.stringify(incoming || {});
+          return merged;
+        });
+        localStorage.setItem(OWNER_KEY, uid);
+        setSyncReady(true);
+        setSyncStatus('synced');
+      } else if (incoming && !pendingStatsWrite.current && JSON.stringify(incoming) !== remoteStats.current) {
+        remoteStats.current = JSON.stringify(incoming);
+        setStats({ ...defaultStats, ...incoming });
+      }
+    }, (error) => {
+      console.warn('Sinkronisasi progres gagal:', error);
+      setSyncStatus('error');
+    });
+    return () => {
+      initialized = false;
+      unsubscribe();
+    };
+  }, [firebaseUser]);
+
+  useEffect(() => {
+    if (!syncReady || !firebaseUser || !firestore) return;
+    const serialized = JSON.stringify(stats);
+    if (serialized === remoteStats.current) return;
+    pendingStatsWrite.current = true;
+    const reference = doc(firestore, 'users', firebaseUser.uid);
+    const timer = setTimeout(() => {
+      remoteStats.current = serialized;
+      setDoc(reference, { stats, updatedAt: new Date().toISOString() })
+        .then(() => {
+          pendingStatsWrite.current = false;
+          setSyncStatus('synced');
+        })
+        .catch((error) => {
+          console.warn('Progres belum tersimpan di Firebase:', error);
+          remoteStats.current = '';
+          setSyncStatus('error');
+        });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [stats, firebaseUser, syncReady]);
+
+  const resetProgress = useCallback(async () => {
+    const reset = { ...defaultStats, lastActiveDate: new Date().toISOString().split('T')[0] };
+    if (firebaseUser && firestore) {
+      await setDoc(doc(firestore, 'users', firebaseUser.uid), { stats: reset, updatedAt: new Date().toISOString() });
+      remoteStats.current = JSON.stringify(reset);
+    }
+    setStats(reset);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(reset));
+  }, [firebaseUser]);
 
   // Streak verification on mount
   useEffect(() => {
@@ -145,8 +252,8 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   // Switch selected ayah if active surah changes
   useEffect(() => {
-    setSelectedAyah(activeSurah.ayahs[0]);
-  }, [activeSurah]);
+    setSelectedAyah((previous) => activeSurah.ayahs.find((ayah) => ayah.id === previous.id) || activeSurah.ayahs[0]);
+  }, [activeSurahNumber, activeSurah]);
 
   const setMode = useCallback((mode: UserMode) => {
     setStats((prev) => ({ ...prev, mode }));
@@ -182,7 +289,7 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
     const newUnlocked = [...unlockedBadges];
     let badgeEarned: string | null = null;
 
-    INITIAL_BADGES.forEach((badge) => {
+    badges.forEach((badge) => {
       if (!newUnlocked.includes(badge.id)) {
         let qualifies = false;
         if (badge.id === 'first_ayah' && memorizedCount >= 1) qualifies = true;
@@ -202,7 +309,7 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
     });
 
     return { newUnlocked, badgeEarned };
-  }, [stats.gardenPlants.length, stats.memorizedAyahIds]);
+  }, [stats.gardenPlants.length, stats.memorizedAyahIds, badges]);
 
   const addXP = useCallback((amount: number) => {
     setStats((prev) => {
@@ -240,7 +347,7 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
       const newXp = prev.xp + 100;
 
       // Check if new plant can be unlocked for the garden
-      const plantCatalogItem = INITIAL_PLANTS_CATALOG.find(
+      const plantCatalogItem = plants.find(
         (p) => p.requiredAyahs === updatedMemorized.length
       );
 
@@ -259,7 +366,7 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
         const pos = plantPositions[updatedPlants.length % plantPositions.length];
 
         const [sNum, aNum] = ayahId.split(':');
-        const surahObj = SURAHS_DATA.find((s) => s.number === Number(sNum));
+        const surahObj = surahs.find((s) => s.number === Number(sNum));
 
         updatedPlants.push({
           id: `plant_${Date.now()}`,
@@ -297,7 +404,7 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
 
     celebrateSuccess();
-  }, [celebrateSuccess, checkBadgeUnlocks]);
+  }, [celebrateSuccess, checkBadgeUnlocks, surahs, plants]);
 
   const inspectWord = useCallback((word: QuranWord) => {
     setSelectedWordForTadabbur(word);
@@ -366,6 +473,13 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
   return (
     <QuranGameContext.Provider
       value={{
+        surahs,
+        firebaseUser,
+        firebaseConfigured,
+        syncStatus,
+        signIn: signInWithGoogle,
+        signOut: signOutFromFirebase,
+        resetProgress,
         mode: stats.mode,
         setMode,
         toggleMode,

@@ -18,16 +18,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     soundEnabled,
     toggleSound,
     reciterSpeed,
-    setReciterSpeed
+    setReciterSpeed,
+    firebaseConfigured,
+    firebaseUser,
+    syncStatus,
+    signIn,
+    signOut,
+    resetProgress
   } = useQuranGame();
 
-  const handleResetData = () => {
+  const handleResetData = async () => {
     if (window.confirm('Apakah Anda yakin ingin mereset seluruh progres hafalan dan poin? Tindakan ini tidak dapat dibatalkan.')) {
       try {
-        localStorage.removeItem('raudhah_quran_user_v1');
-        window.location.reload();
-      } catch {
-        // ignore
+        await resetProgress();
+      } catch (error) {
+        window.alert(`Gagal menghapus progres dari Firebase: ${String(error)}`);
       }
     }
   };
@@ -215,6 +220,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             </div>
           </div>
 
+          {/* Firebase account and progress sync */}
+          <div className="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+            <p className="font-semibold">Sinkronisasi progres</p>
+            <p>{!firebaseConfigured ? 'Firebase belum dihubungkan. Progres tersimpan di perangkat ini.' : firebaseUser
+              ? `${firebaseUser.email || 'Akun Google'} · ${syncStatus === 'synced' ? 'Tersinkron' : syncStatus === 'error' ? 'Gagal sinkronisasi' : 'Menghubungkan…'}`
+              : 'Masuk dengan Google agar progres tersedia di perangkat lain.'}</p>
+            {firebaseConfigured && <button className="rounded-xl border border-[#246579] px-3 py-2 text-[#246579]" onClick={() => {
+              (firebaseUser ? signOut() : signIn()).catch((error) => window.alert(`Akun Firebase: ${String(error)}`));
+            }}>{firebaseUser ? 'Keluar dari Google' : 'Masuk dengan Google'}</button>}
+          </div>
           {/* Reset Progress */}
           <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
             <button

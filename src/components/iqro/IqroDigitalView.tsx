@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { collection, doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import {
@@ -30,6 +31,7 @@ import { playIqroItem, stopIqroAudio } from '../../utils/iqroAudioEngine';
 import { iqro1PagesFromBook } from '../../data/iqro1PdfContent';
 import { iqro2PagesFromBook } from '../../data/iqro2PdfContent';
 import { createIqro1Quiz } from '../../data/iqro1Quiz';
+import { firestore } from '../../services/firebaseClient';
 
 const iqro1BookPages = iqro1PagesFromBook(IQRO_LEVELS[0].pages);
 const iqro2BookPages = iqro2PagesFromBook(IQRO_LEVELS[1].pages);
@@ -70,7 +72,7 @@ interface IqroDigitalViewProps {
 }
 
 export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
-  const { addXP, celebrateSuccess, soundEnabled } = useQuranGame();
+  const { addXP, celebrateSuccess, soundEnabled, firebaseUser } = useQuranGame();
   
   // State
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
@@ -108,10 +110,82 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
     }
   });
 
+  const [remotePages, setRemotePages] = useState<IqroPage[] | null>(null);
+  const [progressReady, setProgressReady] = useState(false);
+  const lastRemoteProgress = useRef('');
+  const pendingProgressWrite = useRef(false);
+
+  useEffect(() => {
+    setRemotePages(null);
+    if (!firestore) return;
+    const reference = collection(firestore, 'iqroLevels', String(selectedLevel), 'pages');
+    return onSnapshot(reference, (snapshot) => {
+      const pages = snapshot.docs.map((entry) => entry.data() as IqroPage)
+        .sort((a, b) => a.pageNumber - b.pageNumber);
+      const expected = selectedLevel === 1 ? iqro1BookPages : selectedLevel === 2 ? iqro2BookPages : IQRO_LEVELS[selectedLevel - 1].pages;
+      if (pages.length === expected.length && pages.every((page) =>
+        Number.isInteger(page.pageNumber) && Array.isArray(page.rows) && page.rows.every((row) => Array.isArray(row.items)))) {
+        setRemotePages(pages);
+      }
+    }, (error) => console.warn('Materi Iqro offline:', error));
+  }, [selectedLevel]);
+
+  useEffect(() => {
+    setProgressReady(false);
+    pendingProgressWrite.current = false;
+    if (!firebaseUser || !firestore) return;
+    const uid = firebaseUser.uid;
+    const owner = localStorage.getItem('raudhah_iqro_progress_owner');
+    let initialized = false;
+    return onSnapshot(doc(firestore, 'users', uid, 'iqroProgress', 'state'), (snapshot) => {
+      if (snapshot.metadata.hasPendingWrites || snapshot.metadata.fromCache) return;
+      const data = snapshot.data();
+      if (!initialized) {
+        initialized = true;
+        const levels = Array.isArray(data?.completedLevels) ? data.completedLevels as number[] : [];
+        const cards = data?.completedCards && typeof data.completedCards === 'object' ? data.completedCards as Record<string, boolean> : {};
+        const sameAccount = !owner || owner === uid;
+        setCompletedLevels((local) => sameAccount ? [...new Set([...levels, ...local])] : levels);
+        setCompletedCards((local) => sameAccount ? { ...cards, ...local } : cards);
+        lastRemoteProgress.current = JSON.stringify({ completedLevels: levels, completedCards: cards });
+        localStorage.setItem('raudhah_iqro_progress_owner', uid);
+        setProgressReady(true);
+      } else if (data && !pendingProgressWrite.current) {
+        const incoming = JSON.stringify({ completedLevels: data.completedLevels, completedCards: data.completedCards });
+        if (incoming !== lastRemoteProgress.current) {
+          lastRemoteProgress.current = incoming;
+          setCompletedLevels(data.completedLevels || []);
+          setCompletedCards(data.completedCards || {});
+        }
+      }
+    }, (error) => console.warn('Gagal menyinkronkan progres Iqro:', error));
+  }, [firebaseUser]);
+
+  useEffect(() => {
+    if (!firebaseUser || !firestore || !progressReady) return;
+    const value = { completedLevels, completedCards };
+    const serialized = JSON.stringify(value);
+    if (serialized === lastRemoteProgress.current) return;
+    pendingProgressWrite.current = true;
+    const reference = doc(firestore, 'users', firebaseUser.uid, 'iqroProgress', 'state');
+    const timer = setTimeout(() => {
+      lastRemoteProgress.current = serialized;
+      setDoc(reference, { ...value, updatedAt: new Date().toISOString() })
+        .then(() => { pendingProgressWrite.current = false; })
+        .catch((error) => {
+          lastRemoteProgress.current = '';
+          console.warn('Gagal menyimpan progres Iqro:', error);
+        });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [completedLevels, completedCards, firebaseUser, progressReady]);
+
   const selectedJilid = IQRO_LEVELS.find((l) => l.level === selectedLevel) || IQRO_LEVELS[0];
-  const currentJilid: IqroJilid = selectedLevel === 1
-    ? { ...selectedJilid, pages: iqro1BookPages }
-    : selectedLevel === 2 ? { ...selectedJilid, pages: iqro2BookPages } : selectedJilid;
+  const currentJilid: IqroJilid = {
+    ...selectedJilid,
+    pages: remotePages || (selectedLevel === 1 ? iqro1BookPages
+      : selectedLevel === 2 ? iqro2BookPages : selectedJilid.pages)
+  };
   const currentPage: IqroPage = currentJilid.pages[activePageIndex] || currentJilid.pages[0];
   const quizQuestions = selectedLevel === 1 ? iqro1SessionQuestions : currentPage.quizQuestions || [];
   const quizPassed = selectedLevel !== 1 || quizScore >= Math.ceil(iqro1QuizQuestions.length * 0.8);

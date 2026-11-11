@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, Search, Sparkles, ChevronDown, ChevronUp, Award, ArrowRight, Volume2, Sliders, Mic, Layers, HelpCircle, CheckCircle2 } from 'lucide-react';
 import { TAJWID_RULES, TajwidRule } from '../../data/tajwidData';
+import { useFirebaseCollection } from '../../services/firebaseContent';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
 import { LetterAudioModal } from './LetterAudioModal';
@@ -24,6 +25,8 @@ interface BelajarTajwidViewProps {
 }
 
 export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz }) => {
+  const tajwidRules = useFirebaseCollection<TajwidRule>('tajwidRules', TAJWID_RULES, (rule) =>
+    Boolean(rule.id && rule.nameLatin && Array.isArray(rule.letters)));
   const { fontSize, mode } = useQuranGame();
   const [activeTab, setActiveTab] = useState<'rules' | 'comparison'>('rules');
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,7 +54,7 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
   ];
 
   const filteredRules = useMemo(() => {
-    return TAJWID_RULES.filter((rule) => {
+    return tajwidRules.filter((rule) => {
       const matchCategory = activeCategory === 'all' || rule.category === activeCategory;
       const matchSearch =
         rule.nameLatin.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -60,7 +63,7 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
         rule.letters.some((l) => l.includes(searchQuery));
       return matchCategory && matchSearch;
     });
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, tajwidRules]);
 
   const toggleExpand = (id: string) => {
     sounds.playWordClick();

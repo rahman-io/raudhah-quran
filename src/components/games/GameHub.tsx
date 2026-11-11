@@ -3,7 +3,6 @@ import { motion } from 'motion/react';
 import { Puzzle, HelpCircle, EyeOff, CheckCircle2, Music2, Layers, Award, PenLine } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { GameType } from '../../types/quran';
-import { SURAHS_DATA } from '../../data/quranData';
 import { WordPuzzleGame } from './WordPuzzleGame';
 import { BlankFillGame } from './BlankFillGame';
 import { VanishingAyahGame } from './VanishingAyahGame';
@@ -17,6 +16,7 @@ import { sounds } from '../../utils/soundEffects';
 
 export const GameHub: React.FC = () => {
   const {
+    surahs,
     activeSurah,
     setActiveSurahNumber,
     selectedAyah,
@@ -82,7 +82,7 @@ export const GameHub: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
-          {SURAHS_DATA.map((surah) => {
+          {surahs.map((surah) => {
             const isSelected = surah.number === activeSurah.number;
             const memorizedCount = surah.ayahs.filter((a) => memorizedAyahIds.includes(a.id)).length;
             const isAllMemorized = memorizedCount === surah.ayahs.length;

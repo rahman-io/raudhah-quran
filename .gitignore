@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+/preview/iqro-ai/
+/preview/qamar-audio/
+/qamar-nooraniya.apk
+/hijaiyah_letter/
+/generated_images/

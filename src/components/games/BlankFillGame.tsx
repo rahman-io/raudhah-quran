@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Volume2, HelpCircle, CheckCircle2, XCircle, ArrowRight, Sparkles, Lightbulb } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { QuranWord } from '../../types/quran';
-import { SURAHS_DATA } from '../../data/quranData';
 import { sounds } from '../../utils/soundEffects';
 
 export const BlankFillGame: React.FC = () => {
   const {
+    surahs,
     selectedAyah,
     activeSurah,
     setSelectedAyah,
@@ -30,7 +30,7 @@ export const BlankFillGame: React.FC = () => {
   // Setup question when selectedAyah changes
   useEffect(() => {
     setupRound();
-  }, [selectedAyah.id]);
+  }, [selectedAyah, surahs]);
 
   const targetWord = useMemo(() => {
     if (!selectedAyah.words.length) return null;
@@ -57,7 +57,7 @@ export const BlankFillGame: React.FC = () => {
 
     // Gather potential distractors from other ayahs in this surah or other surahs
     const otherWords: QuranWord[] = [];
-    SURAHS_DATA.forEach((s) => {
+    surahs.forEach((s) => {
       s.ayahs.forEach((a) => {
         a.words.forEach((w) => {
           if (w.arabic !== correct.arabic && !otherWords.some((ow) => ow.arabic === w.arabic)) {

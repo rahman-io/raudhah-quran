@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, BookOpen, Sparkles, CheckCircle2, ChevronRight, Volume2, Sliders } from 'lucide-react';
 import { TAJWID_RULES, TajwidRule } from '../../data/tajwidData';
+import { useFirebaseCollection } from '../../services/firebaseContent';
 import { sounds } from '../../utils/soundEffects';
 import { LetterAudioModal } from './LetterAudioModal';
 import { playPronunciation, getLetterPhoneticInfo, getSingleLetterAudioUrl } from '../../utils/tajwidAudio';
@@ -19,6 +20,8 @@ export const TajwidGuideModal: React.FC<TajwidGuideModalProps> = ({
   initialRuleId,
   initialCategory
 }) => {
+  const tajwidRules = useFirebaseCollection<TajwidRule>('tajwidRules', TAJWID_RULES, (rule) =>
+    Boolean(rule.id && rule.nameLatin && Array.isArray(rule.letters)));
   const [selectedRuleId, setSelectedRuleId] = useState<string>(
     initialRuleId || TAJWID_RULES[0].id
   );
@@ -31,13 +34,13 @@ export const TajwidGuideModal: React.FC<TajwidGuideModalProps> = ({
     if (initialRuleId) {
       setSelectedRuleId(initialRuleId);
     } else if (initialCategory) {
-      const match = TAJWID_RULES.find((r) => r.category === initialCategory);
+      const match = tajwidRules.find((r) => r.category === initialCategory);
       if (match) setSelectedRuleId(match.id);
     }
-  }, [initialRuleId, initialCategory]);
+  }, [initialRuleId, initialCategory, tajwidRules]);
 
   const currentRule: TajwidRule =
-    TAJWID_RULES.find((r) => r.id === selectedRuleId) || TAJWID_RULES[0];
+    tajwidRules.find((r) => r.id === selectedRuleId) || tajwidRules[0];
 
   const handleSelectRule = (id: string) => {
     sounds.playWordClick();
@@ -97,7 +100,7 @@ export const TajwidGuideModal: React.FC<TajwidGuideModalProps> = ({
 
           {/* Quick Category / Rule Selector Pills */}
           <div className="px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 overflow-x-auto flex items-center gap-2 bg-[#F1EDE6]/60 dark:bg-slate-900/40 scrollbar-thin">
-            {TAJWID_RULES.map((rule) => {
+            {tajwidRules.map((rule) => {
               const isSelected = rule.id === currentRule.id;
               return (
                 <button
