@@ -30,6 +30,20 @@
   line-height: 2.2;
 }
 
+/* Font resmi Mushaf Standar Indonesia, sama dengan quran.kemenag.go.id */
+@font-face {
+  font-family: 'LPMQ Isep Misbah';
+  src: url('./assets/fonts/LPMQ-Isep-Misbah.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-mushaf-id {
+  font-family: 'LPMQ Isep Misbah', 'Amiri', serif;
+  line-height: 2.4;
+}
+
 .font-quran {
   font-family: 'Amiri', 'Scheherazade New', serif;
   direction: rtl;

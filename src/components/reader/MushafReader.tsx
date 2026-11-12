@@ -4,7 +4,7 @@ import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, Che
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import {
-  loadReaderIndex, loadReaderSurah, loadSurahInfo, loadSurahInfoIndex,
+  loadKemenagSurah, loadReaderIndex, loadReaderSurah, loadSurahInfo, loadSurahInfoIndex, splitKemenagWords,
   ReaderAyah, ReaderIndex, ReaderSurah, SurahInfoDetail, SurahInfoSummary
 } from '../../services/quranReaderData';
 import { HafalanSession } from '../hafalan/HafalanSession';
@@ -59,6 +59,8 @@ export const MushafReader: React.FC = () => {
   const [infoIndex, setInfoIndex] = useState<Map<number, SurahInfoSummary>>(new Map());
   const [surahInfo, setSurahInfo] = useState<SurahInfoDetail | null>(null);
   const [infoExpanded, setInfoExpanded] = useState(false);
+  // Teks Arab Mushaf Standar Indonesia (Kemenag) untuk surah yang sedang dibuka.
+  const [kemenagText, setKemenagText] = useState<{ surah: number; ayahs: Map<number, string> } | null>(null);
 
   useEffect(() => {
     loadReaderIndex().then(setSurahIndex);
@@ -71,6 +73,16 @@ export const MushafReader: React.FC = () => {
     setInfoExpanded(false);
     loadSurahInfo(surahNumber).then((info) => {
       if (!cancelled) setSurahInfo(info);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [surahNumber]);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadKemenagSurah(surahNumber).then((ayahs) => {
+      if (!cancelled) setKemenagText(ayahs ? { surah: surahNumber, ayahs } : null);
     });
     return () => {
       cancelled = true;
@@ -433,7 +445,9 @@ export const MushafReader: React.FC = () => {
       </div>
       {surahIndex?.source && (
         <p className="px-2 -mt-3 text-[10px] text-slate-500 dark:text-slate-400">
-          Teks & arti per kata: {surahIndex.source.api} · Terjemah: {surahIndex.source.translation.name}
+          {kemenagText?.surah === surahNumber
+            ? <>Teks Arab: Mushaf Standar Indonesia (Qur'an Kemenag) · Arti per kata: {surahIndex.source.api} · Terjemah: {surahIndex.source.translation.name}</>
+            : <>Teks & arti per kata: {surahIndex.source.api} · Terjemah: {surahIndex.source.translation.name}</>}
         </p>
       )}
 
@@ -443,6 +457,9 @@ export const MushafReader: React.FC = () => {
           const isPlayingThis = isPlayingAudio && currentPlayingAyahId === ayah.id;
           const isMemorized = memorizedAyahIds.includes(ayah.id);
           const gamesDone = getCompletedStages(ayah.id).length;
+          const msiText = kemenagText?.surah === ayah.surahNumber ? kemenagText.ayahs.get(ayah.ayahNumber) : undefined;
+          const msiWords = msiText ? splitKemenagWords(msiText) : null;
+          const msiWordsMatch = msiWords?.length === ayah.words.length;
 
           return (
             <div
@@ -500,7 +517,32 @@ export const MushafReader: React.FC = () => {
                 dir="rtl"
                 className="py-3 text-right leading-loose select-text"
               >
-                {ayah.words.map((word, wordIdx) => (
+                {msiWords ? (
+                  // Teks Mushaf Standar Indonesia (Kemenag). Arti per kata hanya dipasang
+                  // bila pembagian katanya sama dengan data per kata, agar artinya tidak tertukar.
+                  msiWords.map((msiWord, wordIdx) => {
+                    const word = msiWordsMatch ? ayah.words[wordIdx] : undefined;
+                    return word ? (
+                      <button
+                        key={`reader_msi_${ayah.id}_${wordIdx}`}
+                        onClick={() => inspectWord({ ...word, arabic: msiWord })}
+                        className="inline-block px-1.5 py-0.5 rounded-lg hover:bg-[#D3A253]/20 dark:hover:bg-[#D3A253]/20 cursor-pointer transition-colors text-[#173B4E] dark:text-[#F1F5F9] font-mushaf-id"
+                        style={{ fontSize: `${fontSize}px` }}
+                        title={`Klik untuk arti: "${word.translation}"`}
+                      >
+                        {msiWord}
+                      </button>
+                    ) : (
+                      <span
+                        key={`reader_msi_${ayah.id}_${wordIdx}`}
+                        className="inline-block px-1.5 py-0.5 text-[#173B4E] dark:text-[#F1F5F9] font-mushaf-id"
+                        style={{ fontSize: `${fontSize}px` }}
+                      >
+                        {msiWord}
+                      </span>
+                    );
+                  })
+                ) : ayah.words.map((word, wordIdx) => (
                   <button
                     key={`reader_${ayah.id}_${word.id}_${wordIdx}`}
                     onClick={() => inspectWord(word)}

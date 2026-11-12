@@ -131,6 +131,48 @@ export function loadReaderSurah(number: number): Promise<ReaderSurah> {
 }
 
 /* ------------------------------------------------------------------ */
+/* Teks Arab Mushaf Standar Indonesia (Qur'an Kemenag)                */
+/* Hasil impor scripts/import-quran-kemenag.mjs, ditampilkan dengan    */
+/* font LPMQ Isep Misbah agar sama dengan quran.kemenag.go.id          */
+/* ------------------------------------------------------------------ */
+
+const kemenagCache = new Map<number, Promise<Map<number, string> | null>>();
+
+/** Teks Arab MSI per nomor ayat; null bila data belum diimpor. */
+export function loadKemenagSurah(number: number): Promise<Map<number, string> | null> {
+  let cached = kemenagCache.get(number);
+  if (!cached) {
+    cached = fetch(assetUrl(`/quran-kemenag/${number}.json`))
+      .then((response) => (response.ok ? (response.json() as Promise<{ ayahs: [number, string][] }>) : null))
+      .then((data) => (data?.ayahs?.length ? new Map(data.ayahs) : null))
+      .catch(() => null);
+    kemenagCache.set(number, cached);
+  }
+  return cached;
+}
+
+// U+06D5 tidak dihitung huruf: di teks MSI ia dipakai sebagai tanda (mis. "ەۙ").
+const ARABIC_LETTER = /[\u0621-\u064A\u0671-\u06D3\u06EE\u06EF\u06FA-\u06FC]/;
+
+/**
+ * Pecah teks MSI per kata. Tanda yang berdiri sendiri (tanda waqaf, tanda hizb)
+ * digabung ke kata sebelumnya agar tidak menjadi "kata" tersendiri.
+ */
+export function splitKemenagWords(text: string): string[] {
+  const words: string[] = [];
+  let prefix = ''; // tanda di awal ayat (mis. ۞) ikut kata pertama
+  for (const token of text.split(/\s+/).filter(Boolean)) {
+    if (ARABIC_LETTER.test(token)) {
+      words.push(prefix ? `${prefix} ${token}` : token);
+      prefix = '';
+    } else if (words.length) words[words.length - 1] += ` ${token}`;
+    else prefix = prefix ? `${prefix} ${token}` : token;
+  }
+  if (prefix) words.push(prefix);
+  return words;
+}
+
+/* ------------------------------------------------------------------ */
 /* Info surah (latar belakang turun, makna nama, tema)                */
 /* Hasil impor scripts/import-surah-info.mjs dari Quran.com Chapter Info */
 /* ------------------------------------------------------------------ */
