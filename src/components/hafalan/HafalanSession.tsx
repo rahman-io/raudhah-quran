@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, BookOpen, Check, Lock, RotateCcw, Sparkles, X } from 'lucide-react';
+import {
+  ArrowLeft, Award, BookOpen, CheckCircle2, EyeOff, HelpCircle, Layers, Music, PenLine, Play, Puzzle, RotateCcw, Sparkles, X
+} from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import type { ReaderSurah } from '../../services/quranReaderData';
-import { getSavedStage, saveStage, splitIntoSegments, STAGES, type HafalanContext } from './hafalanPlan';
+import { getCompletedStages, markStageCompleted, splitIntoSegments, STAGES, type HafalanContext, type StageId } from './hafalanPlan';
 import { MemoryStage } from './stages/MemoryStage';
 import { TajwidStage } from './stages/TajwidStage';
 import { VanishStage } from './stages/VanishStage';
@@ -14,9 +16,16 @@ import { WriteStage } from './stages/WriteStage';
 
 const STAGE_XP = 20;
 
+const STAGE_ICONS: Record<StageId, React.ElementType> = {
+  memory: Layers, tajwid: Award, vanish: EyeOff, puzzle: Puzzle, blank: HelpCircle, audio: Music, write: PenLine
+};
+
+type View = { kind: 'menu' } | { kind: 'play'; id: StageId; run: number } | { kind: 'done'; id: StageId };
+
 /**
- * Mode Hafalkan: satu ayat dilatih melalui 7 game secara berurutan dan wajib.
- * Ayat baru ditandai "Sudah Dihafal" setelah ketujuh tahap selesai.
+ * Mode Hafalkan: 7 game penguat hafalan untuk satu ayat. Pengguna bebas memilih
+ * game mana saja dan dalam urutan apa saja. Bila ketujuhnya pernah diselesaikan,
+ * ayat otomatis tercatat "Sudah Dihafal".
  */
 export const HafalanSession: React.FC<{
   surah: ReaderSurah;
@@ -24,16 +33,18 @@ export const HafalanSession: React.FC<{
   onClose: () => void;
   onNextAyah?: () => void;
 }> = ({ surah, ayahIndex, onClose, onNextAyah }) => {
-  const { markAyahMemorized, addXP, pauseMurottal } = useQuranGame();
+  const { markAyahMemorized, memorizedAyahIds, addXP, pauseMurottal, fontSize } = useQuranGame();
   const ayah = surah.ayahs[ayahIndex];
   const ctx: HafalanContext = useMemo(
     () => ({ surah, ayah, ayahIndex, segments: splitIntoSegments(ayah.words) }),
     [surah, ayah, ayahIndex]
   );
-  const [stage, setStage] = useState(() => getSavedStage(ayah.id));
-  const [finished, setFinished] = useState(false);
-  const [stageDone, setStageDone] = useState(false);
+  const [completed, setCompleted] = useState<StageId[]>(() => getCompletedStages(ayah.id));
+  const [view, setView] = useState<View>({ kind: 'menu' });
+  const [justFinishedAll, setJustFinishedAll] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const runCounter = useRef(0);
+  const isMemorized = memorizedAyahIds.includes(ayah.id);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -46,147 +57,189 @@ export const HafalanSession: React.FC<{
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [stage, stageDone, finished]);
+  }, [view]);
 
-  const passStage = () => {
+  const open = (id: StageId) => {
     pauseMurottal();
-    addXP(STAGE_XP, `Hafalkan: ${STAGES[stage].title}`);
-    if (stage === STAGES.length - 1) {
-      saveStage(ayah.id, null);
-      markAyahMemorized(ayah.id);
-      setFinished(true);
-    } else {
-      saveStage(ayah.id, stage + 1);
-      setStageDone(true);
+    runCounter.current += 1;
+    setView({ kind: 'play', id, run: runCounter.current });
+  };
+
+  const backToMenu = () => {
+    pauseMurottal();
+    setView({ kind: 'menu' });
+  };
+
+  const passStage = (id: StageId) => {
+    pauseMurottal();
+    const firstTime = !completed.includes(id);
+    const next = markStageCompleted(ayah.id, id);
+    setCompleted(next);
+    if (firstTime) addXP(STAGE_XP, `Hafalkan: ${STAGES.find((s) => s.id === id)?.title}`);
+    if (firstTime && next.length === STAGES.length) {
+      if (!isMemorized) markAyahMemorized(ayah.id);
+      setJustFinishedAll(true);
     }
+    setView({ kind: 'done', id });
   };
 
-  const goNextStage = () => {
-    setStageDone(false);
-    setStage(stage + 1);
-  };
-
-  const restart = () => {
-    pauseMurottal();
-    saveStage(ayah.id, 0);
-    setStage(0);
-    setStageDone(false);
-    setFinished(false);
-  };
-
-  const stageProps = { ctx, onPass: passStage };
-  const current = STAGES[stage];
+  const doneCount = completed.length;
+  const suggestion = STAGES.find((s) => !completed.includes(s.id));
+  const currentStage = view.kind !== 'menu' ? STAGES.find((s) => s.id === view.id)! : null;
 
   return (
     <div className="fixed inset-0 z-[60] bg-[#F7F4EF] dark:bg-[#0D202A] text-[#293640] dark:text-[#E2E8F0] flex flex-col" role="dialog" aria-modal="true" aria-label="Mode Hafalkan">
       {/* Top bar */}
-      <div className="border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/70 backdrop-blur">
+      <div className="border-b border-slate-200 dark:border-slate-700 bg-white/85 dark:bg-slate-900/70 backdrop-blur">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
-          <div className="w-9 h-9 shrink-0 rounded-xl bg-[#246579] text-white flex items-center justify-center">
-            <BookOpen className="w-4 h-4" />
-          </div>
+          {view.kind === 'menu' ? (
+            <div className="w-9 h-9 shrink-0 rounded-xl bg-[#246579] text-white flex items-center justify-center">
+              <BookOpen className="w-4 h-4" />
+            </div>
+          ) : (
+            <button type="button" onClick={backToMenu} className="w-9 h-9 shrink-0 rounded-xl bg-[#246579]/10 dark:bg-[#246579]/30 text-[#246579] dark:text-[#A7CDD3] hover:bg-[#246579]/20 flex items-center justify-center" title="Kembali ke pilihan game">
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          )}
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#477F8D]">Mode Hafalkan</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#477F8D]">
+              {currentStage ? currentStage.title : 'Mode Hafalkan'}
+            </p>
             <p className="text-sm font-bold truncate">
               QS. {surah.nameLatin} : {ayah.ayahNumber}
               {ctx.segments.length > 1 && (
-                <span className="font-normal text-xs text-[#477F8D] dark:text-[#94A3B8]"> · ayat panjang, dilatih {ctx.segments.length} bagian</span>
+                <span className="font-normal text-xs text-[#477F8D] dark:text-[#94A3B8]"> · {ctx.segments.length} bagian</span>
               )}
             </p>
           </div>
+          <div className="hidden sm:flex items-center gap-1.5" aria-label={`${doneCount} dari ${STAGES.length} game selesai`}>
+            {STAGES.map((s) => (
+              <span key={s.id} className={`w-2 h-2 rounded-full ${completed.includes(s.id) ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
+            ))}
+          </div>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-[#F1EDE6] dark:bg-slate-800 text-[#9A7035] dark:text-[#D3A253] whitespace-nowrap">
+            {doneCount}/{STAGES.length}
+          </span>
           <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-[#246579] dark:text-[#A7CDD3]" title="Tutup (progres tersimpan)">
             <X className="w-5 h-5" />
           </button>
-        </div>
-
-        {/* Stepper 7 tahap */}
-        <div className="max-w-4xl mx-auto px-4 pb-3">
-          <ol className="flex items-center gap-1.5 overflow-x-auto">
-            {STAGES.map((s, i) => {
-              const done = finished || i < stage || (i === stage && stageDone);
-              const active = !finished && i === stage;
-              return (
-                <li key={s.id} className="flex items-center gap-1.5 shrink-0">
-                  <span
-                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold ${
-                      done
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                        : active
-                        ? 'bg-[#246579] text-white'
-                        : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
-                    }`}
-                    title={s.goal}
-                  >
-                    {done ? <Check className="w-3.5 h-3.5" /> : !active ? <Lock className="w-3 h-3" /> : <span>{i + 1}</span>}
-                    <span className={active ? '' : 'hidden sm:inline'}>{s.title}</span>
-                  </span>
-                  {i < STAGES.length - 1 && <span className="w-3 h-px bg-slate-300 dark:bg-slate-600" />}
-                </li>
-              );
-            })}
-          </ol>
         </div>
       </div>
 
       {/* Content */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
-          {finished ? (
+        <div className="max-w-4xl mx-auto px-4 py-6 pb-24 space-y-6">
+          {view.kind === 'menu' && (
+            <>
+              {/* Ayat yang sedang dihafal */}
+              <div className="bg-white dark:bg-slate-800/80 rounded-3xl border border-slate-200 dark:border-slate-700 p-5 sm:p-6 space-y-3">
+                <p dir="rtl" className="font-arabic text-right leading-[2.1] text-[#173B4E] dark:text-[#D3A253]" style={{ fontSize: `${Math.max(Math.round(fontSize * 0.9), 24)}px` }}>
+                  {ayah.arabicText}
+                </p>
+                <p className="text-sm text-[#293640] dark:text-[#CBD5E1]">"{ayah.translationId}"</p>
+              </div>
+
+              {justFinishedAll && (
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-3xl bg-[#246579] text-white flex flex-col sm:flex-row sm:items-center gap-4">
+                  <Sparkles className="w-8 h-8 text-[#D3A253] shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-bold">Masya Allah, ketujuh game selesai!</p>
+                    <p className="text-xs text-white/85 mt-0.5">Ayat ini tercatat Sudah Dihafal. Ulangi besok agar hafalan semakin kuat.</p>
+                  </div>
+                  {onNextAyah && (
+                    <button type="button" onClick={onNextAyah} className="px-4 py-2 rounded-xl bg-[#D3A253] hover:bg-[#E3B973] text-[#173B4E] text-xs font-semibold whitespace-nowrap">
+                      Ayat berikutnya →
+                    </button>
+                  )}
+                </motion.div>
+              )}
+
+              <div>
+                <h2 className="text-base font-bold text-[#173B4E] dark:text-white">Pilih cara menghafal</h2>
+                <p className="text-xs text-[#477F8D] dark:text-[#94A3B8] mt-0.5">
+                  Mainkan game mana saja, dalam urutan apa saja.
+                  {ctx.segments.length > 1 && ' Ayat panjang ini otomatis dilatih per bagian.'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+                {STAGES.map((stage) => {
+                  const Icon = STAGE_ICONS[stage.id];
+                  const done = completed.includes(stage.id);
+                  return (
+                    <motion.button
+                      key={stage.id}
+                      type="button"
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => open(stage.id)}
+                      className={`group relative text-left p-3 sm:p-4 rounded-2xl border transition-colors flex flex-col sm:flex-row items-start gap-2 sm:gap-3 ${
+                        done
+                          ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900'
+                          : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:border-[#477F8D]'
+                      }`}
+                    >
+                      <span className={`w-9 h-9 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center ${
+                        done ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300' : 'bg-[#246579]/10 dark:bg-[#246579]/30 text-[#246579] dark:text-[#A7CDD3]'
+                      }`}>
+                        <Icon className="w-5 h-5" />
+                      </span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-bold text-[#173B4E] dark:text-white">{stage.title}</span>
+                        <span className="hidden sm:block text-xs text-[#477F8D] dark:text-[#94A3B8] mt-0.5">{stage.goal}</span>
+                        <span className={`inline-flex items-center gap-1 mt-1 sm:mt-2 text-[11px] font-semibold ${done ? 'text-emerald-700 dark:text-emerald-300' : 'text-[#246579] dark:text-[#A7CDD3]'}`}>
+                          {done ? <><CheckCircle2 className="w-3.5 h-3.5" /> Selesai<span className="hidden sm:inline"> · main lagi</span></> : <><Play className="w-3.5 h-3.5" /> Mainkan</>}
+                        </span>
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {view.kind === 'play' && (
+            <div key={`${view.id}_${view.run}`}>
+              {view.id === 'memory' && <MemoryStage ctx={ctx} onPass={() => passStage('memory')} />}
+              {view.id === 'tajwid' && <TajwidStage ctx={ctx} onPass={() => passStage('tajwid')} />}
+              {view.id === 'vanish' && <VanishStage ctx={ctx} onPass={() => passStage('vanish')} />}
+              {view.id === 'puzzle' && <PuzzleStage ctx={ctx} onPass={() => passStage('puzzle')} />}
+              {view.id === 'blank' && <BlankStage ctx={ctx} onPass={() => passStage('blank')} />}
+              {view.id === 'audio' && <AudioStage ctx={ctx} onPass={() => passStage('audio')} />}
+              {view.id === 'write' && <WriteStage ctx={ctx} onPass={() => passStage('write')} />}
+            </div>
+          )}
+
+          {view.kind === 'done' && currentStage && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mt-6 p-8 rounded-3xl bg-[#246579] text-white text-center space-y-4 shadow-sm"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 p-7 rounded-3xl bg-white dark:bg-slate-800/80 border border-[#477F8D]/40 text-center space-y-4"
             >
-              <Sparkles className="w-10 h-10 mx-auto text-[#D3A253]" />
-              <h2 className="text-xl font-bold">Masya Allah, ketujuh tahap selesai!</h2>
-              <p className="text-sm text-white/85">
-                QS. {surah.nameLatin} ayat {ayah.ayahNumber} kini tercatat <span className="font-semibold text-[#E9CF99]">Sudah Dihafal</span>.
-                Ulangi (muraja'ah) besok agar hafalan semakin kuat.
-              </p>
-              <div className="flex flex-wrap justify-center gap-2 pt-2">
-                <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-sm font-semibold">
-                  Kembali ke bacaan
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold">{currentStage.title} selesai!</h3>
+                <p className="text-xs text-[#246579] dark:text-[#A7CDD3] mt-1">
+                  {doneCount}/{STAGES.length} game selesai untuk ayat ini.
+                  {justFinishedAll && ' Ayat ini kini tercatat Sudah Dihafal.'}
+                </p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                <button type="button" onClick={() => open(currentStage.id)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 text-xs font-semibold text-[#246579] dark:text-[#A7CDD3] hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                  <RotateCcw className="w-4 h-4" /> Main lagi
                 </button>
-                {onNextAyah && (
-                  <button type="button" onClick={onNextAyah} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#D3A253] hover:bg-[#E3B973] text-[#173B4E] text-sm font-semibold">
-                    Hafalkan ayat berikutnya <ArrowRight className="w-4 h-4" />
+                <button type="button" onClick={backToMenu} className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 text-xs font-semibold text-[#246579] dark:text-[#A7CDD3] hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                  Pilih game lain
+                </button>
+                {suggestion && (
+                  <button type="button" onClick={() => open(suggestion.id)} className="px-4 py-2 rounded-xl bg-[#246579] hover:bg-[#174C60] text-white text-xs font-semibold">
+                    Coba {suggestion.title} →
                   </button>
                 )}
               </div>
             </motion.div>
-          ) : stageDone ? (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6 p-7 rounded-3xl bg-white dark:bg-slate-800/80 border border-[#477F8D]/40 text-center space-y-3"
-            >
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
-                <Check className="w-6 h-6" />
-              </div>
-              <h3 className="text-base font-bold">Tahap {stage + 1} · {current.title} selesai</h3>
-              <p className="text-xs text-[#246579] dark:text-[#A7CDD3]">+{STAGE_XP} XP · Progres tersimpan, kamu bisa melanjutkan kapan saja.</p>
-              <button type="button" onClick={goNextStage} className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#246579] hover:bg-[#174C60] text-white rounded-xl text-sm font-semibold">
-                Lanjut ke Tahap {stage + 2}: {STAGES[stage + 1].title} <ArrowRight className="w-4 h-4" />
-              </button>
-            </motion.div>
-          ) : (
-            <div key={`${ayah.id}_${stage}`}>
-              {stage > 0 && (
-                <div className="mb-4 flex items-center justify-between gap-3 text-xs text-[#477F8D] dark:text-[#94A3B8]">
-                  <span>Melanjutkan hafalan: tahap {stage + 1} dari {STAGES.length}</span>
-                  <button type="button" onClick={restart} className="inline-flex items-center gap-1 hover:underline">
-                    <RotateCcw className="w-3.5 h-3.5" /> Mulai dari tahap 1
-                  </button>
-                </div>
-              )}
-              {current.id === 'memory' && <MemoryStage {...stageProps} />}
-              {current.id === 'tajwid' && <TajwidStage {...stageProps} />}
-              {current.id === 'vanish' && <VanishStage {...stageProps} />}
-              {current.id === 'puzzle' && <PuzzleStage {...stageProps} />}
-              {current.id === 'blank' && <BlankStage {...stageProps} />}
-              {current.id === 'audio' && <AudioStage {...stageProps} />}
-              {current.id === 'write' && <WriteStage {...stageProps} />}
-            </div>
           )}
         </div>
       </div>

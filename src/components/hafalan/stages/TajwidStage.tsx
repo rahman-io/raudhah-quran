@@ -36,7 +36,7 @@ export const TajwidStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> 
   return (
     <div className="space-y-5">
       <StageHeader
-        title="Tahap 2 · Kuis Tajwid"
+        title="Kuis Tajwid"
         description="Kenali hukum bacaan yang ada di ayat ini sebelum menghafalkannya."
         round={index}
         rounds={questions.length}
@@ -92,7 +92,7 @@ export const TajwidStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> 
         <RoundDone
           title="Jawaban tepat!"
           note={q.explanation}
-          actionLabel={isLast ? 'Selesaikan Tahap 2' : 'Soal berikutnya'}
+          actionLabel={isLast ? 'Selesai' : 'Soal berikutnya'}
           onContinue={next}
         />
       )}

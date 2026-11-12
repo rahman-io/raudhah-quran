@@ -66,7 +66,7 @@ export const BlankStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> =
   return (
     <div className="space-y-5">
       <StageHeader
-        title="Tahap 5 · Tebak Lanjutan"
+        title="Tebak Lanjutan"
         description="Pilih kata yang tepat untuk mengisi bagian ayat yang kosong."
         round={round}
         rounds={rounds.length}
@@ -133,7 +133,7 @@ export const BlankStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> =
       {solved && (
         <RoundDone
           title={isLast ? 'Semua bagian yang kosong sudah terisi!' : 'Tepat!'}
-          actionLabel={isLast ? 'Selesaikan Tahap 5' : 'Soal berikutnya'}
+          actionLabel={isLast ? 'Selesai' : 'Soal berikutnya'}
           onContinue={() => (isLast ? onPass() : setRound(round + 1))}
         />
       )}

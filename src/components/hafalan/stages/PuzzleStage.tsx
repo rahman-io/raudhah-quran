@@ -75,7 +75,7 @@ export const PuzzleStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> 
   return (
     <div className="space-y-5">
       <StageHeader
-        title="Tahap 4 · Susun Ayat"
+        title="Susun Ayat"
         description={isOrderRound ? 'Susun potongan-potongan ayat sesuai urutan yang benar.' : 'Klik kepingan kata secara berurutan dari kanan ke kiri.'}
         round={round}
         rounds={rounds.length}
@@ -148,7 +148,7 @@ export const PuzzleStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> 
       {solved && (
         <RoundDone
           title={isLastRound ? 'Susunan ayat sudah tepat!' : `Bagian ${round + 1} tersusun benar`}
-          actionLabel={isLastRound ? 'Selesaikan Tahap 4' : round + 1 === rounds.length - 1 && multi ? 'Susun urutan bagian' : 'Lanjut ke bagian berikutnya'}
+          actionLabel={isLastRound ? 'Selesai' : round + 1 === rounds.length - 1 && multi ? 'Susun urutan bagian' : 'Lanjut ke bagian berikutnya'}
           onContinue={() => (isLastRound ? onPass() : setRound(round + 1))}
         />
       )}

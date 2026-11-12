@@ -481,7 +481,11 @@ export function writingWords(segments: QuranWord[][]): QuranWord[] {
 
 const PROGRESS_KEY = 'raudhah_hafalan_progress_v1';
 
-type ProgressMap = Record<string, { stage: number; updatedAt: string }>;
+/** `done`: game yang sudah diselesaikan untuk ayat ini (urutan bebas). `stage`: format lama. */
+type ProgressEntry = { done?: StageId[]; stage?: number; updatedAt: string };
+type ProgressMap = Record<string, ProgressEntry>;
+
+const STAGE_IDS = new Set<string>(STAGES.map((s) => s.id));
 
 function readProgress(): ProgressMap {
   try {
@@ -491,20 +495,27 @@ function readProgress(): ProgressMap {
   }
 }
 
-export function getSavedStage(ayahId: string): number {
-  const stage = readProgress()[ayahId]?.stage ?? 0;
-  return Number.isInteger(stage) && stage >= 0 && stage < STAGES.length ? stage : 0;
+/** Game yang sudah selesai untuk satu ayat. */
+export function getCompletedStages(ayahId: string): StageId[] {
+  const entry = readProgress()[ayahId];
+  if (!entry) return [];
+  if (Array.isArray(entry.done)) return entry.done.filter((id) => STAGE_IDS.has(id));
+  const stage = Number(entry.stage);
+  return Number.isInteger(stage) && stage > 0 ? STAGES.slice(0, Math.min(stage, STAGES.length)).map((s) => s.id) : [];
 }
 
-export function saveStage(ayahId: string, stage: number | null) {
+/** Catat satu game selesai; mengembalikan daftar terbaru. */
+export function markStageCompleted(ayahId: string, stageId: StageId): StageId[] {
+  const done = getCompletedStages(ayahId);
+  const next = done.includes(stageId) ? done : [...done, stageId];
   try {
     const progress = readProgress();
-    if (stage === null) delete progress[ayahId];
-    else progress[ayahId] = { stage, updatedAt: new Date().toISOString() };
+    progress[ayahId] = { done: next, updatedAt: new Date().toISOString() };
     localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
   } catch {
     // Progres tetap berjalan di memori bila penyimpanan tidak tersedia.
   }
+  return next;
 }
 
 /** Kata-kata pengecoh dari ayat lain dalam surah yang sama. */

@@ -5,7 +5,7 @@ import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import { loadReaderIndex, loadReaderSurah, ReaderAyah, ReaderIndex, ReaderSurah } from '../../services/quranReaderData';
 import { HafalanSession } from '../hafalan/HafalanSession';
-import { getSavedStage, STAGES } from '../hafalan/hafalanPlan';
+import { getCompletedStages, STAGES } from '../hafalan/hafalanPlan';
 
 const normalizeSearch = (text: string) => text.toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]/g, '');
 // Kerangka konsonan agar ejaan berbeda tetap cocok, mis. "baqoroh" → Al-Baqarah.
@@ -246,7 +246,7 @@ export const MushafReader: React.FC = () => {
         {activeSurah.ayahs.map((ayah, ayahIndex) => {
           const isPlayingThis = isPlayingAudio && currentPlayingAyahId === ayah.id;
           const isMemorized = memorizedAyahIds.includes(ayah.id);
-          const savedStage = getSavedStage(ayah.id);
+          const gamesDone = getCompletedStages(ayah.id).length;
 
           return (
             <div
@@ -356,12 +356,12 @@ export const MushafReader: React.FC = () => {
                     setHafalanAyahIndex(ayahIndex);
                   }}
                   className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-full bg-[#246579] hover:bg-[#174C60] text-white shadow-xs transition-colors"
-                  title="Latih ayat ini melalui 7 game penguat hafalan"
+                  title="Latih ayat ini dengan 7 game penguat hafalan, bebas pilih"
                 >
                   <GraduationCap className="w-4 h-4" />
                   <span>
-                    {savedStage > 0
-                      ? `Lanjutkan Hafalan (Tahap ${savedStage + 1}/${STAGES.length})`
+                    {gamesDone > 0 && gamesDone < STAGES.length
+                      ? `Lanjutkan Hafalan (${gamesDone}/${STAGES.length} game)`
                       : isMemorized ? "Muraja'ah dengan 7 Game" : 'Hafalkan Ayat Ini'}
                   </span>
                 </button>

@@ -86,7 +86,7 @@ export const MemoryStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> 
   return (
     <div className="space-y-5">
       <StageHeader
-        title="Tahap 1 · Kartu Pasangan"
+        title="Kartu Pasangan"
         description="Buka dua kartu sekaligus dan pasangkan kata Arab dengan artinya."
         round={round}
         rounds={ctx.segments.length}
@@ -137,7 +137,7 @@ export const MemoryStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> 
       {done && (
         <RoundDone
           title={isLastRound ? 'Semua arti kata sudah kamu pasangkan!' : `Bagian ${round + 1} selesai`}
-          actionLabel={isLastRound ? 'Selesaikan Tahap 1' : 'Lanjut ke bagian berikutnya'}
+          actionLabel={isLastRound ? 'Selesai' : 'Lanjut ke bagian berikutnya'}
           onContinue={() => (isLastRound ? onPass() : setRound(round + 1))}
         />
       )}

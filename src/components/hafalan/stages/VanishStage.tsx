@@ -59,7 +59,7 @@ export const VanishStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> 
   return (
     <div className="space-y-5">
       <StageHeader
-        title="Tahap 3 · Ayat Menghilang"
+        title="Ayat Menghilang"
         description={isWholeAyahRound ? 'Putaran akhir: sambungkan semua bagian menjadi satu ayat utuh.' : 'Hafalkan bertahap: teks perlahan menghilang sampai kamu bisa tanpa melihat.'}
         round={round}
         rounds={rounds.length}
@@ -128,7 +128,7 @@ export const VanishStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> 
       {doneRound && (
         <RoundDone
           title={isLastRound ? 'Masya Allah, ayat ini sudah bisa kamu lafalkan tanpa melihat!' : `Bagian ${round + 1} sudah lancar`}
-          actionLabel={isLastRound ? 'Selesaikan Tahap 3' : rounds.length - 1 === round + 1 && ctx.segments.length > 1 ? 'Sambungkan ayat utuh' : 'Lanjut ke bagian berikutnya'}
+          actionLabel={isLastRound ? 'Selesai' : rounds.length - 1 === round + 1 && ctx.segments.length > 1 ? 'Sambungkan ayat utuh' : 'Lanjut ke bagian berikutnya'}
           onContinue={() => (isLastRound ? onPass() : setRound(round + 1))}
         />
       )}

@@ -108,7 +108,7 @@ export const AudioStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> =
   return (
     <div className="space-y-5">
       <StageHeader
-        title="Tahap 6 · Sambung Audio"
+        title="Sambung Audio"
         description="Latih sambungan hafalan: dari ayat sebelumnya ke ayat ini, dan antar bagian ayat."
         round={round}
         rounds={rounds.length}
@@ -166,7 +166,7 @@ export const AudioStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> =
       {solved && (
         <RoundDone
           title={isLast ? 'Sambungan hafalanmu sudah kuat!' : 'Tepat!'}
-          actionLabel={isLast ? 'Selesaikan Tahap 6' : 'Soal berikutnya'}
+          actionLabel={isLast ? 'Selesai' : 'Soal berikutnya'}
           onContinue={() => (isLast ? onPass() : setRound(round + 1))}
         />
       )}

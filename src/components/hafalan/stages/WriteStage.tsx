@@ -120,7 +120,7 @@ export const WriteStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> =
   return (
     <div className="space-y-5">
       <StageHeader
-        title="Tahap 7 · Tulis Ayat"
+        title="Tulis Ayat"
         description={targets.length < ctx.ayah.words.length
           ? 'Tulis kata kunci pembuka tiap bagian ayat: telusuri pola dulu, lalu tulis dari ingatan.'
           : 'Telusuri pola huruf dan harakat, lalu tulis kembali dari ingatan.'}
@@ -194,7 +194,7 @@ export const WriteStage: React.FC<{ ctx: HafalanContext; onPass: () => void }> =
       {wordDone && (
         <RoundDone
           title={isLast ? 'Semua kata kunci sudah kamu tulis!' : 'Tulisanmu sesuai'}
-          actionLabel={isLast ? 'Selesaikan Tahap 7' : 'Kata berikutnya'}
+          actionLabel={isLast ? 'Selesai' : 'Kata berikutnya'}
           onContinue={nextStep}
         />
       )}
