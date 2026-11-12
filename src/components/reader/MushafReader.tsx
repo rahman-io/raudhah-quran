@@ -586,7 +586,7 @@ export const MushafReader: React.FC = () => {
                 </div>
               )}
 
-              {/* Mode Hafalkan: 7 game berurutan untuk ayat ini */}
+              {/* Mode Hafalkan: 8 game penguat hafalan untuk ayat ini */}
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={() => {
@@ -594,7 +594,7 @@ export const MushafReader: React.FC = () => {
                     setHafalanAyahIndex(ayahIndex);
                   }}
                   className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-full bg-[#246579] hover:bg-[#174C60] text-white shadow-xs transition-colors"
-                  title="Latih ayat ini dengan 7 game penguat hafalan, bebas pilih"
+                  title={`Latih ayat ini dengan ${STAGES.length} game penguat hafalan, bebas pilih`}
                 >
                   <GraduationCap className="w-4 h-4" />
                   <span>

@@ -6,7 +6,7 @@ import type { ReaderAyah, ReaderSurah } from '../../services/quranReaderData';
  * dari teks Utsmani (Quran.com API), dan penyimpanan progres per ayat.
  */
 
-export type StageId = 'memory' | 'tajwid' | 'vanish' | 'puzzle' | 'blank' | 'audio' | 'write';
+export type StageId = 'memory' | 'tajwid' | 'vanish' | 'puzzle' | 'blank' | 'audio' | 'write' | 'taisir';
 
 export const STAGES: { id: StageId; title: string; goal: string }[] = [
   { id: 'memory', title: 'Kartu Pasangan', goal: 'Pahami arti setiap kata' },
@@ -15,7 +15,8 @@ export const STAGES: { id: StageId; title: string; goal: string }[] = [
   { id: 'puzzle', title: 'Susun Ayat', goal: 'Susun kata sesuai urutan ayat' },
   { id: 'blank', title: 'Tebak Lanjutan', goal: 'Lengkapi kata yang hilang' },
   { id: 'audio', title: 'Sambung Audio', goal: 'Sambungkan bacaan yang kamu dengar' },
-  { id: 'write', title: 'Tulis Ayat', goal: 'Tulis kata kunci dari ingatan' }
+  { id: 'write', title: 'Tulis Ayat', goal: 'Tulis kata kunci dari ingatan' },
+  { id: 'taisir', title: 'Kunci Ayat', goal: "Metode At-Taisir: ingat ayat dari kata pertamanya" }
 ];
 
 export interface HafalanContext {

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import {
-  ArrowLeft, Award, BookOpen, CheckCircle2, EyeOff, HelpCircle, Layers, Music, PenLine, Play, Puzzle, RotateCcw, Sparkles, X
+  ArrowLeft, Award, BookOpen, CheckCircle2, EyeOff, HelpCircle, KeyRound, Layers, Music, PenLine, Play, Puzzle, RotateCcw, Sparkles, X
 } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import type { ReaderSurah } from '../../services/quranReaderData';
@@ -13,18 +13,19 @@ import { PuzzleStage } from './stages/PuzzleStage';
 import { BlankStage } from './stages/BlankStage';
 import { AudioStage } from './stages/AudioStage';
 import { WriteStage } from './stages/WriteStage';
+import { TaisirStage } from './stages/TaisirStage';
 
 const STAGE_XP = 20;
 
 const STAGE_ICONS: Record<StageId, React.ElementType> = {
-  memory: Layers, tajwid: Award, vanish: EyeOff, puzzle: Puzzle, blank: HelpCircle, audio: Music, write: PenLine
+  memory: Layers, tajwid: Award, vanish: EyeOff, puzzle: Puzzle, blank: HelpCircle, audio: Music, write: PenLine, taisir: KeyRound
 };
 
 type View = { kind: 'menu' } | { kind: 'play'; id: StageId; run: number } | { kind: 'done'; id: StageId };
 
 /**
- * Mode Hafalkan: 7 game penguat hafalan untuk satu ayat. Pengguna bebas memilih
- * game mana saja dan dalam urutan apa saja. Bila ketujuhnya pernah diselesaikan,
+ * Mode Hafalkan: 8 game penguat hafalan untuk satu ayat. Pengguna bebas memilih
+ * game mana saja dan dalam urutan apa saja. Bila kedelapannya pernah diselesaikan,
  * ayat otomatis tercatat "Sudah Dihafal".
  */
 export const HafalanSession: React.FC<{
@@ -143,7 +144,7 @@ export const HafalanSession: React.FC<{
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-3xl bg-[#246579] text-white flex flex-col sm:flex-row sm:items-center gap-4">
                   <Sparkles className="w-8 h-8 text-[#D3A253] shrink-0" />
                   <div className="flex-1">
-                    <p className="font-bold">Masya Allah, ketujuh game selesai!</p>
+                    <p className="font-bold">Masya Allah, semua {STAGES.length} game selesai!</p>
                     <p className="text-xs text-white/85 mt-0.5">Ayat ini tercatat Sudah Dihafal. Ulangi besok agar hafalan semakin kuat.</p>
                   </div>
                   {onNextAyah && (
@@ -207,6 +208,7 @@ export const HafalanSession: React.FC<{
               {view.id === 'blank' && <BlankStage ctx={ctx} onPass={() => passStage('blank')} />}
               {view.id === 'audio' && <AudioStage ctx={ctx} onPass={() => passStage('audio')} />}
               {view.id === 'write' && <WriteStage ctx={ctx} onPass={() => passStage('write')} />}
+              {view.id === 'taisir' && <TaisirStage ctx={ctx} onPass={() => passStage('taisir')} />}
             </div>
           )}
 
