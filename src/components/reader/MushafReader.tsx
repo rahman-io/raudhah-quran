@@ -11,6 +11,22 @@ const normalizeSearch = (text: string) => text.toLowerCase().replace(/[^a-z0-9\u
 // Kerangka konsonan agar ejaan berbeda tetap cocok, mis. "baqoroh" → Al-Baqarah.
 const consonantSkeleton = (text: string) => normalizeSearch(text).replace(/[aiueo'h]/g, '').replace(/(.)\1+/g, '$1');
 
+// Bintang segi delapan (outline) untuk nomor surah di daftar.
+const STAR_POINTS = Array.from({ length: 16 }, (_, i) => {
+  const angle = (Math.PI / 8) * i - Math.PI / 2;
+  const radius = i % 2 === 0 ? 20 : 20 * Math.cos(Math.PI / 4) / Math.cos(Math.PI / 8);
+  return `${(22 + radius * Math.cos(angle)).toFixed(2)},${(22 + radius * Math.sin(angle)).toFixed(2)}`;
+}).join(' ');
+
+const SurahNumberBadge: React.FC<{ number: number }> = ({ number }) => (
+  <span className="relative w-11 h-11 shrink-0 flex items-center justify-center text-[#246579] dark:text-[#A7CDD3]">
+    <svg viewBox="0 0 44 44" className="absolute inset-0 w-full h-full" fill="none" aria-hidden="true">
+      <polygon points={STAR_POINTS} stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+    <span className="relative text-xs font-semibold text-[#173B4E] dark:text-white">{number}</span>
+  </span>
+);
+
 export const MushafReader: React.FC = () => {
   const {
     activeSurah,
@@ -34,6 +50,7 @@ export const MushafReader: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const topRef = useRef<HTMLDivElement>(null);
   const [hafalanAyahIndex, setHafalanAyahIndex] = useState<number | null>(null);
+  const [showList, setShowList] = useState(true);
 
   useEffect(() => {
     loadReaderIndex().then(setSurahIndex);
@@ -77,6 +94,7 @@ export const MushafReader: React.FC = () => {
   const openSurah = (number: number) => {
     if (isPlayingAudio) pauseMurottal();
     setSurahNumber(number);
+    setShowList(false);
     setIsPickerOpen(false);
     setSearchQuery('');
     topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -90,8 +108,61 @@ export const MushafReader: React.FC = () => {
     }
   };
 
+  const backToList = () => {
+    if (isPlayingAudio) pauseMurottal();
+    setShowList(true);
+    setIsPickerOpen(false);
+    topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // Halaman awal menu Baca: daftar lengkap 114 surah.
+  if (showList) {
+    return (
+      <div ref={topRef} className="w-full space-y-4 scroll-mt-24">
+        <div className="flex items-baseline justify-between px-1">
+          <h2 className="text-lg font-bold text-[#173B4E] dark:text-white">Daftar Surah</h2>
+          {surahList.length > 0 && <span className="text-xs text-[#477F8D] dark:text-[#94A3B8]">{surahList.length} surah</span>}
+        </div>
+
+        {surahList.length === 0 ? (
+          <div className="flex items-center justify-center gap-2 py-16 text-sm text-[#246579] dark:text-[#A7CDD3]">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span>Memuat daftar surah…</span>
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-slate-800/80 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xs overflow-hidden divide-y divide-slate-100 dark:divide-slate-700/60">
+            {surahList.map((s) => (
+              <button
+                key={`surah_list_${s.number}`}
+                onClick={() => openSurah(s.number)}
+                className="w-full flex items-center gap-4 px-4 sm:px-6 py-4 text-left hover:bg-[#F8F6F1] dark:hover:bg-slate-700/40 transition-colors"
+              >
+                <SurahNumberBadge number={s.number} />
+                <span className="flex-1 min-w-0">
+                  <span className="block text-[15px] font-semibold text-[#173B4E] dark:text-white truncate">{s.nameLatin}</span>
+                  <span className="block mt-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    {s.revelationType}<span className="mx-1.5">•</span>{s.numberOfAyahs} Ayat
+                  </span>
+                </span>
+                <span dir="rtl" className="font-arabic text-xl sm:text-2xl text-[#246579] dark:text-[#A7CDD3] shrink-0">{s.nameArabic}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div ref={topRef} className="w-full space-y-6 scroll-mt-24">
+      <button
+        onClick={backToList}
+        className="-mb-2 inline-flex items-center gap-1.5 px-1 text-sm font-semibold text-[#246579] dark:text-[#A7CDD3] hover:underline"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        <span>Daftar Surah</span>
+      </button>
+
       {/* Surah Navigator (114 Surah) */}
       <div className="bg-white dark:bg-slate-800/80 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xs">
         <div className="flex items-center gap-2 p-2">
