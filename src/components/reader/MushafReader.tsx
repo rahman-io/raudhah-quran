@@ -5,7 +5,7 @@ import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import { loadReaderIndex, loadReaderSurah, ReaderAyah, ReaderIndex, ReaderSurah } from '../../services/quranReaderData';
 import { HafalanSession } from '../hafalan/HafalanSession';
-import { getCompletedStages, STAGES } from '../hafalan/hafalanPlan';
+import { getCompletedStages, getSurahsWithHafalanProgress, STAGES } from '../hafalan/hafalanPlan';
 
 const normalizeSearch = (text: string) => text.toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]/g, '');
 // Kerangka konsonan agar ejaan berbeda tetap cocok, mis. "baqoroh" → Al-Baqarah.
@@ -117,6 +117,14 @@ export const MushafReader: React.FC = () => {
 
   // Halaman awal menu Baca: daftar lengkap 114 surah.
   if (showList) {
+    // Progres hafalan per surah: jumlah ayat yang sudah ditandai hafal.
+    const memorizedPerSurah = new Map<number, number>();
+    new Set(memorizedAyahIds).forEach((id) => {
+      const surah = Number(id.split(':')[0]);
+      memorizedPerSurah.set(surah, (memorizedPerSurah.get(surah) ?? 0) + 1);
+    });
+    const inProgress = getSurahsWithHafalanProgress();
+
     return (
       <div ref={topRef} className="w-full space-y-4 scroll-mt-24">
         <div className="flex items-baseline justify-between px-1">
@@ -143,6 +151,28 @@ export const MushafReader: React.FC = () => {
                   <span className="block mt-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {s.revelationType}<span className="mx-1.5">•</span>{s.numberOfAyahs} Ayat
                   </span>
+                  {(() => {
+                    const memorized = Math.min(memorizedPerSurah.get(s.number) ?? 0, s.numberOfAyahs);
+                    const percent = Math.round((memorized / s.numberOfAyahs) * 100);
+                    const status = memorized >= s.numberOfAyahs ? 'done' : memorized > 0 || inProgress.has(s.number) ? 'progress' : 'none';
+                    const badge = {
+                      none: { label: 'Belum dihafal', cls: 'bg-slate-100 text-slate-500 dark:bg-slate-700/60 dark:text-slate-300' },
+                      progress: { label: 'Sedang dihafal', cls: 'bg-[#D3A253]/15 text-[#9A7035] dark:bg-[#D3A253]/20 dark:text-[#E9CF99]' },
+                      done: { label: 'Sudah dihafal', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300' }
+                    }[status];
+                    const bar = status === 'done' ? 'bg-emerald-500' : 'bg-[#D3A253]';
+                    return (
+                      <span className="mt-2 flex items-center gap-2">
+                        <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold ${badge.cls}`}>{badge.label}</span>
+                        <span className="w-16 sm:w-28 shrink-0 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden" aria-hidden="true">
+                          <span className={`block h-full rounded-full ${bar}`} style={{ width: `${percent}%` }} />
+                        </span>
+                        <span className="shrink-0 text-[10px] font-semibold text-slate-500 dark:text-slate-400" title={`${memorized} dari ${s.numberOfAyahs} ayat`}>
+                          {percent}%
+                        </span>
+                      </span>
+                    );
+                  })()}
                 </span>
                 <span dir="rtl" className="font-arabic text-xl sm:text-2xl text-[#246579] dark:text-[#A7CDD3] shrink-0">{s.nameArabic}</span>
               </button>

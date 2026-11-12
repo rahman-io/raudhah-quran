@@ -504,6 +504,17 @@ export function getCompletedStages(ayahId: string): StageId[] {
   return Number.isInteger(stage) && stage > 0 ? STAGES.slice(0, Math.min(stage, STAGES.length)).map((s) => s.id) : [];
 }
 
+/** Nomor surah yang punya ayat dengan progres game hafalan (minimal satu game selesai). */
+export function getSurahsWithHafalanProgress(): Set<number> {
+  const surahs = new Set<number>();
+  Object.entries(readProgress()).forEach(([ayahId, entry]) => {
+    const started = (Array.isArray(entry.done) && entry.done.length > 0) || Number(entry.stage) > 0;
+    const surah = Number(ayahId.split(':')[0]);
+    if (started && Number.isInteger(surah)) surahs.add(surah);
+  });
+  return surahs;
+}
+
 /** Catat satu game selesai; mengembalikan daftar terbaru. */
 export function markStageCompleted(ayahId: string, stageId: StageId): StageId[] {
   const done = getCompletedStages(ayahId);
