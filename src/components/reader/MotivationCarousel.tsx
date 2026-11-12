@@ -1,40 +1,81 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, ExternalLink, Quote } from 'lucide-react';
-import { MOTIVATION_SOURCE, QURAN_MOTIVATIONS } from '../../data/quranMotivations';
+import { ChevronLeft, ChevronRight, ExternalLink, Pause, Quote } from 'lucide-react';
+import { QURAN_MOTIVATIONS } from '../../data/quranMotivations';
 
-const AUTOPLAY_MS = 7000;
 const SWIPE_THRESHOLD = 50;
+const MIN_SLIDE_MS = 8000;
+const MAX_SLIDE_MS = 20000;
+const MS_PER_WORD = 330;
 
-/** Slider motivasi membaca & menghafal Al-Qur'an yang bergeser otomatis. */
+/** Lama tampil tiap slide menyesuaikan panjang teks, agar sempat dibaca sampai habis. */
+const slideDuration = (i: number) => {
+  const { title, message } = QURAN_MOTIVATIONS[i];
+  const words = `${title} ${message}`.trim().split(/\s+/).length;
+  return Math.min(MAX_SLIDE_MS, Math.max(MIN_SLIDE_MS, words * MS_PER_WORD));
+};
+
+/**
+ * Slider motivasi membaca & menghafal Al-Qur'an.
+ * Bergeser otomatis hanya bila tidak sedang disentuh/diarahkan kursor:
+ * selama jari menempel atau kursor berada di atasnya, slider diam.
+ */
 export const MotivationCarousel: React.FC = () => {
   const total = QURAN_MOTIVATIONS.length;
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [touching, setTouching] = useState(false);
+  const [keyboardFocus, setKeyboardFocus] = useState(false);
   const [dragX, setDragX] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [pageVisible, setPageVisible] = useState(true);
   const drag = useRef<{ startX: number; startY: number; active: boolean } | null>(null);
 
   const go = (next: number) => setIndex(((next % total) + total) % total);
+  const paused = hovered || touching || keyboardFocus || reducedMotion || !pageVisible;
+  const duration = slideDuration(index);
 
   useEffect(() => {
     const media = window.matchMedia?.('(prefers-reduced-motion: reduce)');
-    if (!media) return;
-    const update = () => setReducedMotion(media.matches);
+    const update = () => setReducedMotion(Boolean(media?.matches));
     update();
-    media.addEventListener?.('change', update);
-    return () => media.removeEventListener?.('change', update);
+    media?.addEventListener?.('change', update);
+    const onVisibility = () => setPageVisible(document.visibilityState === 'visible');
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      media?.removeEventListener?.('change', update);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, []);
 
-  // Geser otomatis; berhenti saat disentuh/diarahkan kursor atau tab tidak terlihat.
+  // Jari dilepas di mana pun (termasuk di luar slider) = sentuhan selesai.
   useEffect(() => {
-    if (paused || reducedMotion || drag.current?.active) return;
-    const timer = setTimeout(() => {
-      if (document.visibilityState === 'visible') go(index + 1);
-    }, AUTOPLAY_MS);
+    if (!touching) return;
+    const release = () => setTouching(false);
+    window.addEventListener('pointerup', release);
+    window.addEventListener('pointercancel', release);
+    return () => {
+      window.removeEventListener('pointerup', release);
+      window.removeEventListener('pointercancel', release);
+    };
+  }, [touching]);
+
+  // Geser otomatis: penghitung waktu dimulai ulang penuh setiap slide berganti
+  // atau setiap kali jeda selesai, jadi pembaca selalu mendapat waktu baca utuh.
+  useEffect(() => {
+    if (paused) return;
+    const timer = setTimeout(() => go(index + 1), duration);
     return () => clearTimeout(timer);
-  }, [index, paused, reducedMotion, dragX]);
+  }, [index, paused, duration]);
+
+  const onPointerEnter = (event: React.PointerEvent) => {
+    if (event.pointerType === 'mouse') setHovered(true);
+  };
+  const onPointerLeave = (event: React.PointerEvent) => {
+    if (event.pointerType === 'mouse') setHovered(false);
+  };
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse') setTouching(true);
     if ((event.target as HTMLElement).closest('a,button')) return;
     drag.current = { startX: event.clientX, startY: event.clientY, active: false };
   };
@@ -66,10 +107,10 @@ export const MotivationCarousel: React.FC = () => {
       aria-roledescription="carousel"
       aria-label="Motivasi membaca dan menghafal Al-Qur'an"
       className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#246579] to-[#174C60] text-white shadow-sm"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
+      onFocus={(event) => setKeyboardFocus((event.target as HTMLElement).matches?.(':focus-visible') ?? false)}
+      onBlur={() => setKeyboardFocus(false)}
     >
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D3A253_1px,transparent_1px)] [background-size:16px_16px]" aria-hidden="true" />
 
@@ -91,7 +132,7 @@ export const MotivationCarousel: React.FC = () => {
           {QURAN_MOTIVATIONS.map((item, i) => (
             <article
               key={item.title}
-              className="w-full shrink-0 px-6 sm:px-10 pt-6 pb-14 sm:pt-8"
+              className="w-full shrink-0 px-6 sm:px-10 pt-6 pb-16 sm:pt-8"
               aria-roledescription="slide"
               aria-label={`${i + 1} dari ${total}`}
               aria-hidden={i !== index}
@@ -117,19 +158,27 @@ export const MotivationCarousel: React.FC = () => {
                   </span>
                 )
               )}
+              <p className="mt-3 text-[11px] text-white/60">Disarikan dari kajian {item.source}</p>
             </article>
           ))}
         </div>
       </div>
 
-      {/* Navigasi: sumber, titik slide, panah */}
-      <div className="absolute inset-x-0 bottom-0 px-6 sm:px-10 pb-4 flex items-center justify-between gap-3">
-        <span className="text-[10px] text-white/60 truncate">{MOTIVATION_SOURCE}</span>
+      {/* Navigasi: sumber kajian, titik slide, panah */}
+      <div className="absolute inset-x-0 bottom-0 px-6 sm:px-10 pb-5 flex items-center justify-between gap-3">
+        <span className="flex items-center gap-1 min-w-0 text-[10px] text-[#E9CF99]" aria-live="polite">
+          {paused && !reducedMotion && (
+            <>
+              <Pause className="w-3 h-3 shrink-0" aria-hidden="true" />
+              <span>Dijeda</span>
+            </>
+          )}
+        </span>
         <div className="flex items-center gap-2 shrink-0">
           <button type="button" onClick={() => go(index - 1)} className="hidden sm:flex w-7 h-7 items-center justify-center rounded-full bg-white/10 hover:bg-white/20" aria-label="Motivasi sebelumnya">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {QURAN_MOTIVATIONS.map((item, i) => (
               <button
                 key={`dot_${item.title}`}
@@ -137,7 +186,7 @@ export const MotivationCarousel: React.FC = () => {
                 onClick={() => go(i)}
                 aria-label={`Tampilkan motivasi ${i + 1}`}
                 aria-current={i === index}
-                className={`h-1.5 rounded-full transition-all ${i === index ? 'w-5 bg-[#D3A253]' : 'w-1.5 bg-white/40 hover:bg-white/70'}`}
+                className={`h-1.5 rounded-full transition-all ${i === index ? 'w-4 bg-[#D3A253]' : 'w-1.5 bg-white/40 hover:bg-white/70'}`}
               />
             ))}
           </div>
@@ -146,6 +195,21 @@ export const MotivationCarousel: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Garis waktu: berjalan saat slider bergeser otomatis, berhenti saat dijeda */}
+      {!reducedMotion && (
+        <div className="absolute inset-x-0 bottom-0 h-1 bg-white/10" aria-hidden="true">
+          <div
+            key={`${index}_${paused ? 'p' : 'r'}`}
+            className="h-full bg-[#D3A253]/80 origin-left"
+            style={{
+              animation: paused ? 'none' : `motivation-progress ${duration}ms linear forwards`,
+              transform: paused ? 'scaleX(0)' : undefined
+            }}
+          />
+          <style>{'@keyframes motivation-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }'}</style>
+        </div>
+      )}
     </section>
   );
 };
