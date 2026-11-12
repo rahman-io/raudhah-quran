@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap } from 'lucide-react';
+import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
-import { loadReaderIndex, loadReaderSurah, ReaderAyah, ReaderIndex, ReaderSurah } from '../../services/quranReaderData';
+import {
+  loadReaderIndex, loadReaderSurah, loadSurahInfo, loadSurahInfoIndex,
+  ReaderAyah, ReaderIndex, ReaderSurah, SurahInfoDetail, SurahInfoSummary
+} from '../../services/quranReaderData';
 import { HafalanSession } from '../hafalan/HafalanSession';
 import { getCompletedStages, getSurahsWithHafalanProgress, STAGES } from '../hafalan/hafalanPlan';
 
@@ -51,10 +54,26 @@ export const MushafReader: React.FC = () => {
   const topRef = useRef<HTMLDivElement>(null);
   const [hafalanAyahIndex, setHafalanAyahIndex] = useState<number | null>(null);
   const [showList, setShowList] = useState(true);
+  const [infoIndex, setInfoIndex] = useState<Map<number, SurahInfoSummary>>(new Map());
+  const [surahInfo, setSurahInfo] = useState<SurahInfoDetail | null>(null);
+  const [infoExpanded, setInfoExpanded] = useState(false);
 
   useEffect(() => {
     loadReaderIndex().then(setSurahIndex);
+    loadSurahInfoIndex().then(setInfoIndex);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setSurahInfo(null);
+    setInfoExpanded(false);
+    loadSurahInfo(surahNumber).then((info) => {
+      if (!cancelled) setSurahInfo(info);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [surahNumber]);
 
   useEffect(() => {
     let cancelled = false;
@@ -151,6 +170,11 @@ export const MushafReader: React.FC = () => {
                   <span className="block mt-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {s.revelationType}<span className="mx-1.5">•</span>{s.numberOfAyahs} Ayat
                   </span>
+                  {infoIndex.get(s.number)?.summary && (
+                    <span className="mt-1.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400 line-clamp-2">
+                      {infoIndex.get(s.number)!.summary}
+                    </span>
+                  )}
                   {(() => {
                     const memorized = Math.min(memorizedPerSurah.get(s.number) ?? 0, s.numberOfAyahs);
                     const percent = Math.round((memorized / s.numberOfAyahs) * 100);
@@ -325,6 +349,35 @@ export const MushafReader: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Tentang surah: latar belakang turun, makna nama, dan tema (Quran.com Chapter Info) */}
+      {surahInfo && (
+        <div className="bg-white dark:bg-slate-800/80 rounded-3xl border border-slate-200 dark:border-slate-700 p-5 sm:p-6 space-y-3">
+          <div className="flex items-center gap-2 text-[#246579] dark:text-[#A7CDD3]">
+            <ScrollText className="w-4 h-4 text-[#D3A253]" />
+            <h3 className="text-sm font-bold">Tentang Surah {activeSurah.nameLatin}</h3>
+          </div>
+          {infoExpanded ? (
+            <div
+              className="text-sm leading-relaxed text-[#293640] dark:text-[#CBD5E1] [&_h4]:mt-4 [&_h4]:mb-1 [&_h4]:font-bold [&_h4]:text-[#173B4E] dark:[&_h4]:text-white [&_p]:mt-2 [&_ul]:mt-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mt-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_blockquote]:mt-2 [&_blockquote]:pl-3 [&_blockquote]:border-l-2 [&_blockquote]:border-[#D3A253]"
+              dangerouslySetInnerHTML={{ __html: surahInfo.html }}
+            />
+          ) : (
+            <p className="text-sm leading-relaxed text-[#293640] dark:text-[#CBD5E1]">{surahInfo.summary}</p>
+          )}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+              Sumber: {surahInfo.source}{surahInfo.language && surahInfo.language !== 'indonesian' ? ` (bahasa ${surahInfo.language === 'english' ? 'Inggris' : surahInfo.language})` : ''} · via Quran.com API
+            </p>
+            <button
+              onClick={() => setInfoExpanded(!infoExpanded)}
+              className="text-xs font-semibold text-[#246579] dark:text-[#A7CDD3] hover:underline"
+            >
+              {infoExpanded ? 'Tutup' : 'Baca selengkapnya'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Reader Guidance Tip */}
       <div className="flex items-center justify-between text-xs text-[#246579] dark:text-[#94A3B8] px-2">

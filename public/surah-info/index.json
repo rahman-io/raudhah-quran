@@ -1,0 +1,691 @@
+{
+ "api": "Quran.com API v4",
+ "requestedLanguage": "id",
+ "importedAt": "2026-11-12T21:28:30.341Z",
+ "surahs": [
+  {
+   "number": 1,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Dinamakan \"Ummul Qur'an\" (induk Al Qur'an) atau \"Ummul Kitaab\" (induk Al Kitaab) karena merupakan induk bagi semua isi Al Qur'an serta menjadi inti sari kandungan Al Qur'an dan karena ia wajib dibaca pada tiap-tiap shalat. Dinamakan pula \"As Sab'ul matsaany\" (tujuh yang berulang-ulang) karena ayatnya berjumlah tujuh dan dibaca berulang-ulang dalam shalat."
+  },
+  {
+   "number": 2,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini dinamai \"Al Baqarah\" karena di dalamnya disebutkan kisah penyembelihan sapi betina yang diperintahkan Allah kepada Bani Israil (ayat 67 sampai dengan 74), di mana dijelaskan watak orang Yahudi pada umumnya. Dinamai \"Fusthaathul-Qur'an\" (puncak Al Qur'an) karena memuat beberapa hukum yang tidak disebutkan dalam surat yang lain. Dinamai juga surat \"Alif-laam-miim\" karena surat ini dimulai dengan Alif-laam-miim."
+  },
+  {
+   "number": 3,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al Baqarah dan Ali 'Imraan dinamakan \"Az Zahrawaani\" (dua yang cemerlang), karena menyingkapkan hal-hal yang disembunyikan oleh para Ahli Kitab, seperti kejadian dan kelahiran Nabi 'Isa a.s., kedatangan Nabi Muhammad s.a.w., dan sebagainya."
+  },
+  {
+   "number": 4,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Dinamakan An Nisaa' karena di dalamnya banyak dibicarakan hal-hal yang berhubungan dengan perempuan; merupakan surat yang paling banyak membicarakan hal itu dibanding surat-surat yang lain. Surat lain yang banyak membicarakan perempuan adalah surat Ath Thalaq. Dalam hal ini, surat An Nisaa' biasa disebut \"Surat An Nisaa' Al Kubraa\" (surat An Nisaa' besar) sedangkan surat Ath Thalaq disebut \"Surat An Nisaa' Ash Shughraa\" (surat An Nisaa' kecil)."
+  },
+  {
+   "number": 5,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini dinamakan \"Al-Ma-idah\" (hidangan) karena memuat kisah pengikut-pengikut setia Nabi 'Isa a.s. yang meminta kepada Nabi 'Isa agar Allah berkenan menurunkan Al-Ma-idah (hidangan makanan) dari langit (ayat 112) untuk mereka. Juga dinamakan dengan \"Al-Uqud\" (perjanjian), karena kata ini terdapat pada ayat pertama surat ini, Allah menyuruh agar hamba memenuhi janji prasetia terhadap Allah dan perjanjian-perjanjian terhadap sesama."
+  },
+  {
+   "number": 6,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Dinamakan Al-An'am karena di dalamnya disebut kata \"An'am\" yang memiliki kaitan erat dengan adat istiadat kaum musyrikin; mereka biasa mempergunakan binatang ternak untuk mendekatkan diri kepada tuhan. Selain itu, juga disebutkan hukum-hukum yang berkenaan dengan binatang ternak itu."
+  },
+  {
+   "number": 7,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Dinamakan \"Al-A'raf\" karena perkataan Al-A'raf terdapat dalam ayat 46 yang mengemukakan tentang keadaan orang-orang yang berada di atas Al-A'raf, tempat yang tertinggi di batas surga dan neraka. Mereka itulah orang-orang yang antara kebaikan dan kejahatan mereka sama banyaknya."
+  },
+  {
+   "number": 8,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini dinamakan Al-Anfal yang berarti harta rampasan perang berhubung kata Al-Anfal terdapat pada permulaan surat ini. Selain itu, persoalan yang menonjol dalam surat ini ialah tentang harta rampasan perang, hukum perang, dan hal-hal yang berhubungan dengan peperangan pada umumnya."
+  },
+  {
+   "number": 9,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini dinamakan \"At-Taubah\" yang berarti pengampunan berhubung kata \"At-Taubah\" disebut berulang kali dalam surat ini. Dinamakan juga dengan \"Baraa'ah\" yang berarti berlepas diri yang di sini maksudnya pernyataan pemutusan hubungan, disebabkan kebanyakan pokok pembicaraannya tentang pernyataan pemutusan perjanjian damai dengan kaum musyrikin."
+  },
+  {
+   "number": 10,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini dinamai \"Yunus\" karena di dalamnya disebutkan kisah Nabi Yunus dan pengikut-pengikutnya yang memiliki keteguhan iman."
+  },
+  {
+   "number": 11,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Hud termasuk surat Makkiyyah, terdiri dari 123 ayat, dan diturunkan setelah surat Yunus. Surat ini dinamai Hud karena di dalamnya terdapat kisah Nabi Hud dan kaumnya."
+  },
+  {
+   "number": 12,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Yusuf ini terdiri dari 111 ayat dan termasuk surat Makkiyyah karena diturunkan di Mekah sebelum hijrah. Surat ini dinamai Yusuf karena titik berat isinya mengenai kisah Nabi Yusuf."
+  },
+  {
+   "number": 13,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Ar-Ra'd terdiri dari 43 ayat dan termasuk surat Madaniyyah. Surat ini dinamakan \"Ar-Ra'd\" yang berarti \"guruh\" karena dalam ayat ke-13 Allah berfirman yang artinya, \"Dan guruh itu bertasbih sambil memuji-Nya,\" yang menunjukkan sifat kesucian dan kesempurnaan Allah."
+  },
+  {
+   "number": 14,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 52 ayat dan termasuk surat Makkiyyah karena diturunkan di Mekah sebelum Hijrah. Dinamakan surat \"IBRAHIM\", karena surat ini menyinggung doa Nabi Ibrahim pada ayat ke-35 sampai ke-41."
+  },
+  {
+   "number": 15,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 99 ayat dan termasuk surat Makkiyyah karena diturunkan di Mekah sebelum Hijrah. Al-Hijr adalah nama sebuah pegunungan yang pada zaman dahulu didiami kaum Tsamud, terletak di pinggir jalan antara Madinah dan Syam (Syiria)."
+  },
+  {
+   "number": 16,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 128 ayat dan termasuk surat Makkiyyah. Surat ini dinamakan \"An-Nahl\" yang berarti \"lebah\" karena di dalamnya terdapat firman Allah pada ayat 68 yang artinya, \"Dan Tuhanmu mengilhamkan kepada lebah.\" Lebah adalah makhluk Allah yang banyak memberi manfaat dan kenikmatan pada manusia."
+  },
+  {
+   "number": 17,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 111 ayat dan termasuk surat Makkiyyah. Dinamakan dengan \"Al-Isra'\" yang berarti \"memperjalankan pada malam hari,\" berhubung peristiwa Isra' Nabi Muhammad dari Masjidil Haram di Mekah ke Masjidil Aqsha di Baitul Maqdis dicantumkan pada ayat pertama surat ini."
+  },
+  {
+   "number": 18,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri daris 110 ayat dan termasuk surat Makkiyyah. Dinamai \"Al-Kahfi\" yang berarti \"Gua\" dan \"Ashhabul Kahfi\" yang berarti \"Penghuni gua\"."
+  },
+  {
+   "number": 19,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Maryam terdiri dari 98 ayat, dan termasuk surat Makkiyyah, karena hampir seluruh ayatnya diturunkan sebelum Nabi Muhammad hijrah ke Madinah, bahkan sebelum sahabat-sahabat beliau hijrah ke negeri Habasyah. Menurut riwayat Ibnu Mas'ud, Ja'far bin Abi Thalib membacakan permulaan surat Maryam ini kepada raja Najasyi dan pengikutnya ketika ia ikut hijrah bersama sahabat-sahabat yang lain ke negeri Habasyah."
+  },
+  {
+   "number": 20,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Thaha terdiri dari 135 ayat, diturunkan setelah diturunkannya surat Maryam, dan termasuk surat Makkiyyah. Surat ini dinamai \"Thaha\", diambil dari perkataan yang berasal dari ayat pertama surat ini."
+  },
+  {
+   "number": 21,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Anbiya' terdiri dari 112 ayat dan termasuk surat Makkiyyah. Surat ini dinamai dengan \"Al-Anbiya'\" (nabi-nabi), karena surat ini mengutarakan kisah beberapa nabi."
+  },
+  {
+   "number": 22,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Hajj termasuk surat Madaniyyah dan terdiri dari 78 ayat. Menurut sebagian ahli tafsir, surat Al-Hajj termasuk surat Makkiyyah."
+  },
+  {
+   "number": 23,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Mu'minun terdiri dari 118 ayat dan termasuk surat Makkiyyah. Dinamai \"Al-Mu'minun\" karena permulaan surat ini menerangkan tentang sifat-sifat orang mukmin yang mendatangkan keberuntungan di akhirat dan ketenteraman jiwa di dunia."
+  },
+  {
+   "number": 24,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat An-Nur terdiri dari 64 ayat dan termasuk surat Madaniyyah. Dinamai \"An-Nur\" yang berarti \"Cahaya\" diambil dari kata \"An-Nur\" yang terdapat pada ayat ke-35."
+  },
+  {
+   "number": 25,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 77 ayat dan termasuk golongan surat Makkiyyah. Dinamakan \"Al-Furqan\" yang artinya \"pembeda\" diambil dari kata \"Al-Furqan\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 26,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 227 ayat dan termasuk golongan surat Makkiyyah. Dinamakan \"Asy Syu'ara'\" yang berarti penyair diambil dari kata \"Asy Syu'ara'\" yang terdapat pada ayat ke-224, ketika Allah secara khusus menyebutkan kedudukan para penyair."
+  },
+  {
+   "number": 27,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat An-Naml terdiri dari 93 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Asy-Syu'ara'. Dinamai dengan \"An-Naml\", karena pada ayat ke-18 dan ke-19 terdapat perkataan \"An-Naml\" (semut), ketika raja semut memerintahkan anak buahnya untuk masuk ke sarangnya masing-masing, agar tidak terinjak oleh Nabi Sulaiman dan bala tentaranya yang akan lewat di tempat itu."
+  },
+  {
+   "number": 28,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Qashash terdiri dari 88 ayat dan termasuk surat Makkiyyah. Dinamai dengan \"Al-Qashash\" karena pada ayat ke-25 surat ini terdapat kata \"Al-Qashash\" yang berarti \"cerita\"."
+  },
+  {
+   "number": 29,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-'Ankabut terdiri dari 69 ayat dan termasuk golongan surat Makkiyyah. Dinamai \"Al-'Ankabut\" berhubung kata Al-'Ankabut yang berarti \"laba-laba\" terdapat pada ayat 41 surat ini, ketika Allah mengumpamakan para penyembah berhala dengan laba-laba yang meyakini kekuatan sarangnya sebagai tempat berlindung dan tempat menjerat mangsa, padahal jika dihembuskan angin atau ditimpa suatu barang yang kecil, sarang itu akan hancur."
+  },
+  {
+   "number": 30,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Ar-Rum yang terdiri dari 60 ayat, termasuk surat Makkiyyah, dan diturunkan setelah surat Al-Insyiqaq. Dinamakan Ar-Rum karena pada permulaan surat ini, yaitu ayat ke-2, ke-3, dan ke-4 terdapat berita tentang bangsa Romawi yang pada mulanya dikalahkan bangsa Persia, tetapi setelah beberapa tahun kemudian kerajaan Romawi dapat menuntut balas dan mengalahkan kerajaan Persia kembali."
+  },
+  {
+   "number": 31,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Luqman terdiri dari 34 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Ash-Shaffat. Dinamai \"Luqman\" karena pada ayat ke-12 disebutkan bahwa \"Luqman\" telah diberi nikmat dan ilmu pengetahuan oleh Allah."
+  },
+  {
+   "number": 32,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat As-Sajdah terdiri dari 30 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Al-Mukminun. Dinamakan \"As-Sajdah\" berhubung pada surat ini terdapat ayat Sajdah, yaitu ayat yang kelima belas."
+  },
+  {
+   "number": 33,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Ahzab terdiri dari 73 ayat, termasuk golongan surat Madaniyyah, dan diturunkan setelah surat Ali 'Imran. Dinamai \"Al-Ahzab\" yang berarti \"golongan-golongan yang bersekutu\" karena dalam surat ini terdapat ayat-ayat, ayat ke-9 sampai ayat ke-27, yang berhubungan dengan peperangan Al-Ahzab, yaitu perang yang dilancarkan oleh orang-orang Yahudi, kaum munafik, dan orang-orang musyrik terhadap orang-orang mukmin di Madinah."
+  },
+  {
+   "number": 34,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Saba' terdiri dari 54 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Luqman. Dinamakan Saba' karena di dalamnya terdapat kisah kaum Saba'."
+  },
+  {
+   "number": 35,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Fathir terdiri dari 45 ayat, termasuk golongan surat Makkiyyah, diturunkan setelah surat Al-Furqan, dan merupakan surat terakhir di antara urutan surat-surat dalam Al-Qur'an yang dimulai dengan \"Alhamdulillah\". Dinamakan \"Fathir\" (pencipta) karena ada hubungannya dengan kata \"Fathir\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 36,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Yasin terdiri dari 83 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Jin. Dinamai \"Yasin\" karena dimulai dengan huruf \"Yasin\"."
+  },
+  {
+   "number": 37,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Ash-Shaffat terdiri dari 182 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Al-An'am. Dinamai dengan \"Ash-Shaffat\" (yang bershaf-shaf) karena ada hubungannya dengan kata \"Ash-Shaffat\" yang terletak pada ayat pertama surat ini, yang mengemukakan bagaimana para malaikat, yang bersih jiwanya dan tidak dapat digoda setan, berbaris di hadapan Allah."
+  },
+  {
+   "number": 38,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Shad terdiri dari 88 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Al-Qamar. Dinamai dengan \"Shad\" karena surat ini dimulai dengan kata \"Shad\" (selanjutnya lihat catatan kaki ayat ke-1 surat Al-Baqarah)."
+  },
+  {
+   "number": 39,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Az-Zumar terdiri dari 75 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Saba'. Dinamakan \"Az-Zumar\" (rombongan-rombongan) karena kata \"Az-Zumar\" terdapat pada ayat ke-71 dan ke-73."
+  },
+  {
+   "number": 40,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat \"Ghafir\" terdiri atas 85 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Az-Zumar. Dinamakan \"Ghafir\" (yang mengampuni), karena ada hubungannya dengan kata \"Ghafir\" yang terdapat pada ayat ke-3 surat ini."
+  },
+  {
+   "number": 41,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Fussilat terdiri dari 54 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Al-Mu'min. Dinamai \"Fussilat\" (yang dijelaskan) karena ada hubungannya dengan kata \"Fussilat\" yang terdapat pada permulaan surat ini."
+  },
+  {
+   "number": 42,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Asy-Syura terdiri dari 53 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Fussilat. Dinamai \"Asy-Syura\" (musyawarat) diambil dari kata \"Syura\" yang terdapat pada ayat ke-38 surat ini."
+  },
+  {
+   "number": 43,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Az-Zukhruf terdiri dari 89 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Asy-Syura. Dinamai Az-Zukhruf (perhiasan) diambil dari kata \"Az-Zukhruf\" yang terdapat pada ayat ke-35 surat ini."
+  },
+  {
+   "number": 44,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Ad-Dukhan terdiri dari 59 ayat, termasuk golongan surat Makkiyyah, diturunkan setelah surat Az-Zukhruf. Dinamai \"Ad-Dukhan\" (kabut) diambil dari kata \"Dukhaan\" yang terdapat pada ayat ke-10 surat ini."
+  },
+  {
+   "number": 45,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Jatsiyah terdiri dari 37 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Ad-Dukhan. Dinamai \"Al-Jatsiyah\" (yang berlutut) diambil dari kata \"Jatsiyah\" yang terdapat pada ayat ke-28 surat ini."
+  },
+  {
+   "number": 46,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Ahqaf terdiri dari 35 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Al-Jatsiyah. Dinamai \"Al-Ahqaf\" (bukit-bukit pasir) dari kata \"Al-Ahqaf\" yang terdapat pada ayat ke-21 surat ini."
+  },
+  {
+   "number": 47,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Muhammad terdiri dari 38 ayat, termasuk golongan surat Madaniyyah, dan diturunkan setelah surat Al-Hadid. Surat ini diberi nama \"Muhammad\" diambil dari kata \"Muhammad\" yang terdapat pada ayat ke-2 surat ini."
+  },
+  {
+   "number": 48,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Fath terdiri dari 29 ayat, termasuk golongan surat Madaniyyah, dan diturunkan setelah surat Al-Jumu'ah. Dinamai \"Al-Fath (kemenangan)\" diambil dari kata \"Fat-han\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 49,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Hujurat terdiri dari 18 ayat, termasuk golongan surat Madaniyyah, dan diturunkan setelah surat Al-Mujadilah. Dinamai \"Al-Hujurat\" (kamar) diambil dari kata \"Al-Hujurat\" yang terdapat pada ayat ke-4 surat ini."
+  },
+  {
+   "number": 50,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Qaf terdiri dari 45 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Al-Mursalat. Dinamai \"Qaf\" karena surat ini dimulai dengan huruf Hijaiyah \"Qaf.\" Menurut hadis yang diriwayatkan Imam Muslim, bahwa Rasulullah senang membaca surat ini pada rakaat pertama shalat subuh dan pada shalat hari raya."
+  },
+  {
+   "number": 51,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Adz-Dzaariyaat terdiri dari 60 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Al-Ahqaf. Dinamai \"Adz-Dzariyat\" (angin yang menerbangkan) diambil dari kata \"Adz-Dzariyat\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 52,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Ath-Thur terdiri dari 49 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat As-Sajdah. Dinamai \"Ath-Thur\" (Bukit) diambil dari kata \"Ath-Thur\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 53,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat An-Najm terdiri dari 62 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Al-Ikhlas. Nama \"An-Najm\" (bintang) diambil dari kata \"An-Najm\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 54,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Qamar terdiri dari 55 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Ath-Thariq. Nama \"Al-Qamar\" (bulan) diambil dari kata \"Al-Qamar\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 55,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Ar-Rahman terdiri dari 78 ayat, termasuk golongan surat Madaniyyah, dan diturunkan setelah surat Ar-Ra'd. Dinamai \"Ar-Rahman\" (Yang Maha Pengasih) diambil dari kata \"Ar-Rahman\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 56,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Waqi'ah terdiri dari 96 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Thaha. Dinamai \"Al-Waqi'ah\" (hari kiamat) diambil dari kata \"Al-Waqi'ah\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 57,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Hadid terdiri dari 29 ayat, termasuk golongan surat Madaniyyah, dan diturunkan setelah surat Az-Zalzalah. Dinamai \"Al-Hadid\" (besi) diambil dari kata \"Al-Hadid\" yang terdapat pada ayat ke-25 surat ini."
+  },
+  {
+   "number": 58,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Mujadalah terdiri dari 22 ayat, termasuk golongan surat Madaniyyah, dan diturunkan setelah surat Al-Munafiqun. Surat ini dinamai \"Al-Mujadalah\" (Perbantahan) karena pada awal surat ini disebutkan bantahan seorang perempuan, menurut sebuah riwayat, bernama Khaulah binti Tsa'labah terhadap sikap suaminya yang telah menzhiharnya."
+  },
+  {
+   "number": 59,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Hasyr terdiri dari 24 ayat, termasuk golongan surat Madaniyyah, dan diturunkan setelah surat Al-Bayyinah. Surat ini dinamai \"Al-Hasyr\" (pengusiran) diambil dari kata \"Al-Hasyr\" yang terdapat pada ayat kedua surat ini."
+  },
+  {
+   "number": 60,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Mumtahanah terdiri dari 13 ayat, termasuk golongan surat Madaniyyah, dan diturunkan sesudah surat Al-Ahzab. Dinamai \"Al-Mumtahanah\" (perempuan yang diuji) diambil dari kata \"Famtahinuuhunna\" yang berarti \"maka ujilah mereka\", yang terdapat pada ayat ke-10 surat ini."
+  },
+  {
+   "number": 61,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Ash-Shaff terdiri dari 14 ayat dan termasuk golongan surat Madaniyyah. Dinamai dengan \"Ash-Shaff\", karena pada ayat keempat surat ini terdapat kata \"Shaffan\" yang berarti \"satu barisan\"."
+  },
+  {
+   "number": 62,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Jumu'ah ini terdiri dari 11 ayat, termasuk golongan surat Madaniyyah, dan diturunkan sesudah surat Ash-Shaff. Nama surat Al-Jumu'ah diambil dari kata \"Al-Jumu'ah\" yang terdapat pada ayat kesembilan surat ini yang artinya hari Jumat."
+  },
+  {
+   "number": 63,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 11 ayat, termasuk golongan surat Madaniyyah, dan diturunkan sesudah surat Al-Hajj. Surat ini dinamai \"Al-Munafikun\", yang artinya orang-orang munafik, karena mengungkapkan sifat-sifat orang-orang munafik."
+  },
+  {
+   "number": 64,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 18 ayat, termasuk golongan surat Madaniyyah, dan diturunkan sesudah surat At-Tahrim. Nama At-Taghabun diambil dari kata \"At-Taghabun\" yang terdapat pada ayat ke-9 yang artinya hari kesalahan-kesalahan ditampakkan."
+  },
+  {
+   "number": 65,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 12 ayat, termasuk golongan surat Madaniyyah, dan diturunkan setelah surat Al-Insan. Dinamai surat Ath-Thalaq karena kebanyakan ayat-ayatnya menyinggung masalah talak dan hal-hal yang terkait dengan itu."
+  },
+  {
+   "number": 66,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 12 ayat, termasuk golongan surat Madaniyyah, dan diturunkan setelah surat Al-Hujurat. Dinamai surat At-Tahrim karena pada awal surat ini terdapat kata \"tuharrim\" yang kata asalnya adalah At-Tahrim yang berarti \"mengharamkan\"."
+  },
+  {
+   "number": 67,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 30 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Ath-Thuur. Nama \"Al-Mulk\" diambil dari kata \"Al-Mulk\" yang terdapat pada ayat pertama surat ini yang artinya kerajaan atau kekuasaan."
+  },
+  {
+   "number": 68,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 52 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Al-'Alaq. Nama \"Al-Qalam\" diambil dari kata Al-Qalam yang terdapat pada ayat pertama surat ini yang artinya \"pena\"."
+  },
+  {
+   "number": 69,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 52 ayat, termasuk surat Makkiyyah, dan diturunkan setelah surat Al-Mulk. Nama \"Al-Haqqah\" yang artinya \"hari kiamat\" diambil dari kata \"Al-Haqqah\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 70,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 44 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat Al-Haqqah. Perkataan \"Al-Ma'arij\" yang menjadi nama surat ini adalah kata jamak dari \"Mi'raj\", diambil dari kata Al-Ma'arij yang terdapat pada ayat ketiga, yang artinya menurut bahasa ialah tempat naik."
+  },
+  {
+   "number": 71,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 28 ayat, termasuk golongan surat Makkiyyah, dan diturunkan setelah surat An-Nahl. Dinamakan dengan surat \"Nuh\" karena seluruh surat ini menjelaskan tentang dakwah dan doa Nabi Nuh."
+  },
+  {
+   "number": 72,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Jin terdiri dari 28 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-A'raf. Dinamai \"Al-Jin\" (jin) diambil dari kata \"Al-Jin\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 73,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Muzzammil terdiri dari 20 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Qalam. Dinamai \"Al-Muzzammil\" (orang yang berselimut) diambil dari kata \"Al-Muzzammil\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 74,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Muddassir terdiri dari 56 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Muzzammil. Dinamai \"Al-Muddassir\" (orang yang berkemul) diambil dari kata \"Al-Muddassir\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 75,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Qiyamah terdiri adari 40 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Qari'ah. Dinamai \"Al-Qiyamah\" (hari kiamat) diambil dari kata \"Al-Qiyamah\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 76,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al Insan terdiri dari 31 ayat, termasuk golongan surat Madaniyyah, dan diturunkan sesudah surat Ar-Rahman. Dinamai \"Al-Insan\" (manusia) diambil dari kata \"Al-Insan\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 77,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Mursalat terdiri dari 50 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Humazah. Dinamai \"Al-Mursalat\" (malaikat-malaikat yang diutus) diambil dari kata \"Al-Mursalat\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 78,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat An-Naba' terdiri dari 40 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Ma'arij. Dinamai \"An-Naba'\" (berita besar) diambil dari kata An-Naba' yang terdapat pada ayat kedua surat ini."
+  },
+  {
+   "number": 79,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat An-Nazi'at terdiri dari 46 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat An-Naba'. Dinamai \"An-Nazi'at (malaikat-malaikat yang mencabut) diambil dari kata \"An-Nazi'at yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 80,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat 'Abasa terdiri dari 42 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat An-Najm. Dinamai \"Abasa\" (bermuka masam) diambil dari kata 'Abasa yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 81,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat At-Takwir terdiri dari 29 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Masad. Kata \"At-Takwir\" yang menjadi nama bagi surat ini berasal dari kata kerja \"kuwwirat\" (digulung) yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 82,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 19 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat An-Nazi'aat. Al-Infithar yang dijadikan nama surat ini berasal dari kata \"Infatharat\" (yang berarti terbelah) yang terdapat pada ayat pertama."
+  },
+  {
+   "number": 83,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 36 ayat, termasuk golongan surat Makkiyyah, diturunkan sesudah surat Al-'Ankabut, dan merupakan surat terakhir yang diturunkan di Mekah sebelum hijrah. Al-Muthaffifin yang dijadikan nama surat ini diambil dari kata \"Al-Muthaffifin\" yang terdapat pada ayat pertama."
+  },
+  {
+   "number": 84,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Insyiqaq, terdiri dari 25 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Infithar. Dinamai \"Al-Insyiqaq\" (terbelah) diambil dari kata \"insyaqqat\" yang terdapat pada permulaan surat ini, yang pokok katanya ialah \"insyiqaq\"."
+  },
+  {
+   "number": 85,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Buruj terdiri dari 22 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Asy-Syams. Dinamai \"Al-Buruj\" (gugusan bintang) diambil dari kata \"Al-Buruj\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 86,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Ath-Thariq terdiri dari 17 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Balad. Dinamai \"Ath-Thariq\" (yang datang di malam hari) diambil dari kata \"Ath-Thariq\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 87,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 19 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat At-Takwiir. Nama Al-A'la diambil dari kata \"Al-A'la\" yang terdapat pada ayat pertama, berarti \"Yang Paling Tinggi\"."
+  },
+  {
+   "number": 88,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 26 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Adz-Dzaariyaat. Nama \"Al-Ghasyiyah\" diambil dari kata \"Al-Ghasyiyah\" yang terdapat pada ayat pertama surat ini yang artinya peristiwa yang dahsyat, tapi yang dimaksud adalah hari kiamat."
+  },
+  {
+   "number": 89,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 30 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Lail. Nama Al-Fajr diambil dari kata \"Al-Fajr\" yang terdapat pada ayat pertama surat ini yang artinya \"fajar.\" **Pokok-Pokok Isi:** Allah bersumpah bahwa azab terhadap orang-orang kafir tidak akan dapat dielakkan; beberapa contoh umat-umat yang sudah dibinasakan; kenikmatan hidup atau bencana yang dialami oleh seseorang, bukanlah tanda penghormatan atau penghinaan Allah kepadanya tetapi murni cobaan belaka; celaan terhadap orang orang yang tidak mau memelihara anak yatim dan tidak memberi makan orang miskin; kecaman terhadap orang yang memakan harta warisan dengan campur aduk; malapetaka yang dihadapi orang-orang kafir pada hari kiamat; orang-orang yang berjiwa tenang mendapat kemuliaan di sisi Allah."
+  },
+  {
+   "number": 90,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Balad terdiri dari 20 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Qaf. Dinamai Al-Balad diambil dari kata \"Al-Balad\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 91,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Asy-Syams terdiri dari 15 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Qadr. Dinamai \"Asy-Syams\" (matahari) diambil dari kata Asy-Syams yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 92,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Lail terdiri dari 21 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-A'la. Surat ini dinamai Al-Lail (malam) diambil dari kata \"Al-Lail\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 93,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 11 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Fajr. Nama Adh-Dhuha diambil dari kata \"Adh-Dhuha\" yang terdapat pada ayat pertama, artinya waktu dhuha (matahari naik sepenggalah)."
+  },
+  {
+   "number": 94,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 8 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Adh-Dhuha. Nama Asy-Syarh diambil dari kata kerja \"Nasyrah\" yang terdapat pada ayat pertama, yang berarti melapangkan."
+  },
+  {
+   "number": 95,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 8 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Buruj. Nama At-Tin diambil dari kata \"At-Tin\" yang terdapat pada ayat pertama surat ini yang artinya buah tin."
+  },
+  {
+   "number": 96,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-'Alaq terdiri dari 19 ayat dan termasuk golongan surat Makkiyyah. Ayat pertama sampai ayat kelima dari surat ini adalah ayat-ayat yang pertama kali diturunkan, yaitu ketika Nabi Muhammad berkhalwat di gua Hira'."
+  },
+  {
+   "number": 97,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Qadr terdiri daro 5 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat 'Abasa. Surat ini dinamai Al-Qadr (kemuliaan) diambil dari kata \"Al-Qadr\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 98,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Bayyinah terdiri dari 8 ayat, termasuk golongan surat Madaniyyah, dan diturunkan sesudah surat Ath-Thalaq. Dinamai Al-Bayyinah (bukti yang nyata) diambil dari kata \"Al-Bayyinah\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 99,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 8 ayat, termasuk golongan surat Madaniyyah, dan diturunkan sesudah surat An-Nisaa'. Nama Az-Zalzalah diambil dari kata \"Zilzal\" yang terdapat pada ayat pertama surat ini yang berarti guncangan."
+  },
+  {
+   "number": 100,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 11 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-'Ashr. Nama Al-'Adiyat diambil dari kata \"Al-'Adiyat\" yang terdapat pada ayat pertama surat ini, artinya kuda yang berlari kencang."
+  },
+  {
+   "number": 101,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 11 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Quraisy. Nama Al-Qari'ah diambil dari kata \"Al-Qari'ah\" yang terdapat pada ayat pertama, artinya yang mengetuk dengan keras, kemudian kata ini dipakai untuk nama hari kiamat."
+  },
+  {
+   "number": 102,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat At-Takatsur terdiri dari 8 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Kautsar. Dinamai At-Takatsur (bermegah-megahan) diambil dari kata \"At-Takatsur\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 103,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-'Ashr terdiri dari3 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Asy-Syarh. Dinamai Al-'Ashr (masa) diambil dari kata \"Al-'Ashr\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 104,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Humazah terdiri dari 9 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Qiyamah. Dinamai Al-Humazah (pengumpat) diambil dari kata \"Humazah\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 105,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 5 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Kafirun. Nama Al-Fil diambil dari kata \"Al-Fil\" yang terdapat pada ayat pertama surat ini, artinya \"gajah\"."
+  },
+  {
+   "number": 106,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 4 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat At-Tin. Nama Quraisy diambil dari kata \"Quraisy\" yang terdapat pada ayat pertama, artinya suku Quraisy."
+  },
+  {
+   "number": 107,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 7 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat At-Takatsur. Nama Al-Ma'un diambil dari kata \"Al-Ma'un\" yang terdapat pada ayat ketujuh, artinya bantuan."
+  },
+  {
+   "number": 108,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Kautsar terdiri dari 3 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-'Aadiyat. Dinamai Al-Kautsar (sungai di surga yang dianugerahkan kepada Nabi Muhammad) diambil dari kata \"Al-Kautsar\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 109,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat Al-Kafirun terdiri dari 6 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Ma'un. Dinamai Al-Kafirun (orang-orang kafir) diambil dari kata \"Al-Kafirun\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 110,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat An-Nashr terdiri dari 3 ayat, termasuk golongan surat Madaniyyah, dan diturunkan di Mekah sesudah surat At-Taubah. Dinamai An-Nashr (pertolongan) diambil dari kata \"Nashr\" yang terdapat pada ayat pertama surat ini."
+  },
+  {
+   "number": 111,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 5 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Fath Nama Al-Lahab diambil dari kata \"Lahab\" yang terdapat pada ayat ketiga surat ini, yang artinya gejolak api. Surat ini juga dinamakan surat \"Al Masad\"."
+  },
+  {
+   "number": 112,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 4 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat An-Naas. Dinamakan Al-Ikhlas karena surat ini sepenuhnya menegaskan kemurnian keesaan Allah."
+  },
+  {
+   "number": 113,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 5 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Fil. Nama Al-Falaq diambil dari kata \"Al-Falaq\" yang terdapat pada ayat pertama surat ini, yang artinya waktu subuh."
+  },
+  {
+   "number": 114,
+   "language": "indonesian",
+   "source": "Indonesian Translation - King Fahad Complex",
+   "summary": "Surat ini terdiri dari 6 ayat, termasuk golongan surat Makkiyyah, dan diturunkan sesudah surat Al-Falaq. Nama An-Nas diambil dari \"An-Nas\" yang berulang kali disebut dalam surat ini, yang artinya manusia."
+  }
+ ]
+}

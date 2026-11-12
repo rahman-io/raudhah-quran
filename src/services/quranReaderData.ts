@@ -129,3 +129,47 @@ export function loadReaderSurah(number: number): Promise<ReaderSurah> {
   }
   return cached;
 }
+
+/* ------------------------------------------------------------------ */
+/* Info surah (latar belakang turun, makna nama, tema)                */
+/* Hasil impor scripts/import-surah-info.mjs dari Quran.com Chapter Info */
+/* ------------------------------------------------------------------ */
+
+export interface SurahInfoSummary {
+  number: number;
+  language: string;
+  source: string;
+  summary: string;
+}
+
+export interface SurahInfoDetail extends SurahInfoSummary {
+  /** HTML yang sudah disaring saat impor (hanya tag dasar tanpa atribut). */
+  html: string;
+}
+
+let infoIndexPromise: Promise<Map<number, SurahInfoSummary>> | null = null;
+const infoCache = new Map<number, Promise<SurahInfoDetail | null>>();
+
+/** Ringkasan info ke-114 surah; peta kosong bila data belum diimpor. */
+export function loadSurahInfoIndex(): Promise<Map<number, SurahInfoSummary>> {
+  infoIndexPromise ??= fetch(assetUrl('/surah-info/index.json'))
+    .then((response) => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json() as Promise<{ surahs: SurahInfoSummary[] }>;
+    })
+    .then((data) => new Map((data.surahs ?? []).map((s) => [s.number, s] as [number, SurahInfoSummary])))
+    .catch(() => new Map<number, SurahInfoSummary>());
+  return infoIndexPromise;
+}
+
+/** Info lengkap satu surah; null bila belum tersedia. */
+export function loadSurahInfo(number: number): Promise<SurahInfoDetail | null> {
+  let cached = infoCache.get(number);
+  if (!cached) {
+    cached = fetch(assetUrl(`/surah-info/${number}.json`))
+      .then((response) => (response.ok ? (response.json() as Promise<SurahInfoDetail>) : null))
+      .catch(() => null);
+    infoCache.set(number, cached);
+  }
+  return cached;
+}
