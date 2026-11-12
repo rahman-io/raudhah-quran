@@ -81,5 +81,6 @@ export interface UserStats {
   soundEnabled: boolean;
   fontSize: number; // 24 to 48px
   reciterSpeed: number; // 0.8 or 1.0
+  reciterId?: string; // qari murottal (lihat src/data/reciters.ts)
   mode: UserMode;
 }

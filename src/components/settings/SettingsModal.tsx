@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Volume2, VolumeX, Sparkles, Type, Sliders, RefreshCw, Moon, Sun, Check } from 'lucide-react';
+import { X, Volume2, VolumeX, Sparkles, Type, Sliders, RefreshCw, Moon, Sun, Check, Mic, Play, Pause } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
+import { RECITERS } from '../../data/reciters';
+
+/** Contoh suara qari: Al-Fatihah ayat 2. */
+const SAMPLE_AYAH = { surahNumber: 1, ayahNumber: 2, globalAyahNumber: 2 };
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -19,6 +23,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     toggleSound,
     reciterSpeed,
     setReciterSpeed,
+    reciterId,
+    setReciterId,
+    pauseMurottal,
     firebaseConfigured,
     firebaseUser,
     syncStatus,
@@ -26,6 +33,39 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     signOut,
     resetProgress
   } = useQuranGame();
+
+  // Pratinjau suara qari di dalam pengaturan
+  const previewRef = useRef<HTMLAudioElement | null>(null);
+  const [previewId, setPreviewId] = useState<string | null>(null);
+
+  const stopPreview = () => {
+    previewRef.current?.pause();
+    setPreviewId(null);
+  };
+
+  const togglePreview = (id: string) => {
+    if (previewId === id) {
+      stopPreview();
+      return;
+    }
+    const reciter = RECITERS.find((r) => r.id === id);
+    if (!reciter) return;
+    pauseMurottal();
+    previewRef.current ??= new Audio();
+    const audio = previewRef.current;
+    audio.pause();
+    audio.src = reciter.url(SAMPLE_AYAH);
+    audio.onended = () => setPreviewId(null);
+    audio.onerror = () => setPreviewId(null);
+    setPreviewId(id);
+    audio.play().catch(() => setPreviewId(null));
+  };
+
+  useEffect(() => {
+    if (!isOpen) stopPreview();
+  }, [isOpen]);
+
+  useEffect(() => () => previewRef.current?.pause(), []);
 
   const handleResetData = async () => {
     if (window.confirm('Apakah Anda yakin ingin mereset seluruh progres hafalan dan poin? Tindakan ini tidak dapat dibatalkan.')) {
@@ -47,7 +87,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-md bg-[#F8F6F1] dark:bg-[#1E293B] border border-[#477F8D]/40 rounded-3xl p-6 shadow-xl text-[#293640] dark:text-[#E2E8F0] space-y-5"
+            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-[#F8F6F1] dark:bg-[#1E293B] border border-[#477F8D]/40 rounded-3xl p-6 shadow-xl text-[#293640] dark:text-[#E2E8F0] space-y-5"
           >
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700">
@@ -172,6 +212,66 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
           {/* Reciter Speed & Sound */}
           <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700 text-xs">
+            {/* Pilihan Qari */}
+            <div className="space-y-2">
+              <span className="font-semibold text-[#246579] dark:text-[#94A3B8] flex items-center gap-1.5">
+                <Mic className="w-4 h-4" />
+                <span>Suara Qari (Murottal):</span>
+              </span>
+              <div
+                role="radiogroup"
+                aria-label="Pilih suara qari"
+                className="max-h-56 overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700"
+              >
+                {RECITERS.map((reciter) => {
+                  const selected = reciter.id === reciterId;
+                  const previewing = previewId === reciter.id;
+                  return (
+                    <div key={reciter.id} className={`flex items-center gap-2 px-3 py-2 ${selected ? 'bg-[#246579]/5 dark:bg-[#246579]/20' : ''}`}>
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => {
+                          sounds.playWordClick();
+                          setReciterId(reciter.id);
+                        }}
+                        className="flex-1 min-w-0 flex items-center gap-2 text-left"
+                      >
+                        <span
+                          className={`w-4 h-4 shrink-0 rounded-full border flex items-center justify-center ${
+                            selected ? 'border-[#246579] bg-[#246579] text-white' : 'border-slate-300 dark:border-slate-500'
+                          }`}
+                        >
+                          {selected && <Check className="w-3 h-3" />}
+                        </span>
+                        <span className="min-w-0">
+                          <span className={`block truncate font-semibold ${selected ? 'text-[#173B4E] dark:text-white' : 'text-[#293640] dark:text-slate-200'}`}>
+                            {reciter.name}
+                          </span>
+                          <span className="block truncate text-[10px] text-slate-500 dark:text-slate-400">{reciter.note}</span>
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => togglePreview(reciter.id)}
+                        className={`shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
+                          previewing ? 'bg-[#D3A253] text-[#173B4E]' : 'bg-slate-100 dark:bg-slate-700 text-[#246579] dark:text-slate-200 hover:bg-slate-200'
+                        }`}
+                        aria-label={previewing ? `Hentikan contoh suara ${reciter.name}` : `Dengar contoh suara ${reciter.name}`}
+                        title={previewing ? 'Hentikan' : 'Dengar contoh (Al-Fatihah: 2)'}
+                      >
+                        {previewing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                Dipakai untuk semua tombol putar murottal. Tekan ▶ untuk mendengar contoh.
+              </p>
+            </div>
+
             {/* Audio Speed */}
             <div className="flex items-center justify-between">
               <span className="font-medium text-[#246579] dark:text-[#94A3B8]">

@@ -7,6 +7,7 @@ import { onAuthStateChanged, type User } from 'firebase/auth';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { firebaseAuth, firebaseConfigured, firestore, signInWithGoogle, signOutFromFirebase } from '../services/firebaseClient';
 import { useFirebaseCollection } from '../services/firebaseContent';
+import { DEFAULT_RECITER_ID, reciterAudioUrl } from '../data/reciters';
 
 interface QuranGameContextType {
   surahs: Surah[];
@@ -25,6 +26,8 @@ interface QuranGameContextType {
   toggleSound: () => void;
   reciterSpeed: number;
   setReciterSpeed: (speed: number) => void;
+  reciterId: string;
+  setReciterId: (id: string) => void;
 
   // Stats
   xp: number;
@@ -84,6 +87,7 @@ const defaultStats: UserStats = {
   soundEnabled: true,
   fontSize: 32,
   reciterSpeed: 1.0,
+  reciterId: DEFAULT_RECITER_ID,
   mode: 'ceria'
 };
 
@@ -285,6 +289,10 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   }, []);
 
+  const setReciterId = useCallback((reciterId: string) => {
+    setStats((prev) => ({ ...prev, reciterId }));
+  }, []);
+
   const checkBadgeUnlocks = useCallback((memorizedCount: number, streak: number, unlockedBadges: string[]) => {
     const newUnlocked = [...unlockedBadges];
     let badgeEarned: string | null = null;
@@ -445,7 +453,9 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
 
     const audio = audioRef.current;
     audio.pause();
-    audio.src = ayah.audioUrl;
+    // Suara qari pilihan pengguna; bila gagal dimuat, kembali ke audio bawaan ayat.
+    const reciterUrl = reciterAudioUrl(stats.reciterId, ayah);
+    audio.src = reciterUrl || ayah.audioUrl;
     audio.playbackRate = stats.reciterSpeed;
 
     audio.onended = () => {
@@ -456,19 +466,27 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
       }
     };
 
-    audio.onerror = () => {
-      setIsPlayingAudio(false);
-      setCurrentPlayingAyahId(null);
-    };
-
-    audio.play().then(() => {
+    const start = () => audio.play().then(() => {
       setIsPlayingAudio(true);
       setCurrentPlayingAyahId(ayah.id);
     }).catch(() => {
       setIsPlayingAudio(false);
       setCurrentPlayingAyahId(null);
     });
-  }, [stats.reciterSpeed]);
+
+    audio.onerror = () => {
+      if (ayah.audioUrl && audio.src !== ayah.audioUrl) {
+        audio.src = ayah.audioUrl;
+        audio.playbackRate = stats.reciterSpeed;
+        start();
+        return;
+      }
+      setIsPlayingAudio(false);
+      setCurrentPlayingAyahId(null);
+    };
+
+    start();
+  }, [stats.reciterSpeed, stats.reciterId]);
 
   return (
     <QuranGameContext.Provider
@@ -489,6 +507,8 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
         toggleSound,
         reciterSpeed: stats.reciterSpeed,
         setReciterSpeed,
+        reciterId: stats.reciterId ?? DEFAULT_RECITER_ID,
+        setReciterId,
         xp: stats.xp,
         addXP,
         streakDays: stats.streakDays,
