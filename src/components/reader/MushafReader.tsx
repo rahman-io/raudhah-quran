@@ -9,6 +9,7 @@ import {
 } from '../../services/quranReaderData';
 import { HafalanSession } from '../hafalan/HafalanSession';
 import { SURAH_VIRTUES } from '../../data/surahVirtues';
+import { MotivationCarousel } from './MotivationCarousel';
 import { getCompletedStages, getSurahsWithHafalanProgress, STAGES } from '../hafalan/hafalanPlan';
 
 const normalizeSearch = (text: string) => text.toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]/g, '');
@@ -147,6 +148,8 @@ export const MushafReader: React.FC = () => {
 
     return (
       <div ref={topRef} className="w-full space-y-4 scroll-mt-24">
+        <MotivationCarousel />
+
         <div className="flex items-baseline justify-between px-1">
           <h2 className="text-lg font-bold text-[#173B4E] dark:text-white">Daftar Surah</h2>
           {surahList.length > 0 && <span className="text-xs text-[#477F8D] dark:text-[#94A3B8]">{surahList.length} surah</span>}
