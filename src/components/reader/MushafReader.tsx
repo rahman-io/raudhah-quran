@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText } from 'lucide-react';
+import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, ExternalLink } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import {
@@ -8,6 +8,7 @@ import {
   ReaderAyah, ReaderIndex, ReaderSurah, SurahInfoDetail, SurahInfoSummary
 } from '../../services/quranReaderData';
 import { HafalanSession } from '../hafalan/HafalanSession';
+import { SURAH_VIRTUES } from '../../data/surahVirtues';
 import { getCompletedStages, getSurahsWithHafalanProgress, STAGES } from '../hafalan/hafalanPlan';
 
 const normalizeSearch = (text: string) => text.toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]/g, '');
@@ -166,7 +167,15 @@ export const MushafReader: React.FC = () => {
               >
                 <SurahNumberBadge number={s.number} />
                 <span className="flex-1 min-w-0">
-                  <span className="block text-[15px] font-semibold text-[#173B4E] dark:text-white truncate">{s.nameLatin}</span>
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span className="text-[15px] font-semibold text-[#173B4E] dark:text-white truncate">{s.nameLatin}</span>
+                    {SURAH_VIRTUES[s.number] && (
+                      <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#D3A253]/15 text-[#9A7035] dark:text-[#E9CF99] text-[10px] font-semibold" title="Memiliki keutamaan dari hadits sahih/hasan">
+                        <Sparkles className="w-3 h-3" />
+                        Keutamaan
+                      </span>
+                    )}
+                  </span>
                   <span className="block mt-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {s.revelationType}<span className="mx-1.5">•</span>{s.numberOfAyahs} Ayat
                   </span>
@@ -376,6 +385,36 @@ export const MushafReader: React.FC = () => {
               {infoExpanded ? 'Tutup' : 'Baca selengkapnya'}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Keutamaan surah: hanya dari hadits sahih/hasan yang sudah diverifikasi */}
+      {SURAH_VIRTUES[activeSurah.number] && (
+        <div className="bg-white dark:bg-slate-800/80 rounded-3xl border border-[#D3A253]/40 p-5 sm:p-6 space-y-4">
+          <div className="flex items-center gap-2 text-[#246579] dark:text-[#A7CDD3]">
+            <Sparkles className="w-4 h-4 text-[#D3A253]" />
+            <h3 className="text-sm font-bold">Keutamaan Surah {activeSurah.nameLatin}</h3>
+          </div>
+          <ul className="space-y-3">
+            {SURAH_VIRTUES[activeSurah.number].map((virtue) => (
+              <li key={virtue.reference + virtue.label} className="pl-3 border-l-2 border-[#D3A253]">
+                <p className="text-sm font-semibold text-[#173B4E] dark:text-white">{virtue.label}</p>
+                <p className="text-sm leading-relaxed text-[#293640] dark:text-[#CBD5E1] mt-0.5">{virtue.text}</p>
+                <a
+                  href={virtue.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium text-[#246579] dark:text-[#A7CDD3] hover:underline"
+                >
+                  {virtue.reference} · {virtue.grade}
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">
+            Hanya keutamaan dari hadits sahih atau hasan yang ditampilkan. Rujukan: Sunnah.com.
+          </p>
         </div>
       )}
 

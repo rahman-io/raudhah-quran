@@ -148,6 +148,10 @@ export interface SurahInfoDetail extends SurahInfoSummary {
 }
 
 let infoIndexPromise: Promise<Map<number, SurahInfoSummary>> | null = null;
+
+// Sebagian teks sumber memakai format Markdown (**tebal**). Ubah ke HTML / buang tandanya.
+const markdownBoldToHtml = (html: string) => html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*\*/g, '');
+const stripMarkdown = (text: string) => text.replace(/\*\*/g, '');
 const infoCache = new Map<number, Promise<SurahInfoDetail | null>>();
 
 /** Ringkasan info ke-114 surah; peta kosong bila data belum diimpor. */
@@ -157,7 +161,7 @@ export function loadSurahInfoIndex(): Promise<Map<number, SurahInfoSummary>> {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.json() as Promise<{ surahs: SurahInfoSummary[] }>;
     })
-    .then((data) => new Map((data.surahs ?? []).map((s) => [s.number, s] as [number, SurahInfoSummary])))
+    .then((data) => new Map((data.surahs ?? []).map((s) => [s.number, { ...s, summary: stripMarkdown(s.summary) }] as [number, SurahInfoSummary])))
     .catch(() => new Map<number, SurahInfoSummary>());
   return infoIndexPromise;
 }
@@ -168,6 +172,7 @@ export function loadSurahInfo(number: number): Promise<SurahInfoDetail | null> {
   if (!cached) {
     cached = fetch(assetUrl(`/surah-info/${number}.json`))
       .then((response) => (response.ok ? (response.json() as Promise<SurahInfoDetail>) : null))
+      .then((info) => info && { ...info, summary: stripMarkdown(info.summary), html: markdownBoldToHtml(info.html) })
       .catch(() => null);
     infoCache.set(number, cached);
   }
