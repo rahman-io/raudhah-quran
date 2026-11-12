@@ -14,6 +14,7 @@ import { BlankStage } from './stages/BlankStage';
 import { AudioStage } from './stages/AudioStage';
 import { WriteStage } from './stages/WriteStage';
 import { TaisirStage } from './stages/TaisirStage';
+import { useBackHandler } from '../../utils/backNavigation';
 
 const STAGE_XP = 20;
 
@@ -83,6 +84,9 @@ export const HafalanSession: React.FC<{
     }
     setView({ kind: 'done', id });
   };
+
+  // Tombol back HP: dari game kembali ke pilihan game.
+  useBackHandler(view.kind !== 'menu', backToMenu);
 
   const doneCount = completed.length;
   const suggestion = STAGES.find((s) => !completed.includes(s.id));

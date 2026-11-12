@@ -16,11 +16,20 @@ import { WordExplorerModal } from './components/tadabbur/WordExplorerModal';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { BelajarTajwidView } from './components/tajwid/BelajarTajwidView';
 import { IqroDigitalView } from './components/iqro/IqroDigitalView';
+import { useBackHandler, useExitPrompt } from './utils/backNavigation';
 
 function MainApp() {
   const [activeTab, setActiveTab] = useState<'games' | 'iqro' | 'reader' | 'tajwid' | 'garden' | 'achievements'>('games');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { recentAchievement, clearRecentAchievement, mode } = useQuranGame();
+  const { recentAchievement, clearRecentAchievement, mode, selectedWordForTadabbur, setSelectedWordForTadabbur } = useQuranGame();
+  const [showExitHint, setShowExitHint] = useState(false);
+
+  // Tombol back HP: tutup jendela yang terbuka, lalu kembali ke menu depan,
+  // dan di menu depan minta tekan sekali lagi sebelum keluar.
+  useExitPrompt(setShowExitHint);
+  useBackHandler(activeTab !== 'games', () => setActiveTab('games'));
+  useBackHandler(isSettingsOpen, () => setIsSettingsOpen(false));
+  useBackHandler(!!selectedWordForTadabbur, () => setSelectedWordForTadabbur(null));
 
   return (
     <div className={`raudhah-ui min-h-screen flex flex-col font-sans transition-colors duration-300 ${
@@ -119,6 +128,22 @@ function MainApp() {
           Data offline Juz 30 · Audio Murottal Syaikh Misyari Rasyid Al-Afasy · Siap Deploy ke Cloudflare Pages
         </p>
       </footer>
+
+      {/* Pesan sebelum keluar aplikasi lewat tombol back */}
+      <AnimatePresence>
+        {showExitHint && (
+          <motion.div
+            key="exit_hint"
+            role="status"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            className="fixed left-1/2 -translate-x-1/2 bottom-28 lg:bottom-10 z-[80] px-4 py-2.5 rounded-full bg-[#173B4E]/95 text-white text-xs font-semibold shadow-lg whitespace-nowrap"
+          >
+            Tekan sekali lagi untuk keluar
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modals */}
       <WordExplorerModal />

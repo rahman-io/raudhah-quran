@@ -10,6 +10,7 @@ import {
 import { HafalanSession } from '../hafalan/HafalanSession';
 import { SURAH_VIRTUES } from '../../data/surahVirtues';
 import { MotivationCarousel } from './MotivationCarousel';
+import { useBackHandler } from '../../utils/backNavigation';
 import { getCompletedStages, getSurahsWithHafalanProgress, STAGES } from '../hafalan/hafalanPlan';
 
 const normalizeSearch = (text: string) => text.toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]/g, '');
@@ -147,6 +148,10 @@ export const MushafReader: React.FC = () => {
     setIsPickerOpen(false);
     topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+
+  // Tombol back HP: tutup mode Hafalkan dulu, lalu kembali dari surah ke Daftar Surah.
+  useBackHandler(!showList, backToList);
+  useBackHandler(hafalanAyahIndex !== null, () => setHafalanAyahIndex(null));
 
   // Halaman awal menu Baca: daftar lengkap 114 surah.
   if (showList) {
