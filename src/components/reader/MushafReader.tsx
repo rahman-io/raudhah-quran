@@ -68,7 +68,9 @@ export const MushafReader: React.FC = () => {
     markAyahMemorized,
     mode,
     reciterId,
-    reciterSpeed
+    reciterSpeed,
+    latinFontSize,
+    translationFontSize
   } = useQuranGame();
 
   // Posisi sebelum halaman di-refresh: surah yang terbuka, ayat, dan mode Hafalkan.
@@ -936,15 +938,19 @@ export const MushafReader: React.FC = () => {
               </div>
 
               {/* Transliteration */}
-              <p className="text-xs text-[#246579] dark:text-[#A7CDD3] font-medium italic mt-2">
+              <p
+                className="text-[#246579] dark:text-[#A7CDD3] font-medium italic mt-2 leading-relaxed"
+                style={{ fontSize: `${latinFontSize}px` }}
+              >
                 {ayah.transliteration}
               </p>
 
               {/* Translation */}
               <p
-                className={`text-xs text-[#293640] dark:text-[#CBD5E1] leading-relaxed mt-1.5 font-normal rounded-xl transition-colors duration-500 ${
+                className={`text-[#293640] dark:text-[#CBD5E1] leading-relaxed mt-1.5 font-normal rounded-xl transition-colors duration-500 ${
                   readingArti ? 'bg-[#246579]/[0.06] dark:bg-[#246579]/25 -mx-2 px-2 py-1.5' : ''
                 }`}
+                style={{ fontSize: `${translationFontSize}px` }}
               >
                 {readingArti ? (
                   <>

@@ -80,6 +80,8 @@ export interface UserStats {
   gardenPlants: GardenPlant[];
   soundEnabled: boolean;
   fontSize: number; // 24 to 48px
+  latinFontSize?: number; // ukuran teks latin (transliterasi) di menu Baca, 11–24px
+  translationFontSize?: number; // ukuran teks terjemahan di menu Baca, 11–24px
   reciterSpeed: number; // 0.8 or 1.0
   reciterId?: string; // qari murottal (lihat src/data/reciters.ts)
   mode: UserMode;

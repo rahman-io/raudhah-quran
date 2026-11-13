@@ -5,6 +5,57 @@ import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
 import { RECITERS } from '../../data/reciters';
 
+const TEXT_SIZE_MIN = 11;
+const TEXT_SIZE_MAX = 24;
+
+/** Pengatur ukuran teks (latin / terjemahan) dengan contoh langsung. */
+const TextSizeControl: React.FC<{
+  label: string;
+  value: number;
+  onChange: (size: number) => void;
+  sample: string;
+  sampleClass: string;
+}> = ({ label, value, onChange, sample, sampleClass }) => (
+  <div className="space-y-2">
+    <div className="flex items-center justify-between text-xs">
+      <span className="font-semibold text-[#246579] dark:text-[#94A3B8] flex items-center gap-1.5">
+        <Type className="w-4 h-4" />
+        <span>{label}:</span>
+      </span>
+      <span className="font-bold tabular-nums text-[#173B4E] dark:text-white">{value}px</span>
+    </div>
+    <div className="flex items-center gap-3">
+      <button
+        onClick={() => onChange(Math.max(value - 1, TEXT_SIZE_MIN))}
+        className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        aria-label={`Perkecil ${label.toLowerCase()}`}
+      >
+        A-
+      </button>
+      <input
+        type="range"
+        min={TEXT_SIZE_MIN}
+        max={TEXT_SIZE_MAX}
+        step="1"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full accent-[#246579] cursor-pointer"
+        aria-label={label}
+      />
+      <button
+        onClick={() => onChange(Math.min(value + 1, TEXT_SIZE_MAX))}
+        className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        aria-label={`Perbesar ${label.toLowerCase()}`}
+      >
+        A+
+      </button>
+    </div>
+    <div className="p-3 bg-[#F1EDE6] dark:bg-slate-900 rounded-xl">
+      <p className={`leading-relaxed ${sampleClass}`} style={{ fontSize: `${value}px` }}>{sample}</p>
+    </div>
+  </div>
+);
+
 /** Contoh suara qari: Al-Fatihah ayat 2. */
 const SAMPLE_AYAH = { surahNumber: 1, ayahNumber: 2, globalAyahNumber: 2 };
 
@@ -19,6 +70,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     setMode,
     fontSize,
     setFontSize,
+    latinFontSize,
+    setLatinFontSize,
+    translationFontSize,
+    setTranslationFontSize,
     soundEnabled,
     toggleSound,
     reciterSpeed,
@@ -209,6 +264,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               </p>
             </div>
           </div>
+
+          {/* Ukuran teks latin & terjemahan (menu Baca & Tadabbur) */}
+          <TextSizeControl
+            label="Ukuran Teks Latin"
+            value={latinFontSize}
+            onChange={setLatinFontSize}
+            sample="Bismillāhir-raḥmānir-raḥīm"
+            sampleClass="italic font-medium text-[#246579] dark:text-[#A7CDD3]"
+          />
+          <TextSizeControl
+            label="Ukuran Terjemahan"
+            value={translationFontSize}
+            onChange={setTranslationFontSize}
+            sample="Dengan nama Allah Yang Maha Pengasih, Maha Penyayang."
+            sampleClass="text-[#293640] dark:text-[#CBD5E1]"
+          />
 
           {/* Reciter Speed & Sound */}
           <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700 text-xs">

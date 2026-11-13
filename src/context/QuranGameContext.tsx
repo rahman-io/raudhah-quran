@@ -9,6 +9,9 @@ import { firebaseAuth, firebaseConfigured, firestore, signInWithGoogle, signOutF
 import { useFirebaseCollection } from '../services/firebaseContent';
 import { DEFAULT_RECITER_ID, reciterAudioUrl } from '../data/reciters';
 
+/** Ukuran bawaan teks latin & terjemahan di menu Baca (sama dengan tampilan sebelumnya). */
+const DEFAULT_TEXT_SIZE = 12;
+
 interface QuranGameContextType {
   surahs: Surah[];
   firebaseUser: User | null;
@@ -22,6 +25,10 @@ interface QuranGameContextType {
   toggleMode: () => void;
   fontSize: number;
   setFontSize: (size: number) => void;
+  latinFontSize: number;
+  setLatinFontSize: (size: number) => void;
+  translationFontSize: number;
+  setTranslationFontSize: (size: number) => void;
   soundEnabled: boolean;
   toggleSound: () => void;
   reciterSpeed: number;
@@ -274,6 +281,14 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
     setStats((prev) => ({ ...prev, fontSize }));
   }, []);
 
+  const setLatinFontSize = useCallback((latinFontSize: number) => {
+    setStats((prev) => ({ ...prev, latinFontSize }));
+  }, []);
+
+  const setTranslationFontSize = useCallback((translationFontSize: number) => {
+    setStats((prev) => ({ ...prev, translationFontSize }));
+  }, []);
+
   const toggleSound = useCallback(() => {
     setStats((prev) => {
       const next = !prev.soundEnabled;
@@ -503,6 +518,10 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
         toggleMode,
         fontSize: stats.fontSize,
         setFontSize,
+        latinFontSize: stats.latinFontSize ?? DEFAULT_TEXT_SIZE,
+        setLatinFontSize,
+        translationFontSize: stats.translationFontSize ?? DEFAULT_TEXT_SIZE,
+        setTranslationFontSize,
         soundEnabled: stats.soundEnabled,
         toggleSound,
         reciterSpeed: stats.reciterSpeed,
