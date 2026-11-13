@@ -3,6 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, BookOpen, Volume2, Sparkles, Tag } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
+import { TajwidWordSection } from '../tajwid/TajwidWord';
+
+/** Id kata "surah:ayat:urutan" (urutan mulai 1) → posisi untuk data tajwid. */
+const parseWordId = (id: string) => {
+  const [surah, ayah, index] = id.split(':').map(Number);
+  return Number.isInteger(surah) && Number.isInteger(ayah) && Number.isInteger(index) && index >= 1 ? { surah, ayah, word: index - 1 } : null;
+};
 
 export const WordExplorerModal: React.FC = () => {
   const { selectedWordForTadabbur, setSelectedWordForTadabbur, fontSize, mode } = useQuranGame();
@@ -35,7 +42,7 @@ export const WordExplorerModal: React.FC = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 12 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-md bg-[#F8F6F1] dark:bg-[#1E293B] border border-[#477F8D]/40 rounded-3xl p-6 shadow-xl text-[#293640] dark:text-[#E2E8F0]"
+            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto overscroll-contain bg-[#F8F6F1] dark:bg-[#1E293B] border border-[#477F8D]/40 rounded-3xl p-6 shadow-xl text-[#293640] dark:text-[#E2E8F0]"
           >
           {/* Close button */}
           <button
@@ -127,6 +134,12 @@ export const WordExplorerModal: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Tajwid kata ini: huruf berwarna, penjelasan, materi, latihan */}
+          {(() => {
+            const ref = parseWordId(word.id);
+            return ref ? <TajwidWordSection key={word.id} surah={ref.surah} ayah={ref.ayah} word={ref.word} /> : null;
+          })()}
 
           {/* Action button */}
           <div className="mt-5">

@@ -13,6 +13,7 @@ import {
 } from '../../../services/mushafLayout';
 import { AyahEndMarker } from '../AyahEndMarker';
 import { HeaderPill, MushafFrame, SurahTitleCard } from './MushafOrnaments';
+import { curlStyles, grabPoint, type Point } from './pageCurl';
 
 /**
  * Mode Mushaf: satu halaman (atau dua halaman berdampingan di layar lebar) seperti mushaf cetak.
@@ -305,10 +306,8 @@ MushafPage.displayName = 'MushafPage';
 interface Turn {
   /** Halaman tujuan. */
   to: number;
-  /** +1 = halaman berikutnya, -1 = sebelumnya. */
+  /** +1 = halaman berikutnya (lembar sekarang dilipat), -1 = sebelumnya (lembar sebelumnya kembali menutup). */
   dir: 1 | -1;
-  /** Sudut lembar yang sedang dibalik: 0 = menutup halaman, 180 = sudah terbalik ke kanan (lewat punggung mushaf). */
-  angle: number;
 }
 
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -438,19 +437,53 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     });
   }, []);
 
-  /* ----- Membalik halaman ----- */
+  /* ----- Membalik halaman: efek lipatan kertas ----- */
+  // Lapisan: halaman atas (dilipat), halaman bawah, punggung lipatan, dan bayangannya.
+  const frontRef = useRef<HTMLDivElement>(null);
+  const flapRef = useRef<HTMLDivElement>(null);
+  const underShadeRef = useRef<HTMLDivElement>(null);
+  const curl = useRef<{ a: Point; p: Point; w: number; h: number } | null>(null);
   const animRef = useRef<number | null>(null);
-  const animateTo = useCallback(
-    (from: Turn, target: number, done: () => void) => {
+
+  /** Terapkan lipatan dengan titik jari P (langsung ke DOM, tanpa render ulang React). */
+  const applyCurl = useCallback((p: Point) => {
+    const c = curl.current;
+    if (!c) return;
+    c.p = p;
+    const styles = curlStyles(c.a, p, c.w, c.h);
+    const front = frontRef.current;
+    const flap = flapRef.current;
+    const shade = underShadeRef.current;
+    if (!front) return;
+    if (!styles) {
+      front.style.clipPath = '';
+      if (flap) flap.style.visibility = 'hidden';
+      return;
+    }
+    front.style.clipPath = styles.front;
+    if (flap) {
+      flap.style.visibility = 'visible';
+      flap.style.clipPath = styles.flapClip;
+      flap.style.transform = styles.flapTransform;
+      flap.style.background = styles.flapBackground;
+    }
+    if (shade) shade.style.background = styles.underShade;
+  }, []);
+
+  /** Gerakkan titik lipatan dari posisinya sekarang ke `target` (lengkung sedikit ke atas seperti tangan). */
+  const animateCurl = useCallback(
+    (target: Point, done: () => void, lift = 0) => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
+      const c = curl.current;
+      if (!c) return done();
+      const from = { ...c.p };
+      const distance = Math.hypot(target.x - from.x, target.y - from.y);
+      const duration = Math.max(160, Math.min(prefersReducedMotion() ? 260 : 720, (distance / (2 * c.w)) * 760));
       const start = performance.now();
-      const startAngle = from.angle;
-      const full = prefersReducedMotion() ? 260 : 650;
-      const duration = Math.max(140, full * (Math.abs(target - startAngle) / 180));
       const step = (now: number) => {
         const t = Math.min(1, (now - start) / duration);
-        const eased = easeInOut(t);
-        setTurn({ ...from, angle: startAngle + (target - startAngle) * eased });
+        const e = easeInOut(t);
+        applyCurl({ x: from.x + (target.x - from.x) * e, y: from.y + (target.y - from.y) * e - Math.sin(Math.PI * e) * lift });
         if (t < 1) animRef.current = requestAnimationFrame(step);
         else {
           animRef.current = null;
@@ -459,14 +492,46 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
       };
       animRef.current = requestAnimationFrame(step);
     },
-    []
+    [applyCurl]
   );
+
+  /** Mulai lipatan: ukur halaman atas, letakkan titik pegangan & titik awal jari. */
+  const pendingStart = useRef<{ a: Point; p: Point; then?: () => void } | null>(null);
+  const beginTurn = (next: Turn, grabY: number | null, then?: () => void) => {
+    const rect = frontRef.current?.getBoundingClientRect();
+    const w = rect?.width ?? width;
+    const h = rect?.height ?? width * 1.5;
+    const a = grabPoint(grabY ?? h * 0.94, h);
+    // Halaman berikutnya: lembar sekarang mulai rata (P = A). Sebelumnya: lembar datang terlipat penuh.
+    const p = next.dir === 1 ? { ...a } : { x: 2 * w + 40, y: a.y };
+    curl.current = { a, p, w, h };
+    pendingStart.current = { a, p, then };
+    setTurn(next);
+  };
+  // Setelah lapisan lipatan dirender, terapkan posisi awal lalu jalankan animasi (bila ada).
+  useLayoutEffect(() => {
+    const start = pendingStart.current;
+    if (!turn || !start) return;
+    pendingStart.current = null;
+    applyCurl(start.p);
+    start.then?.();
+  }, [turn, applyCurl]);
+
+  const finishTurn = (committed: boolean, to: number) => {
+    curl.current = null;
+    if (frontRef.current) frontRef.current.style.clipPath = '';
+    setTurn(null);
+    if (committed) {
+      setShown(to);
+      if (to !== page) onPageChange(to);
+    }
+  };
 
   const stepSize = spread ? 2 : 1;
   const goTo = useCallback(
     (target: number, animate = true) => {
       const to = Math.min(TOTAL_PAGES, Math.max(1, target));
-      if (to === shown) return;
+      if (to === shown || turn) return;
       const dir: 1 | -1 = to > shown ? 1 : -1;
       const near = Math.abs(to - shown) <= stepSize;
       if (!animate || !near || spread) {
@@ -475,15 +540,15 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
         if (to !== page) onPageChange(to);
         return;
       }
-      const startTurn: Turn = { to, dir, angle: dir === 1 ? 0 : 180 };
-      setTurn(startTurn);
-      animateTo(startTurn, dir === 1 ? 180 : 0, () => {
-        setTurn(null);
-        setShown(to);
-        if (to !== page) onPageChange(to);
+      // Tombol: lipat otomatis dari sudut bawah, seperti membalik lembar dengan tangan.
+      beginTurn({ to, dir }, null, () => {
+        const c = curl.current!;
+        const target = dir === 1 ? { x: 2 * c.w + 40, y: c.a.y } : { ...c.a };
+        animateCurl(target, () => finishTurn(true, to), c.h * 0.18);
       });
     },
-    [shown, page, onPageChange, animateTo, stepSize, spread]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [shown, page, onPageChange, animateCurl, stepSize, spread, turn, width]
   );
 
   // Halaman diganti dari luar (lompat ke surah, murottal pindah halaman).
@@ -520,13 +585,25 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  // Geser untuk membalik: geser ke kanan = halaman berikutnya.
-  const drag = useRef<{ x: number; y: number; id: number; active: boolean; dir: 1 | -1 | 0 } | null>(null);
+  // Geser untuk membalik: tarik tepi kiri ke kanan = halaman berikutnya (lipatan mengikuti jari);
+  // tarik ke kiri = lembar sebelumnya kembali menutup.
+  const drag = useRef<{ x: number; y: number; id: number; active: boolean; dir: 1 | -1 | 0; grabY: number } | null>(null);
   const suppressTap = useRef(false);
   const onPointerDown = (event: React.PointerEvent) => {
     if (turn || (event.pointerType === 'mouse' && event.button !== 0)) return;
-    drag.current = { x: event.clientX, y: event.clientY, id: event.pointerId, active: false, dir: 0 };
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    drag.current = { x: event.clientX, y: event.clientY, id: event.pointerId, active: false, dir: 0, grabY: event.clientY - rect.top };
     suppressTap.current = false;
+  };
+  const fingerPoint = (d: NonNullable<typeof drag.current>, event: React.PointerEvent): Point | null => {
+    const c = curl.current;
+    if (!c) return null;
+    const dx = event.clientX - d.x;
+    const dy = event.clientY - d.y;
+    // Lipatan bergerak setengah dari titik pegangan, jadi titik pegangan dibawa dua kali jarak jari.
+    return d.dir === 1
+      ? { x: Math.max(0, c.a.x + 2 * dx), y: c.a.y + dy * 0.8 }
+      : { x: Math.max(0, 2 * c.w + 40 + 2 * dx), y: c.a.y + dy * 0.8 };
   };
   const onPointerMove = (event: React.PointerEvent) => {
     const d = drag.current;
@@ -534,20 +611,24 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     const dx = event.clientX - d.x;
     const dy = event.clientY - d.y;
     if (!d.active) {
-      if (Math.abs(dx) < 12 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+      if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
       const dir: 1 | -1 = dx > 0 ? 1 : -1;
       const target = dir === 1 ? shown + stepSize : shown - stepSize;
       if (target < 1 || target > TOTAL_PAGES) return;
       d.active = true;
       d.dir = dir;
+      // Mulai dari posisi jari sekarang agar lipatan tidak melompat.
+      d.x = event.clientX - (dir === 1 ? 4 : -4);
+      d.y = event.clientY;
       suppressTap.current = true;
       (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
       if (spread) return;
+      beginTurn({ to: target, dir }, d.grabY);
+      return;
     }
     if (spread || !d.dir) return;
-    const progress = Math.min(1, Math.abs(dx) / Math.max(180, width * 0.95));
-    const to = d.dir === 1 ? shown + 1 : shown - 1;
-    setTurn({ to, dir: d.dir, angle: d.dir === 1 ? progress * 180 : 180 - progress * 180 });
+    const p = fingerPoint(d, event);
+    if (p) applyCurl(p);
   };
   const onPointerUp = (event: React.PointerEvent) => {
     const d = drag.current;
@@ -558,18 +639,44 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
       if (Math.abs(dx) > 50) (d.dir === 1 ? next : previous)();
       return;
     }
+    const c = curl.current;
     const current = turn;
-    if (!current) return;
-    const committed = Math.abs(dx) > Math.min(80, width * 0.2);
-    const finish = committed ? (current.dir === 1 ? 180 : 0) : current.dir === 1 ? 0 : 180;
-    animateTo(current, finish, () => {
-      setTurn(null);
-      if (committed) {
-        setShown(current.to);
-        onPageChange(current.to);
-      }
-    });
+    if (!c || !current) return;
+    // Selesai bila lipatan sudah lewat ±35% (berikutnya) atau sudah tertutup ±35% (sebelumnya).
+    const opened = (c.p.x - c.a.x) / (2 * c.w + 40);
+    const committed = current.dir === 1 ? opened > 0.35 || dx > 140 : opened < 0.65 || dx < -140;
+    const flat = { ...c.a };
+    const away = { x: 2 * c.w + 40, y: c.a.y };
+    const target = current.dir === 1 ? (committed ? away : flat) : committed ? flat : away;
+    animateCurl(target, () => finishTurn(committed, current.to));
   };
+
+  // Tarikan miring (mis. dari sudut halaman) jangan sampai diambil alih gulir layar: begitu gerakan
+  // awal lebih mendatar, gulir bawaan dicegah agar lipatan tetap mengikuti jari.
+  const pageAreaRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = pageAreaRef.current;
+    if (!el) return;
+    let start: { x: number; y: number } | null = null;
+    let claimed = false;
+    const onStart = (event: TouchEvent) => {
+      claimed = false;
+      start = event.touches.length === 1 ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null;
+    };
+    const onMove = (event: TouchEvent) => {
+      if (!start || event.touches.length !== 1) return;
+      const dx = event.touches[0].clientX - start.x;
+      const dy = event.touches[0].clientY - start.y;
+      if (!claimed && Math.abs(dx) > 4 && Math.abs(dx) >= Math.abs(dy) * 0.9) claimed = true;
+      if (claimed && event.cancelable) event.preventDefault();
+    };
+    el.addEventListener('touchstart', onStart, { passive: true });
+    el.addEventListener('touchmove', onMove, { passive: false });
+    return () => {
+      el.removeEventListener('touchstart', onStart);
+      el.removeEventListener('touchmove', onMove);
+    };
+  });
 
   // Cubit dua jari untuk memperbesar/memperkecil huruf.
   const pinch = useRef<{ distance: number; font: number } | null>(null);
@@ -578,7 +685,7 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     if (event.touches.length !== 2) return;
     pinch.current = { distance: touchDistance(event.touches), font: currentFont };
     drag.current = null;
-    setTurn(null);
+    if (turn) finishTurn(false, shown);
   };
   const onTouchMove = (event: React.TouchEvent) => {
     if (!pinch.current || event.touches.length !== 2) return;
@@ -646,12 +753,9 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     };
   };
 
-  // Lapisan balik lembar: lembar atas berputar pada tepi kanan (punggung mushaf), tepi kirinya
-  // terangkat ke arah pembaca lalu terbalik ke kanan, memperlihatkan halaman di bawahnya.
+  // Lapisan balik lembar: halaman atas (dilipat) dan halaman di bawahnya.
   const top = turn ? (turn.dir === 1 ? shown : turn.to) : shown;
   const under = turn ? (turn.dir === 1 ? turn.to : shown) : null;
-  const angle = turn?.angle ?? 0;
-  const lift = Math.sin((angle * Math.PI) / 180); // 0 → 1 (tegak) → 0
 
   const rangeLabel = spread ? `${spreadOf(shown)[0]}–${spreadOf(shown)[1]}` : String(shown);
 
@@ -663,8 +767,9 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
         </div>
       ) : (
         <div
+          ref={pageAreaRef}
           className="relative mx-auto select-none touch-pan-y"
-          style={{ width: spread ? undefined : width, perspective: Math.max(900, width * 2.4), perspectiveOrigin: '70% 50%' }}
+          style={{ width: spread ? undefined : width }}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
@@ -686,51 +791,25 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
           ) : (
             <>
               {under !== null && (
-                <div className="absolute inset-0">
+                <div className="absolute inset-0 overflow-hidden rounded-[18px]">
                   <MushafPage {...pageProps(under)} />
-                  {/* Bayangan lembar yang terangkat, jatuh di halaman bawah dekat punggung mushaf */}
+                  {/* Bayangan lipatan yang jatuh di halaman bawah */}
+                  <div ref={underShadeRef} className="pointer-events-none absolute inset-0" />
+                </div>
+              )}
+              <div ref={frontRef} className="relative" style={{ zIndex: 1 }}>
+                <MushafPage {...pageProps(top)} />
+              </div>
+              {/* Punggung lembar yang terlipat (kertas bagian belakang), dengan bayangan di tepinya */}
+              {turn && (
+                <div className="pointer-events-none absolute inset-0" style={{ zIndex: 2, filter: 'drop-shadow(0 4px 10px rgba(15,30,36,0.35))' }}>
                   <div
-                    className="pointer-events-none absolute inset-0 rounded-[18px]"
-                    style={{ background: `linear-gradient(to left, rgba(15,30,36,${0.38 * lift}) 0%, rgba(15,30,36,${0.12 * lift}) 35%, rgba(15,30,36,0) 70%)` }}
+                    ref={flapRef}
+                    className="absolute inset-0 rounded-[18px]"
+                    style={{ transformOrigin: '0 0', visibility: 'hidden', boxShadow: 'inset 0 0 0 1px rgba(211,162,83,0.55)' }}
                   />
                 </div>
               )}
-              <div
-                className="relative"
-                style={{
-                  transformOrigin: 'right center',
-                  transform: turn ? `rotateY(${-angle}deg)` : undefined,
-                  transformStyle: 'preserve-3d',
-                  willChange: turn ? 'transform' : undefined,
-                  zIndex: 1
-                }}
-              >
-                {/* Muka depan lembar */}
-                <div style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }} className="relative">
-                  <MushafPage {...pageProps(top)} />
-                  {turn && (
-                    <div
-                      className="pointer-events-none absolute inset-0 rounded-[18px]"
-                      style={{
-                        background: `linear-gradient(to left, rgba(0,0,0,${0.32 * lift}) 0%, rgba(255,255,255,${0.18 * lift}) 55%, rgba(0,0,0,${0.08 * lift}) 100%)`
-                      }}
-                    />
-                  )}
-                </div>
-                {/* Punggung lembar (kertas bagian belakang) */}
-                {turn && (
-                  <div
-                    className="absolute inset-0 rounded-[18px] border border-[#D3A253]/60"
-                    style={{
-                      transform: 'rotateY(180deg)',
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden',
-                      background: `linear-gradient(to right, rgba(0,0,0,${0.25 * lift}), rgba(0,0,0,0) 40%), linear-gradient(135deg, #FBF5E6, #EFE4CB)`,
-                      boxShadow: 'inset 0 0 40px rgba(120,90,40,0.18)'
-                    }}
-                  />
-                )}
-              </div>
             </>
           )}
         </div>

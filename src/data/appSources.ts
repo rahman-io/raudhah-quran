@@ -41,6 +41,11 @@ export const APP_SOURCE_GROUPS: AppSourceGroup[] = [
         url: 'https://quran.com/'
       },
       {
+        title: 'Hukum tajwid per kata',
+        detail: 'Data anotasi tajwid riwayat Hafs "quran-tajweed" (CC BY 4.0), dipetakan ke teks Mushaf Standar Indonesia. Penjelasannya mengikuti materi Belajar Tajwid.',
+        url: 'https://github.com/cpfair/quran-tajweed'
+      },
+      {
         title: 'Data offline Juz 30 & Al-Fatihah',
         detail: 'Arti per kata, akar kata, dan catatan tadabbur bawaan aplikasi.'
       }

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
-import { AlignJustify, CheckCircle2, Circle, Play, ScrollText, Share2, X } from 'lucide-react';
+import { AlignJustify, CheckCircle2, Circle, GraduationCap, Languages, Play, ScrollText, Share2, X } from 'lucide-react';
+import { TajwidAyahPanel } from '../../tajwid/TajwidWord';
 import { loadReaderSurah } from '../../../services/quranReaderData';
 import { useBackHandler } from '../../../utils/backNavigation';
 
@@ -19,6 +20,7 @@ export const MushafAyahSheet: React.FC<{
   onOpenTadabbur: () => void;
 }> = ({ surah, ayah, surahName, memorized, onClose, onPlay, onTafsir, onShare, onToggleMemorized, onOpenTadabbur }) => {
   const [translation, setTranslation] = useState<string | null>(null);
+  const [tab, setTab] = useState<'arti' | 'tajwid'>('arti');
   useBackHandler(true, onClose, 10);
 
   useEffect(() => {
@@ -67,6 +69,30 @@ export const MushafAyahSheet: React.FC<{
           </button>
         </div>
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-[#246579]/[0.07] dark:bg-slate-900/40" role="tablist">
+            {([
+              { id: 'arti', label: 'Arti & Aksi', Icon: Languages },
+              { id: 'tajwid', label: 'Tajwid', Icon: GraduationCap }
+            ] as const).map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={tab === id}
+                onClick={() => setTab(id)}
+                className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                  tab === id ? 'bg-white dark:bg-[#246579] text-[#173B4E] dark:text-white shadow-xs' : 'text-[#477F8D] dark:text-[#94A3B8]'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+              </button>
+            ))}
+          </div>
+          {tab === 'tajwid' ? (
+            <TajwidAyahPanel surah={surah} ayah={ayah} surahName={surahName} />
+          ) : (
+          <>
           <p className="text-sm leading-relaxed text-[#26343E] dark:text-slate-200">
             {translation === null ? 'Memuat arti…' : translation ? `“${translation}”` : 'Arti belum bisa dimuat.'}
           </p>
@@ -77,6 +103,8 @@ export const MushafAyahSheet: React.FC<{
             {action('Hafal', memorized ? CheckCircle2 : Circle, onToggleMemorized, memorized)}
             {action('Tadabbur', AlignJustify, onOpenTadabbur)}
           </div>
+          </>
+          )}
         </div>
       </motion.div>
     </div>,
