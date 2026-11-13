@@ -6,6 +6,8 @@ import { sounds } from '../../utils/soundEffects';
 import { RECITERS } from '../../data/reciters';
 import { InstallAppSettingsRow } from '../InstallAppPrompt';
 import { SourcesModal } from './SourcesModal';
+import { MenuIcon } from '../MenuIcon';
+import { ICON_THEMES, setIconTheme, useIconTheme } from '../../utils/menuIcons';
 
 const TEXT_SIZE_MIN = 11;
 const TEXT_SIZE_MAX = 24;
@@ -90,6 +92,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     signOut,
     resetProgress
   } = useQuranGame();
+  const iconTheme = useIconTheme();
 
   // Jendela "Sumber & Rujukan"
   const [sourcesOpen, setSourcesOpen] = useState(false);
@@ -220,6 +223,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   Dewasa & Lansia · Tenang & Huruf Besar
                 </p>
               </button>
+            </div>
+          </div>
+
+          {/* Tema ikon menu */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-[#246579] dark:text-[#94A3B8] block">Gaya Ikon Menu:</label>
+            <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Gaya ikon menu">
+              {ICON_THEMES.map((theme) => {
+                const active = iconTheme === theme.id;
+                return (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => {
+                      sounds.playWordClick();
+                      setIconTheme(theme.id);
+                    }}
+                    className={`relative p-2.5 rounded-2xl border text-left transition-all ${
+                      active
+                        ? 'border-[#246579] bg-white dark:bg-slate-800 ring-2 ring-[#246579]/20 shadow-xs'
+                        : 'border-slate-200 dark:border-slate-700 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    {active && <Check className="absolute -top-1.5 -right-1.5 w-5 h-5 p-1 rounded-full bg-[#246579] text-white" strokeWidth={3} />}
+                    <div className="flex items-center gap-0.5 h-8 mb-1.5 overflow-hidden">
+                      <MenuIcon id="beranda" place="preview" theme={theme.id} />
+                      <MenuIcon id="quran" place="preview" theme={theme.id} />
+                      <MenuIcon id="tasbih" place="preview" theme={theme.id} />
+                    </div>
+                    <p className="font-bold text-xs text-[#293640] dark:text-white">{theme.name}</p>
+                    <p className="text-[10px] leading-tight text-slate-500 dark:text-slate-400 mt-0.5">{theme.detail}</p>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

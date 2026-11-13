@@ -1,6 +1,6 @@
 import React from 'react';
 import { Settings } from 'lucide-react';
-import { menuIcon } from '../utils/menuIcons';
+import { MenuIcon } from './MenuIcon';
 
 type Tab = 'home' | 'iqro' | 'reader' | 'tajwid' | 'garden' | 'achievements';
 
@@ -97,12 +97,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenS
                 ? 'bg-[#EAF2F3] text-[#174C60] dark:bg-[#246579]/35 dark:text-white'
                 : 'text-[#667882] hover:bg-[#F8F6F1] dark:text-slate-300'}`}
             >
-              <img
-                src={menuIcon(icon)}
-                alt=""
-                draggable={false}
-                className={`h-7 w-7 transition-[filter,opacity,transform] duration-200 ${activeTab === id ? 'scale-110 drop-shadow-[0_2px_3px_rgba(23,59,78,0.25)]' : 'opacity-60 grayscale-[70%]'}`}
-              />
+              <MenuIcon id={icon} place="nav" active={activeTab === id} />
               <span className="w-full truncate text-center">{short}</span>
             </button>
           ))}
