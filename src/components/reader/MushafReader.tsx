@@ -17,6 +17,7 @@ import { PlayerDock, PlayerOptions } from './SurahPlayerBar';
 import { RecentReadingCard } from './RecentReadingCard';
 import { MemorizingCard } from './MemorizingCard';
 import { AyahEndMarker } from './AyahEndMarker';
+import { QuranSearch } from './QuranSearch';
 import { getRecentReadings, recordReading } from './recentReading';
 import { loadView, saveView } from '../../utils/viewState';
 import { useIdleVisibility } from '../../utils/useIdleVisibility';
@@ -100,6 +101,8 @@ export const MushafReader: React.FC = () => {
   const [showList, setShowList] = useState(!restored.open);
   /** Ayat yang dituju saat membuka surah dari "Terakhir Dibaca" (atau setelah refresh). */
   const [pendingAyah, setPendingAyah] = useState<number | null>(restored.ayah);
+  /** Ayat yang disorot sebentar setelah dibuka dari hasil pencarian. */
+  const [flashAyah, setFlashAyah] = useState<{ surah: number; ayah: number } | null>(null);
   /** Mode Hafalkan yang dibuka setelah surah selesai dimuat (dari kartu "Sedang Dihafal"). */
   const [pendingHafalan, setPendingHafalan] = useState<number | null>(null);
   const [infoIndex, setInfoIndex] = useState<Map<number, SurahInfoSummary>>(new Map());
@@ -337,14 +340,22 @@ export const MushafReader: React.FC = () => {
   /* ---------- Terakhir dibaca: dicatat otomatis ---------- */
   const surahReady = !showList && !isLoading && !loadError && loadedSurah?.number === surahNumber;
 
-  // Dibuka dari "Lanjutkan": gulir ke ayat terakhir yang dibaca.
+  // Dibuka dari "Lanjutkan" / pencarian: langsung ke ayat yang dituju. Diperiksa sekali lagi
+  // setelah teks Kemenag, info surah, dan font selesai dimuat (tinggi halaman bisa berubah).
+  // Tanpa animasi: guliran halus yang panjang bisa meleset saat tinggi halaman berubah.
   useEffect(() => {
     if (!surahReady || !pendingAyah) return;
-    const timer = setTimeout(() => {
-      ayahRefs.current[pendingAyah - 1]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const target = () => ayahRefs.current[pendingAyah - 1];
+    const first = setTimeout(() => target()?.scrollIntoView({ block: 'start' }), 120);
+    const settle = setTimeout(() => {
+      const top = target()?.getBoundingClientRect().top;
+      if (top !== undefined && (top < 0 || top > 200)) target()?.scrollIntoView({ block: 'start' });
       setPendingAyah(null);
-    }, 120);
-    return () => clearTimeout(timer);
+    }, 1300);
+    return () => {
+      clearTimeout(first);
+      clearTimeout(settle);
+    };
   }, [surahReady, pendingAyah]);
 
   // Dari "Sedang Dihafal": buka mode Hafalkan begitu surahnya siap.
@@ -353,6 +364,17 @@ export const MushafReader: React.FC = () => {
     setHafalanAyahIndex(pendingHafalan);
     setPendingHafalan(null);
   }, [surahReady, pendingHafalan]);
+
+  // Dari pencarian: buka surah (dan ayatnya), lalu sorot ayat itu sebentar.
+  const openFromSearch = (surah: number, ayah?: number) => {
+    openSurah(surah, ayah);
+    setFlashAyah(ayah ? { surah, ayah } : null);
+  };
+  useEffect(() => {
+    if (!flashAyah || !surahReady) return;
+    const timer = setTimeout(() => setFlashAyah(null), 3500);
+    return () => clearTimeout(timer);
+  }, [flashAyah, surahReady]);
 
   const continueHafalan = (surah: number, ayah: number) => {
     openSurah(surah, ayah);
@@ -440,6 +462,7 @@ export const MushafReader: React.FC = () => {
           {surahList.length > 0 && <span className="text-xs text-[#477F8D] dark:text-[#94A3B8]">{surahList.length} surah</span>}
         </div>
 
+        <QuranSearch surahs={surahList} onOpen={openFromSearch}>
         {surahList.length === 0 ? (
           <div className="flex items-center justify-center gap-2 py-16 text-sm text-[#246579] dark:text-[#A7CDD3]">
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -501,6 +524,7 @@ export const MushafReader: React.FC = () => {
             ))}
           </div>
         )}
+        </QuranSearch>
       </div>
     );
   }
@@ -820,6 +844,8 @@ export const MushafReader: React.FC = () => {
               className={`relative bg-white dark:bg-slate-800/80 rounded-3xl p-5 sm:p-7 border transition-all duration-500 scroll-mt-24 ${
                 isPlayerHere
                   ? 'border-[#D3A253] reader-now-playing'
+                  : flashAyah?.surah === ayah.surahNumber && flashAyah.ayah === ayah.ayahNumber
+                    ? 'border-[#D3A253] ring-4 ring-[#D3A253]/40 shadow-lg'
                   : isPlayingThis
                     ? 'border-[#D3A253] ring-2 ring-[#D3A253]/20 shadow-md'
                     : 'border-slate-200 dark:border-slate-700 hover:border-[#477F8D]/50 shadow-xs'
