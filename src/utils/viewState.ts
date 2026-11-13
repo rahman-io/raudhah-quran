@@ -14,6 +14,8 @@ export interface ViewState {
     hafalanAyah: number | null;
     /** Surah paling atas yang terlihat di Daftar Surah (posisi gulir). */
     listTopSurah?: number;
+    /** Ayat dari tautan "Bagikan Ayat" (?surah=&ayat=), dipakai sekali saat app dibuka. */
+    linkAyah?: number;
   };
 }
 

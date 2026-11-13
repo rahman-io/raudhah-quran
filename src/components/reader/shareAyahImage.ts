@@ -394,7 +394,7 @@ export async function renderShareImages(
 }
 
 /** Versi teks untuk dibagikan / disalin. */
-export function buildShareText(content: ShareAyahContent, identity: AppIdentity): string {
+export function buildShareText(content: ShareAyahContent, identity: AppIdentity, link: string = identity.url): string {
   const ayah = [content.arabic, content.latin, `“${content.translation.trim()}”`, `(${content.reference})`].filter(Boolean).join('\n\n');
-  return `${ayah}\n\nDibagikan dari ${identity.name}\n${identity.url}`;
+  return `${ayah}\n\nDibagikan dari ${identity.name}\n${link}`;
 }

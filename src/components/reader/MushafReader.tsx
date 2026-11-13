@@ -83,12 +83,16 @@ export const MushafReader: React.FC = () => {
     const reader = loadView().reader;
     const open = !!reader?.open;
     const recent = getRecentReadings()[0];
+    // Dari tautan ayat yang dibagikan: dipakai sekali saja.
+    const linkAyah = open ? reader?.linkAyah : undefined;
+    if (linkAyah) saveView({ reader: { linkAyah: undefined } });
     return {
       surah: reader?.surah ?? activeSurah.number,
       open,
       hafalanAyah: open ? reader?.hafalanAyah ?? null : null,
-      ayah: open && recent?.number === reader?.surah && recent.ayah > 1 ? recent.ayah : null,
-      listTopSurah: !open ? reader?.listTopSurah ?? 0 : 0
+      ayah: linkAyah ? linkAyah : open && recent?.number === reader?.surah && recent.ayah > 1 ? recent.ayah : null,
+      listTopSurah: !open ? reader?.listTopSurah ?? 0 : 0,
+      linkAyah
     };
   });
 
@@ -115,7 +119,9 @@ export const MushafReader: React.FC = () => {
   /** Nomor ayat yang sedang dibagikan (jendela "Bagikan Ayat"). */
   const [shareAyah, setShareAyah] = useState<number | null>(null);
   /** Ayat yang disorot sebentar setelah dibuka dari hasil pencarian. */
-  const [flashAyah, setFlashAyah] = useState<{ surah: number; ayah: number } | null>(null);
+  const [flashAyah, setFlashAyah] = useState<{ surah: number; ayah: number } | null>(
+    restored.linkAyah ? { surah: restored.surah, ayah: restored.linkAyah } : null
+  );
   /** Mode Hafalkan yang dibuka setelah surah selesai dimuat (dari kartu "Sedang Dihafal"). */
   const [pendingHafalan, setPendingHafalan] = useState<number | null>(null);
   const [infoIndex, setInfoIndex] = useState<Map<number, SurahInfoSummary>>(new Map());

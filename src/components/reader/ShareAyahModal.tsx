@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Check, Copy, Download, Image as ImageIcon, Loader2, Share2, Type, X } from 'lucide-react';
 import { useBackHandler } from '../../utils/backNavigation';
 import { loadAppIdentity, type AppIdentity } from '../../utils/appIdentity';
+import { ayahLink } from '../../utils/ayahLink';
 import {
   buildShareText,
   renderShareImages,
@@ -111,7 +112,8 @@ export const ShareAyahModal: React.FC<Props> = ({ surahNumber, surahName, ayahNu
 
   const files = images?.map((image) => image.file) ?? [];
   const canShareFiles = files.length > 0 && typeof navigator.canShare === 'function' && navigator.canShare({ files });
-  const text = identity ? buildShareText(content, identity) : '';
+  // Tautan langsung ke ayat ini: saat dibuka, app langsung menuju surah & ayatnya.
+  const text = identity ? buildShareText(content, identity, ayahLink(identity.url, surahNumber, ayahNumber)) : '';
 
   const download = () => {
     images?.forEach((image) => {
