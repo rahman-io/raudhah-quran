@@ -5,14 +5,15 @@ import { useEffect, useState } from 'react';
  * Disimpan per tanggal di perangkat (localStorage); berganti otomatis tiap hari.
  */
 
-export type ActivityId = 'baca' | 'setor' | 'game' | 'tajwid' | 'murottal';
+export type ActivityId = 'baca' | 'setor' | 'game' | 'tajwid' | 'murottal' | 'dzikir';
 
 export const ACTIVITIES: { id: ActivityId; title: string; hint: string }[] = [
   { id: 'baca', title: 'Baca 1 halaman Al-Qur\'an', hint: 'Mode Mushaf 1 halaman, atau 10 ayat di Tadabbur' },
   { id: 'setor', title: 'Setor hafalan 1 halaman', hint: 'Setor Hafalan di Mode Mushaf, atau Tantangan Surah' },
   { id: 'game', title: 'Main 1 game hafalan', hint: 'Salah satu dari 9 game di Mode Hafalkan' },
   { id: 'tajwid', title: 'Belajar 1 materi tajwid', hint: 'Buka satu materi di menu Tajwid' },
-  { id: 'murottal', title: 'Dengarkan murottal', hint: 'Putar murottal minimal 1 ayat' }
+  { id: 'murottal', title: 'Dengarkan murottal', hint: 'Putar murottal minimal 1 ayat' },
+  { id: 'dzikir', title: 'Baca dzikir pagi atau petang', hint: 'Dzikir terpandu di menu Doa' }
 ];
 
 interface DayRecord {

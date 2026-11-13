@@ -82,6 +82,11 @@ export const APP_SOURCE_GROUPS: AppSourceGroup[] = [
         url: 'https://hadeethenc.com/'
       },
       {
+        title: 'Doa & Dzikir',
+        detail: "Hisnul Muslim (Sa'id bin Ali al-Qahthani) beserta terjemah Indonesia dan takhrijnya; nomor hadits dicek silang dan dikoreksi bila sumber berbeda. Dzikir pagi, petang, setelah shalat, dan doa harian berlatin dari dataset Dua & Dhikr (Fitrahive, lisensi MIT). Doa dari Al-Qur'an memakai teks, latin, dan terjemah Kemenag RI.",
+        url: 'https://sunnah.com/hisn'
+      },
+      {
         title: 'Dzikir di Tasbih',
         detail: 'Bacaan dan keutamaan dzikir dari HR. Muslim 597 dan 408, HR. Bukhari 6405, 6307, dan 6384, serta HR. Tirmidzi 3383 (hasan), dicocokkan ke Sunnah.com.',
         url: 'https://sunnah.com/'

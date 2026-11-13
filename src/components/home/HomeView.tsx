@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import {
-  BookMarked, BookOpen, CheckCircle2, ChevronRight, Circle, CloudSun, Compass, Flame, GraduationCap, History, Loader2, LocateFixed, MapPin,
+  BookOpen, CheckCircle2, ChevronRight, Circle, CloudSun, Compass, Flame, GraduationCap, HandHeart, History, Loader2, LocateFixed, MapPin,
   MicVocal, Minus, Moon, MoonStar, Plus, Search, SlidersHorizontal, Sun, Sunrise, Sunset, Swords, X
 } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
@@ -17,6 +17,7 @@ import { ACTIVITIES, claimDailyBonus, useTodayActivities, type ActivityId } from
 import { getRecentReadings } from '../reader/recentReading';
 import { TasbihIcon, TasbihView } from '../tasbih/TasbihView';
 import { QiblaView } from '../qibla/QiblaView';
+import { DoaView } from '../doa/DoaView';
 
 /** Tujuan dari Beranda (ditangani App: pindah menu / buka surah). */
 export type HomeTarget = 'quran' | 'continue' | 'setor' | 'challenge' | 'hafalan' | 'tajwid' | 'iqro' | 'garden' | 'achievements';
@@ -26,12 +27,13 @@ const PRAYER_ICONS: Record<PrayerKey, React.ElementType> = {
 };
 
 /** Ke mana tugas harian dikerjakan. */
-const ACTIVITY_TARGET: Record<ActivityId, HomeTarget> = {
+const ACTIVITY_TARGET: Record<ActivityId, HomeTarget | 'dzikir'> = {
   baca: 'continue',
   setor: 'setor',
   game: 'hafalan',
   tajwid: 'tajwid',
-  murottal: 'continue'
+  murottal: 'continue',
+  dzikir: 'dzikir'
 };
 
 /** Siluet masjid sederhana (ornamen latar). */
@@ -252,6 +254,7 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tasbihOpen, setTasbihOpen] = useState(false);
   const [qiblaOpen, setQiblaOpen] = useState(false);
+  const [doaOpen, setDoaOpen] = useState<false | 'menu' | 'dzikir'>(false);
   const prayerSettings = usePrayerSettings();
   const [gpsState, setGpsState] = useState<'idle' | 'loading' | 'error'>('idle');
 
@@ -293,13 +296,19 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
       });
   };
 
-  const shortcuts: { label: string; Icon: React.ElementType; target: HomeTarget | 'tasbih' | 'qibla'; note?: string }[] = [
+  const goActivity = (id: ActivityId) => {
+    const target = ACTIVITY_TARGET[id];
+    if (target === 'dzikir') setDoaOpen('dzikir');
+    else onGo(target);
+  };
+
+  const shortcuts: { label: string; Icon: React.ElementType; target: HomeTarget | 'tasbih' | 'qibla' | 'doa'; note?: string }[] = [
     { label: 'Lanjut Baca', Icon: History, target: 'continue', note: recent ? `${recent.nameLatin} ${recent.ayah}` : undefined },
     { label: "Al-Qur'an", Icon: BookOpen, target: 'quran' },
     { label: 'Setor Hafalan', Icon: MicVocal, target: 'setor' },
     { label: 'Tantangan', Icon: Swords, target: 'challenge' },
     { label: 'Tajwid', Icon: GraduationCap, target: 'tajwid' },
-    { label: 'Iqro', Icon: BookMarked, target: 'iqro' },
+    { label: 'Doa', Icon: HandHeart, target: 'doa' },
     { label: 'Tasbih', Icon: TasbihIcon, target: 'tasbih' },
     { label: 'Kiblat', Icon: Compass, target: 'qibla' }
   ];
@@ -381,7 +390,7 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
       {/* Pintasan */}
       <section className="relative -mt-16 max-w-3xl mx-auto bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_10px_30px_rgba(23,59,78,0.10)] px-2 py-4 grid grid-cols-4 gap-y-4" aria-label="Menu pintasan">
         {shortcuts.map(({ label, Icon, target, note }) => (
-          <button key={label} type="button" onClick={() => (target === 'tasbih' ? setTasbihOpen(true) : target === 'qibla' ? setQiblaOpen(true) : onGo(target))} className="flex flex-col items-center gap-1.5 px-1 rounded-2xl hover:bg-[#F8F6F1] dark:hover:bg-slate-700/40 py-1">
+          <button key={label} type="button" onClick={() => (target === 'tasbih' ? setTasbihOpen(true) : target === 'qibla' ? setQiblaOpen(true) : target === 'doa' ? setDoaOpen('menu') : onGo(target))} className="flex flex-col items-center gap-1.5 px-1 rounded-2xl hover:bg-[#F8F6F1] dark:hover:bg-slate-700/40 py-1">
             <Icon className="w-7 h-7 text-[#BE9452]" strokeWidth={1.6} />
             <span className="text-[12px] font-medium text-[#293640] dark:text-slate-200 text-center leading-tight">{label}</span>
             {note && <span className="text-[9px] text-[#477F8D] leading-none truncate max-w-full">{note}</span>}
@@ -413,7 +422,7 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
               <li key={activity.id}>
                 <button
                   type="button"
-                  onClick={() => onGo(ACTIVITY_TARGET[activity.id])}
+                  onClick={() => goActivity(activity.id)}
                   className="w-full flex items-center gap-3 px-2 py-2 rounded-2xl text-left hover:bg-[#F8F6F1] dark:hover:bg-slate-700/40"
                 >
                   {done ? <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" /> : <Circle className="w-5 h-5 shrink-0 text-slate-300" />}
@@ -430,7 +439,7 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
         {nextTask ? (
           <button
             type="button"
-            onClick={() => onGo(ACTIVITY_TARGET[nextTask.id])}
+            onClick={() => goActivity(nextTask.id)}
             className="w-full py-3 rounded-2xl bg-[#D3A253] hover:bg-[#C8964A] text-white text-sm font-bold shadow-xs"
           >
             Lanjutkan: {nextTask.title}
@@ -443,6 +452,7 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
       {locationOpen && <LocationSheet current={location} onClose={() => setLocationOpen(false)} />}
       {settingsOpen && location && <PrayerSettingsSheet location={location} onClose={() => setSettingsOpen(false)} />}
       {tasbihOpen && <TasbihView onClose={() => setTasbihOpen(false)} />}
+      {doaOpen && <DoaView onClose={() => setDoaOpen(false)} startSet={doaOpen === 'dzikir' ? (new Date().getHours() < 12 ? 'pagi' : 'petang') : undefined} />}
       {qiblaOpen && <QiblaView onClose={() => setQiblaOpen(false)} onChangeLocation={() => setLocationOpen(true)} />}
     </div>
   );
