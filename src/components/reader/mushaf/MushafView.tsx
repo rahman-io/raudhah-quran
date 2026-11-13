@@ -214,7 +214,10 @@ const MushafPage: React.FC<PageProps> = React.memo(
       }
       if (state === 'missed' && hifz.showMistakes) {
         return (
-          <span data-hifz-word={key} className="hifz-reveal rounded text-[#C2410C] dark:text-[#FDBA74] bg-amber-100/80 dark:bg-amber-900/30">
+          <span
+            data-hifz-word={key}
+            className="hifz-reveal text-[#C2410C] dark:text-[#FDBA74] underline decoration-wavy decoration-1 decoration-[#C2410C]/70 dark:decoration-[#FDBA74]/70 [text-underline-offset:0.4em]"
+          >
             {item.text}
           </span>
         );
@@ -222,7 +225,8 @@ const MushafPage: React.FC<PageProps> = React.memo(
       const marks = hifz.tajwid?.get(item.surah)?.get(item.ayah)?.filter((m) => m.word === item.index);
       return (
         <span data-hifz-word={key} className={state === 'shown' ? 'opacity-60' : 'hifz-reveal'}>
-          {marks?.length ? <ColoredWord text={item.text} marks={marks} /> : item.text}
+          {/* Tinggi baris ikut teks mushaf agar baris tetap duduk di atas garisnya. */}
+          {marks?.length ? <ColoredWord text={item.text} marks={marks} style={{ lineHeight: 'inherit' }} /> : item.text}
         </span>
       );
     };
