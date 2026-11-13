@@ -43,8 +43,8 @@ interface Props {
   immersive?: boolean;
   /** Layar penuh: tombol halaman tampil (muncul saat layar disentuh, hilang sendiri). */
   controlsVisible?: boolean;
-  /** Mode Hafalan: teks disembunyikan, kata muncul saat dibaca. */
-  hifz?: { active: boolean; onExit: () => void };
+  /** Setor Hafalan: teks disembunyikan, kata muncul saat dibaca. */
+  hifz?: { active: boolean };
 }
 
 const ARABIC_FONT = '"LPMQ Isep Misbah"';
@@ -195,6 +195,13 @@ const MushafPage: React.FC<PageProps> = React.memo(
       if (state === 'hidden' || state === 'current') {
         return (
           <span data-hifz-word={key} className={`text-transparent select-none ${state === 'current' ? 'border-b-2 border-[#D3A253]' : ''}`} aria-hidden="true">
+            {item.text}
+          </span>
+        );
+      }
+      if (state === 'hint') {
+        return (
+          <span data-hifz-word={key} className="hifz-reveal text-[#7A8C96] dark:text-slate-400">
             {item.text}
           </span>
         );
@@ -473,7 +480,12 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     [hifzActive, layout, texts, shown, spread]
   );
   const nextPageRef = useRef<() => void>(() => undefined);
-  const hifzState = useMushafHifz({ active: hifzActive, words: hifzWords, onPageDone: () => nextPageRef.current() });
+  const hifzState = useMushafHifz({
+    active: hifzActive,
+    words: hifzWords,
+    onPageDone: () => nextPageRef.current(),
+    ayahWordCount: (surah, ayah) => texts.get(surah)?.get(ayah)?.length ?? 0
+  });
   const [tajwidMarks, setTajwidMarks] = useState<Map<number, Map<number, TajwidMark[]>>>(new Map());
   useEffect(() => {
     if (!hifzActive || !hifzState.prefs.tajwid) return;
@@ -977,7 +989,7 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
         <>
           {/* Ruang agar baris terakhir tidak tertutup bilah Mode Hafalan */}
           <div className="h-28" aria-hidden="true" />
-          <MushafHifzBar hifz={hifzState} immersive={immersive} onExit={hifz.onExit} />
+          <MushafHifzBar hifz={hifzState} immersive={immersive} surahName={(n) => surahs.find((m) => m.number === n)?.nameLatin ?? `Surah ${n}`} />
           <style>{'.hifz-reveal{animation:hifz-in .35s ease-out}@keyframes hifz-in{from{opacity:0;filter:blur(2px)}to{opacity:1;filter:none}}@media (prefers-reduced-motion:reduce){.hifz-reveal{animation:none}}'}</style>
         </>
       )}
