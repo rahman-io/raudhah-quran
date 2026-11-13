@@ -14,6 +14,8 @@ import { useBackHandler } from '../../utils/backNavigation';
 import { getCompletedStages, getSurahsWithHafalanProgress, STAGES } from '../hafalan/hafalanPlan';
 import { useSurahPlayer } from './useSurahPlayer';
 import { PlayerDock, PlayerOptions } from './SurahPlayerBar';
+import { RecentReadingCard } from './RecentReadingCard';
+import { recordReading } from './recentReading';
 
 const NO_AYAHS: ReaderAyah[] = [];
 /** Gulir otomatis berlanjut bila pengguna sudah berhenti menggulir selama ini. */
@@ -74,6 +76,8 @@ export const MushafReader: React.FC = () => {
   const topRef = useRef<HTMLDivElement>(null);
   const [hafalanAyahIndex, setHafalanAyahIndex] = useState<number | null>(null);
   const [showList, setShowList] = useState(true);
+  /** Ayat yang dituju saat membuka surah dari "Terakhir Dibaca". */
+  const [pendingAyah, setPendingAyah] = useState<number | null>(null);
   const [infoIndex, setInfoIndex] = useState<Map<number, SurahInfoSummary>>(new Map());
   const [surahInfo, setSurahInfo] = useState<SurahInfoDetail | null>(null);
   const [infoExpanded, setInfoExpanded] = useState(false);
@@ -142,8 +146,9 @@ export const MushafReader: React.FC = () => {
     );
   }, [surahList, searchQuery]);
 
-  const openSurah = (number: number) => {
+  const openSurah = (number: number, ayah?: number) => {
     if (isPlayingAudio) pauseMurottal();
+    setPendingAyah(ayah && ayah > 1 ? ayah : null);
     setSurahNumber(number);
     setShowList(false);
     setIsPickerOpen(false);
@@ -260,6 +265,42 @@ export const MushafReader: React.FC = () => {
     return () => observer.disconnect();
   }, [playerActive, playerState.single, playerState.index]);
 
+  /* ---------- Terakhir dibaca: dicatat otomatis ---------- */
+  const surahReady = !showList && !isLoading && !loadError && loadedSurah?.number === surahNumber;
+
+  // Dibuka dari "Lanjutkan": gulir ke ayat terakhir yang dibaca.
+  useEffect(() => {
+    if (!surahReady || !pendingAyah) return;
+    const timer = setTimeout(() => {
+      ayahRefs.current[pendingAyah - 1]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setPendingAyah(null);
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [surahReady, pendingAyah]);
+
+  // Catat surah yang dibuka dan ayat teratas yang sedang terlihat di layar.
+  useEffect(() => {
+    if (!surahReady || !loadedSurah) return;
+    const surah = loadedSurah;
+    const save = (ayah: number) =>
+      recordReading({ number: surah.number, nameLatin: surah.nameLatin, ayah, totalAyahs: surah.ayahs.length });
+    save(pendingAyah ?? 1);
+    if (typeof IntersectionObserver === 'undefined') return;
+    const visible = new Set<number>();
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const index = ayahRefs.current.indexOf(entry.target as HTMLDivElement);
+        if (index < 0) return;
+        if (entry.isIntersecting) visible.add(index);
+        else visible.delete(index);
+      });
+      if (visible.size) save(Math.min(...visible) + 1);
+    }, { rootMargin: '-96px 0px -45% 0px' });
+    ayahRefs.current.slice(0, surah.ayahs.length).forEach((el) => el && observer.observe(el));
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [surahReady, loadedSurah]);
+
   // Murottal satu ayat (tombol "Putar" biasa) dimulai: hentikan pemutar berurutan.
   useEffect(() => {
     if (isPlayingAudio && playerActive) player.stop();
@@ -285,6 +326,8 @@ export const MushafReader: React.FC = () => {
     return (
       <div ref={topRef} className="w-full space-y-4 scroll-mt-24">
         <MotivationCarousel />
+
+        <RecentReadingCard onOpen={openSurah} />
 
         <div className="flex items-baseline justify-between px-1">
           <h2 className="text-lg font-bold text-[#173B4E] dark:text-white">Daftar Surah</h2>
