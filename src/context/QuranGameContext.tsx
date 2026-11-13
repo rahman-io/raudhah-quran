@@ -42,6 +42,8 @@ interface QuranGameContextType {
   streakDays: number;
   memorizedAyahIds: string[];
   markAyahMemorized: (ayahId: string) => void;
+  /** Batalkan tanda "sudah hafal" (mis. salah pencet): XP dan tanaman dari tanda itu ikut ditarik. */
+  unmarkAyahMemorized: (ayahId: string) => void;
   gardenPlants: GardenPlant[];
   unlockedBadges: string[];
   recentAchievement: string | null;
@@ -429,6 +431,26 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
     celebrateSuccess();
   }, [celebrateSuccess, checkBadgeUnlocks, surahs, plants]);
 
+  const unmarkAyahMemorized = useCallback((ayahId: string) => {
+    setStats((prev) => {
+      if (!prev.memorizedAyahIds.includes(ayahId)) return prev;
+      // Tanaman yang tumbuh tepat saat jumlah hafalan mencapai angka ini ikut dicabut,
+      // agar menandai-membatalkan berulang tidak menumbuhkan tanaman ganda.
+      const plantCatalogItem = plants.find((p) => p.requiredAyahs === prev.memorizedAyahIds.length);
+      let gardenPlants = prev.gardenPlants;
+      if (plantCatalogItem) {
+        const index = gardenPlants.map((plant) => plant.type).lastIndexOf(plantCatalogItem.type);
+        if (index !== -1) gardenPlants = gardenPlants.filter((_, i) => i !== index);
+      }
+      return {
+        ...prev,
+        xp: Math.max(0, prev.xp - 100),
+        memorizedAyahIds: prev.memorizedAyahIds.filter((id) => id !== ayahId),
+        gardenPlants
+      };
+    });
+  }, [plants]);
+
   const inspectWord = useCallback((word: QuranWord) => {
     setSelectedWordForTadabbur(word);
     sounds.playWordClick();
@@ -533,6 +555,7 @@ export const QuranGameProvider: React.FC<{ children: ReactNode }> = ({ children 
         streakDays: stats.streakDays,
         memorizedAyahIds: stats.memorizedAyahIds,
         markAyahMemorized,
+        unmarkAyahMemorized,
         gardenPlants: stats.gardenPlants,
         unlockedBadges: stats.unlockedBadges,
         recentAchievement,

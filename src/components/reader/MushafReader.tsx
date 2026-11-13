@@ -69,6 +69,7 @@ export const MushafReader: React.FC = () => {
     currentPlayingAyahId,
     memorizedAyahIds,
     markAyahMemorized,
+    unmarkAyahMemorized,
     mode,
     reciterId,
     reciterSpeed,
@@ -972,13 +973,14 @@ export const MushafReader: React.FC = () => {
                   </button>
 
                   <button
-                    onClick={() => markAyahMemorized(ayah.id)}
+                    onClick={() => (isMemorized ? unmarkAyahMemorized(ayah.id) : markAyahMemorized(ayah.id))}
+                    aria-pressed={isMemorized}
                     className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
                       isMemorized
                         ? 'bg-[#477F8D] text-white'
                         : 'border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                     }`}
-                    title="Tandai Sudah Dihafal"
+                    title={isMemorized ? 'Sudah dihafal. Ketuk lagi untuk membatalkan' : 'Tandai Sudah Dihafal'}
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">{isMemorized ? 'Sudah Dihafal' : 'Tandai Hafal'}</span>
