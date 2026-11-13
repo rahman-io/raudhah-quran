@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, ExternalLink } from 'lucide-react';
+import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, ExternalLink, Languages, ListMusic, PlayCircle, Square } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import {
@@ -12,6 +12,19 @@ import { SURAH_VIRTUES } from '../../data/surahVirtues';
 import { MotivationCarousel } from './MotivationCarousel';
 import { useBackHandler } from '../../utils/backNavigation';
 import { getCompletedStages, getSurahsWithHafalanProgress, STAGES } from '../hafalan/hafalanPlan';
+import { useSurahPlayer } from './useSurahPlayer';
+import { PlayerDock, PlayerOptions } from './SurahPlayerBar';
+
+const NO_AYAHS: ReaderAyah[] = [];
+
+/** Terjemah dipecah per kata (dengan posisi karakternya) untuk highlight saat dibacakan. */
+const translationTokens = (text: string) => {
+  const tokens: { word: string; start: number }[] = [];
+  const pattern = /\S+/g;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text))) tokens.push({ word: match[0], start: match.index });
+  return tokens;
+};
 
 const normalizeSearch = (text: string) => text.toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]/g, '');
 // Kerangka konsonan agar ejaan berbeda tetap cocok, mis. "baqoroh" → Al-Baqarah.
@@ -44,7 +57,9 @@ export const MushafReader: React.FC = () => {
     currentPlayingAyahId,
     memorizedAyahIds,
     markAyahMemorized,
-    mode
+    mode,
+    reciterId,
+    reciterSpeed
   } = useQuranGame();
 
   const [surahIndex, setSurahIndex] = useState<ReaderIndex | null>(null);
@@ -135,6 +150,16 @@ export const MushafReader: React.FC = () => {
   };
 
   const handleTogglePlay = (ayah: ReaderAyah) => {
+    if (playerRunning) {
+      // Pemutar berurutan sedang aktif: lompat ke ayat ini.
+      const index = loadedSurah?.ayahs.findIndex((a) => a.id === ayah.id) ?? -1;
+      if (index >= 0) {
+        setFollowing(true);
+        player.playFrom(index);
+      }
+      return;
+    }
+    if (playerActive) player.stop();
     if (isPlayingAudio && currentPlayingAyahId === ayah.id) {
       pauseMurottal();
     } else {
@@ -152,6 +177,72 @@ export const MushafReader: React.FC = () => {
   // Tombol back HP: tutup mode Hafalkan dulu, lalu kembali dari surah ke Daftar Surah.
   useBackHandler(!showList, backToList);
   useBackHandler(hafalanAyahIndex !== null, () => setHafalanAyahIndex(null));
+
+  /* ---------- Pemutar surah berurutan + suara arti ---------- */
+  const player = useSurahPlayer(loadedSurah?.ayahs ?? NO_AYAHS, reciterId, reciterSpeed);
+  const { state: playerState, active: playerActive } = player;
+  /** Pemutar berurutan sedang berjalan atau dijeda (bukan sekadar baca arti satu ayat). */
+  const playerRunning = playerActive && !playerState.single && playerState.status !== 'done';
+  const ayahRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [following, setFollowing] = useState(true);
+
+  const scrollToAyah = (index: number) => {
+    const el = ayahRefs.current[index];
+    if (!el) return;
+    const tall = el.getBoundingClientRect().height > window.innerHeight * 0.6;
+    el.scrollIntoView({ behavior: 'smooth', block: tall ? 'start' : 'center' });
+  };
+
+  const startPlayer = (index: number) => {
+    if (isPlayingAudio) pauseMurottal();
+    setFollowing(true);
+    player.playFrom(index);
+  };
+
+  const startArti = (index: number) => {
+    if (isPlayingAudio) pauseMurottal();
+    if (playerState.single && playerState.index === index && playerState.status === 'playing') {
+      player.stop();
+      return;
+    }
+    setFollowing(true);
+    player.speakArti(index);
+  };
+
+  // Gulir otomatis mengikuti ayat yang sedang dibaca.
+  useEffect(() => {
+    if (playerState.status === 'playing' && following && !playerState.single) scrollToAyah(playerState.index);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerState.index, playerState.status, following]);
+
+  // Pengguna menggulir sendiri: jeda gulir otomatis agar layar tidak "direbut".
+  useEffect(() => {
+    if (playerState.status !== 'playing' || playerState.single) return;
+    const userScrolled = () => setFollowing(false);
+    const onKey = (event: KeyboardEvent) => {
+      if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) userScrolled();
+    };
+    window.addEventListener('wheel', userScrolled, { passive: true });
+    window.addEventListener('touchmove', userScrolled, { passive: true });
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('wheel', userScrolled);
+      window.removeEventListener('touchmove', userScrolled);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [playerState.status, playerState.single]);
+
+  // Murottal satu ayat (tombol "Putar" biasa) dimulai: hentikan pemutar berurutan.
+  useEffect(() => {
+    if (isPlayingAudio && playerActive) player.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlayingAudio]);
+
+  // Pindah ke Daftar Surah atau membuka mode Hafalkan: hentikan suara.
+  useEffect(() => {
+    if (showList || hafalanAyahIndex !== null) player.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showList, hafalanAyahIndex]);
 
   // Halaman awal menu Baca: daftar lengkap 114 surah.
   if (showList) {
@@ -456,6 +547,29 @@ export const MushafReader: React.FC = () => {
         </p>
       )}
 
+      {/* Putar surah berurutan */}
+      <div className="bg-white dark:bg-slate-800/80 rounded-3xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <button
+          type="button"
+          onClick={() => (playerRunning ? player.stop() : startPlayer(0))}
+          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-semibold shadow-xs transition-colors ${
+            playerRunning
+              ? 'bg-[#D3A253] text-[#173B4E] hover:bg-[#C99543]'
+              : 'bg-[#246579] hover:bg-[#174C60] text-white'
+          }`}
+        >
+          {playerRunning ? <Square className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />}
+          <span>{playerRunning ? 'Hentikan' : 'Putar Surah'}</span>
+        </button>
+        <div className="flex-1 min-w-0 space-y-1">
+          <PlayerOptions prefs={player.prefs} setPrefs={player.setPrefs} canSpeak={player.canSpeak} />
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">
+            Diputar terus ke ayat berikutnya dan layar ikut bergulir.
+            {player.canSpeak ? ' Arti dibacakan oleh suara pembaca teks bawaan perangkat.' : ' Perangkat ini belum mendukung suara pembaca teks untuk arti.'}
+          </p>
+        </div>
+      </div>
+
       {/* Ayahs List */}
       <div className="space-y-4">
         {activeSurah.ayahs.map((ayah, ayahIndex) => {
@@ -465,14 +579,30 @@ export const MushafReader: React.FC = () => {
           const msiText = kemenagText?.surah === ayah.surahNumber ? kemenagText.ayahs.get(ayah.ayahNumber) : undefined;
           const msiWords = msiText ? splitKemenagWords(msiText) : null;
           const msiWordsMatch = msiWords?.length === ayah.words.length;
+          const isPlayerHere = playerActive && playerState.index === ayahIndex && playerState.status !== 'done';
+          const readingArab = isPlayerHere && playerState.part === 'arab';
+          const readingArti = isPlayerHere && playerState.part === 'arti';
+          const artiSpeaking = readingArti && playerState.status === 'playing';
+          const tokens = readingArti ? translationTokens(ayah.translationId) : [];
+          let activeToken = -1;
+          if (readingArti && playerState.wordChar !== null) {
+            tokens.forEach((token, i) => {
+              if (token.start <= (playerState.wordChar as number)) activeToken = i;
+            });
+          }
 
           return (
             <div
               key={ayah.id}
-              className={`relative bg-white dark:bg-slate-800/80 rounded-3xl p-5 sm:p-7 border transition-all ${
-                isPlayingThis
-                  ? 'border-[#D3A253] ring-2 ring-[#D3A253]/20 shadow-md'
-                  : 'border-slate-200 dark:border-slate-700 hover:border-[#477F8D]/50 shadow-xs'
+              ref={(el) => {
+                ayahRefs.current[ayahIndex] = el;
+              }}
+              className={`relative bg-white dark:bg-slate-800/80 rounded-3xl p-5 sm:p-7 border transition-all duration-500 scroll-mt-24 ${
+                isPlayerHere
+                  ? 'border-[#D3A253] reader-now-playing'
+                  : isPlayingThis
+                    ? 'border-[#D3A253] ring-2 ring-[#D3A253]/20 shadow-md'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-[#477F8D]/50 shadow-xs'
               }`}
             >
               {/* Ayah Top Meta & Audio Bar */}
@@ -482,13 +612,39 @@ export const MushafReader: React.FC = () => {
                   <div className="w-8 h-8 rounded-full bg-[#246579]/10 dark:bg-[#246579]/30 text-[#246579] dark:text-[#477F8D] flex items-center justify-center font-bold text-xs">
                     {ayah.ayahNumber}
                   </div>
-                  <span className="text-xs font-semibold text-[#246579] dark:text-[#94A3B8]">
+                  <span className="hidden sm:inline text-xs font-semibold text-[#246579] dark:text-[#94A3B8]">
                     Ayat {ayah.ayahNumber}
                   </span>
                 </div>
 
                 {/* Audio and Memorized buttons */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <button
+                    onClick={() => startPlayer(ayahIndex)}
+                    className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors"
+                    title="Putar berurutan mulai dari ayat ini"
+                    aria-label={`Putar berurutan mulai dari ayat ${ayah.ayahNumber}`}
+                  >
+                    <ListMusic className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Dari sini</span>
+                  </button>
+
+                  {player.canSpeak && (
+                    <button
+                      onClick={() => startArti(ayahIndex)}
+                      className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                        artiSpeaking
+                          ? 'bg-[#D3A253] text-[#173B4E]'
+                          : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200'
+                      }`}
+                      title={artiSpeaking ? 'Hentikan bacaan arti' : 'Bacakan arti ayat ini'}
+                      aria-label={artiSpeaking ? 'Hentikan bacaan arti' : `Bacakan arti ayat ${ayah.ayahNumber}`}
+                    >
+                      <Languages className="w-3.5 h-3.5" />
+                      <span>Arti</span>
+                    </button>
+                  )}
+
                   <button
                     onClick={() => handleTogglePlay(ayah)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
@@ -504,7 +660,7 @@ export const MushafReader: React.FC = () => {
 
                   <button
                     onClick={() => markAyahMemorized(ayah.id)}
-                    className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                    className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
                       isMemorized
                         ? 'bg-[#477F8D] text-white'
                         : 'border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
@@ -512,7 +668,8 @@ export const MushafReader: React.FC = () => {
                     title="Tandai Sudah Dihafal"
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
-                    <span>{isMemorized ? 'Sudah Dihafal' : 'Tandai Hafal'}</span>
+                    <span className="hidden sm:inline">{isMemorized ? 'Sudah Dihafal' : 'Tandai Hafal'}</span>
+                    <span className="sm:hidden">Hafal</span>
                   </button>
                 </div>
               </div>
@@ -520,7 +677,9 @@ export const MushafReader: React.FC = () => {
               {/* Arabic Verse with Word Clickability */}
               <div
                 dir="rtl"
-                className="py-3 text-right leading-loose select-text"
+                className={`py-3 text-right leading-loose select-text rounded-2xl transition-colors duration-500 ${
+                  readingArab ? 'bg-[#D3A253]/10 dark:bg-[#D3A253]/10 -mx-2 px-2' : ''
+                }`}
               >
                 {msiWords ? (
                   // Teks Mushaf Standar Indonesia (Kemenag). Arti per kata hanya dipasang
@@ -570,8 +729,36 @@ export const MushafReader: React.FC = () => {
               </p>
 
               {/* Translation */}
-              <p className="text-xs text-[#293640] dark:text-[#CBD5E1] leading-relaxed mt-1.5 font-normal">
-                "{ayah.translationId}"
+              <p
+                className={`text-xs text-[#293640] dark:text-[#CBD5E1] leading-relaxed mt-1.5 font-normal rounded-xl transition-colors duration-500 ${
+                  readingArti ? 'bg-[#246579]/[0.06] dark:bg-[#246579]/25 -mx-2 px-2 py-1.5' : ''
+                }`}
+              >
+                {readingArti ? (
+                  <>
+                    "
+                    {tokens.map((token, i) => (
+                      <React.Fragment key={i}>
+                        <span
+                          className={`rounded px-0.5 -mx-0.5 transition-colors duration-200 ${
+                            i === activeToken
+                              ? 'bg-[#D3A253]/45 text-[#173B4E] dark:text-white'
+                              : activeToken === -1 && artiSpeaking
+                                ? 'bg-[#D3A253]/15'
+                                : i < activeToken
+                                  ? 'text-[#246579] dark:text-[#A7CDD3]'
+                                  : ''
+                          }`}
+                        >
+                          {token.word}
+                        </span>{i < tokens.length - 1 && ' '}
+                      </React.Fragment>
+                    ))}
+                    "
+                  </>
+                ) : (
+                  <>"{ayah.translationId}"</>
+                )}
               </p>
 
               {/* Tadabbur Wisdom Card */}
@@ -605,7 +792,7 @@ export const MushafReader: React.FC = () => {
                   <span>
                     {gamesDone > 0 && gamesDone < STAGES.length
                       ? `Lanjutkan Hafalan (${gamesDone}/${STAGES.length} game)`
-                      : isMemorized ? "Muraja'ah dengan 7 Game" : 'Hafalkan Ayat Ini'}
+                      : isMemorized ? `Muraja'ah dengan ${STAGES.length} Game` : 'Hafalkan Ayat Ini'}
                   </span>
                 </button>
               </div>
@@ -613,6 +800,33 @@ export const MushafReader: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Ruang agar ayat terakhir tidak tertutup pemutar */}
+      {playerActive && <div className="h-36 lg:h-24" aria-hidden="true" />}
+      <PlayerDock
+        state={playerState}
+        total={activeSurah.ayahs.length}
+        surahName={activeSurah.nameLatin}
+        following={following}
+        onFollow={() => {
+          setFollowing(true);
+          scrollToAyah(playerState.index);
+        }}
+        onToggle={() => (playerState.status === 'playing' ? player.pause() : player.resume())}
+        onPrevious={() => {
+          setFollowing(true);
+          player.previous();
+        }}
+        onNext={() => {
+          setFollowing(true);
+          player.next();
+        }}
+        onStop={player.stop}
+        prefs={player.prefs}
+        setPrefs={player.setPrefs}
+        canSpeak={player.canSpeak}
+      />
+      <style>{'@keyframes reader-glow { 0%, 100% { box-shadow: 0 0 0 3px rgba(211,162,83,0.30), 0 6px 18px rgba(211,162,83,0.12); } 50% { box-shadow: 0 0 0 4px rgba(211,162,83,0.40), 0 10px 36px rgba(211,162,83,0.32); } } .reader-now-playing { box-shadow: 0 0 0 3px rgba(211,162,83,0.30); animation: reader-glow 2.4s ease-in-out infinite; } @media (prefers-reduced-motion: reduce) { .reader-now-playing { animation: none; } }'}</style>
       </>
         );
       })()}
