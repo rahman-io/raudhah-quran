@@ -4,7 +4,7 @@ import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, Che
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import {
-  loadKemenagSurah, loadReaderIndex, loadReaderSurah, loadSurahInfo, loadSurahInfoIndex, splitKemenagWords,
+  loadKemenagLatin, loadKemenagSurah, loadReaderIndex, loadReaderSurah, loadSurahInfo, loadSurahInfoIndex, splitKemenagWords,
   ReaderAyah, ReaderIndex, ReaderSurah, SurahInfoDetail, SurahInfoSummary
 } from '../../services/quranReaderData';
 import { HafalanSession } from '../hafalan/HafalanSession';
@@ -107,6 +107,8 @@ export const MushafReader: React.FC = () => {
   const [infoExpanded, setInfoExpanded] = useState(false);
   // Teks Arab Mushaf Standar Indonesia (Kemenag) untuk surah yang sedang dibuka.
   const [kemenagText, setKemenagText] = useState<{ surah: number; ayahs: Map<number, string> } | null>(null);
+  // Transliterasi latin versi Kemenag (mis. "Bismillāhir-raḥmānir-raḥīm(i).").
+  const [kemenagLatin, setKemenagLatin] = useState<{ surah: number; ayahs: Map<number, string> } | null>(null);
 
   useEffect(() => {
     loadReaderIndex().then(setSurahIndex);
@@ -129,6 +131,9 @@ export const MushafReader: React.FC = () => {
     let cancelled = false;
     loadKemenagSurah(surahNumber).then((ayahs) => {
       if (!cancelled) setKemenagText(ayahs ? { surah: surahNumber, ayahs } : null);
+    });
+    loadKemenagLatin(surahNumber).then((ayahs) => {
+      if (!cancelled) setKemenagLatin(ayahs ? { surah: surahNumber, ayahs } : null);
     });
     return () => {
       cancelled = true;
@@ -757,7 +762,7 @@ export const MushafReader: React.FC = () => {
       {surahIndex?.source && (
         <p className="px-2 -mt-3 text-[10px] text-slate-500 dark:text-slate-400">
           {kemenagText?.surah === surahNumber
-            ? <>Teks Arab: Mushaf Standar Indonesia (Qur'an Kemenag) · Arti per kata: {surahIndex.source.api} · Terjemah: {surahIndex.source.translation.name}</>
+            ? <>Teks Arab{kemenagLatin?.surah === surahNumber ? ' & latin' : ''}: Mushaf Standar Indonesia (Qur'an Kemenag) · Arti per kata: {surahIndex.source.api} · Terjemah: {surahIndex.source.translation.name}</>
             : <>Teks & arti per kata: {surahIndex.source.api} · Terjemah: {surahIndex.source.translation.name}</>}
         </p>
       )}
@@ -941,7 +946,7 @@ export const MushafReader: React.FC = () => {
                 className="text-[#246579] dark:text-[#A7CDD3] font-medium italic mt-2 leading-relaxed"
                 style={{ fontSize: `${latinFontSize}px` }}
               >
-                {ayah.transliteration}
+                {(kemenagLatin?.surah === ayah.surahNumber && kemenagLatin.ayahs.get(ayah.ayahNumber)) || ayah.transliteration}
               </p>
 
               {/* Translation */}

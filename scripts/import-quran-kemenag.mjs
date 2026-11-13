@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Impor teks Arab Mushaf Standar Indonesia (MSI) dari layanan resmi Qur'an Kemenag
+ * Impor teks Arab Mushaf Standar Indonesia (MSI) dan transliterasi latinnya dari layanan resmi Qur'an Kemenag
  * (quran.kemenag.go.id, disusun Lajnah Pentashihan Mushaf Al-Qur'an) untuk 114 surah.
  * Teks diambil apa adanya, tidak ada yang diketik manual.
  *
@@ -11,7 +11,7 @@
  * (hasil scripts/import-quran.mjs), jadi impor itu harus sudah ada.
  *
  * Keluaran:
- *   public/quran-kemenag/{1..114}.json  { number, ayahs: [[nomorAyat, teksArab], ...] }
+ *   public/quran-kemenag/{1..114}.json  { number, ayahs: [[nomorAyat, teksArab, teksLatin], ...] }
  *   public/quran-kemenag/index.json     sumber, waktu impor, dan ringkasan pemeriksaan
  * Bila satu pemeriksaan gagal, tidak ada berkas yang diubah.
  */
@@ -65,7 +65,10 @@ async function fetchSurah(number, expected) {
       if (Number(row.surah_id ?? number) !== number) {
         throw new Error(`Surah ${number}: API mengembalikan ayat dari surah ${row.surah_id}`);
       }
-      byAyah.set(Number(row.ayah), String(row.arabic ?? '').trim());
+      byAyah.set(Number(row.ayah), {
+        arabic: String(row.arabic ?? '').trim(),
+        latin: String(row.latin ?? '').replace(/\s+/g, ' ').trim()
+      });
     }
     start += page.length;
   }
@@ -111,13 +114,16 @@ async function main() {
     const reader = JSON.parse(await readFile(path.join(READER_DIR, 'surah', `${number}.json`), 'utf8'));
     const rows = [];
     for (let n = 1; n <= numberOfAyahs; n += 1) {
-      const text = ayahs.get(n);
+      const text = ayahs.get(n)?.arabic;
+      const latin = ayahs.get(n)?.latin ?? '';
       if (!text || !ARABIC_LETTER.test(text)) {
         problems.push(`Surah ${number} ayat ${n}: teks Arab kosong`);
         continue;
       }
       if (/[<>]/.test(text)) problems.push(`Surah ${number} ayat ${n}: teks memuat tag HTML`);
-      rows.push([n, text]);
+      if (!latin) problems.push(`Surah ${number} ayat ${n}: teks latin kosong`);
+      if (/[<>]/.test(latin)) problems.push(`Surah ${number} ayat ${n}: teks latin memuat tag HTML`);
+      rows.push([n, text, latin]);
       const words = reader.ayahs[n - 1]?.w?.length ?? 0;
       if (wordCount(text) === words) sameWordCount += 1;
       else differentWordCount.push(`${number}:${n}`);

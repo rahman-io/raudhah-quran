@@ -136,19 +136,33 @@ export function loadReaderSurah(number: number): Promise<ReaderSurah> {
 /* font LPMQ Isep Misbah agar sama dengan quran.kemenag.go.id          */
 /* ------------------------------------------------------------------ */
 
-const kemenagCache = new Map<number, Promise<Map<number, string> | null>>();
+/** Baris berkas: [nomor ayat, teks Arab, teks latin]; teks latin ada sejak impor versi baru. */
+type KemenagRow = [number, string, string?];
+const kemenagFileCache = new Map<number, Promise<KemenagRow[] | null>>();
+
+function loadKemenagFile(number: number): Promise<KemenagRow[] | null> {
+  let cached = kemenagFileCache.get(number);
+  if (!cached) {
+    cached = fetch(assetUrl(`/quran-kemenag/${number}.json`))
+      .then((response) => (response.ok ? (response.json() as Promise<{ ayahs: KemenagRow[] }>) : null))
+      .then((data) => (data?.ayahs?.length ? data.ayahs : null))
+      .catch(() => null);
+    kemenagFileCache.set(number, cached);
+  }
+  return cached;
+}
 
 /** Teks Arab MSI per nomor ayat; null bila data belum diimpor. */
 export function loadKemenagSurah(number: number): Promise<Map<number, string> | null> {
-  let cached = kemenagCache.get(number);
-  if (!cached) {
-    cached = fetch(assetUrl(`/quran-kemenag/${number}.json`))
-      .then((response) => (response.ok ? (response.json() as Promise<{ ayahs: [number, string][] }>) : null))
-      .then((data) => (data?.ayahs?.length ? new Map(data.ayahs) : null))
-      .catch(() => null);
-    kemenagCache.set(number, cached);
-  }
-  return cached;
+  return loadKemenagFile(number).then((rows) => (rows ? new Map(rows.map(([n, arabic]) => [n, arabic])) : null));
+}
+
+/** Transliterasi latin versi Kemenag per nomor ayat; null bila belum diimpor. */
+export function loadKemenagLatin(number: number): Promise<Map<number, string> | null> {
+  return loadKemenagFile(number).then((rows) => {
+    const latin = rows?.filter((row) => row[2]).map(([n, , text]) => [n, text as string] as [number, string]);
+    return latin?.length ? new Map(latin) : null;
+  });
 }
 
 // U+06D5 tidak dihitung huruf: di teks MSI ia dipakai sebagai tanda (mis. "ەۙ").
