@@ -161,3 +161,18 @@ export function alignRecitation(variants: string[][], transcript: string): Recit
   }
   return best?.progress ?? { status: [], next: 0 };
 }
+
+/**
+ * Sama seperti `alignRecitation`, tetapi hanya memakai ekor teks bacaan (`maxLetters` huruf
+ * terakhir). Dipakai untuk bacaan panjang (beberapa ayat): kata yang sudah dinilai tidak lagi
+ * ikut dicocokkan, dan teks lama di depan diabaikan.
+ */
+export function alignRecitationTail(variants: string[][], transcript: string, maxLetters: number): RecitationProgress {
+  const text = arabicSkeleton(transcript).slice(-maxLetters);
+  let best: { progress: RecitationProgress; score: number } | null = null;
+  for (const expected of variants) {
+    const result = alignOnce(expected, text);
+    if (!best || result.score > best.score) best = result;
+  }
+  return best?.progress ?? { status: [], next: 0 };
+}

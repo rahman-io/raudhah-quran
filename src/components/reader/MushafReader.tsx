@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, Share2, ExternalLink, Languages, ListMusic, PlayCircle, Square, AlignJustify, Maximize2, Minimize2 } from 'lucide-react';
+import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, Share2, ExternalLink, Languages, ListMusic, PlayCircle, Square, AlignJustify, Maximize2, Minimize2, Swords } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import {
@@ -8,6 +8,7 @@ import {
   ReaderAyah, ReaderIndex, ReaderSurah, SurahInfoDetail, SurahInfoSummary
 } from '../../services/quranReaderData';
 import { HafalanSession } from '../hafalan/HafalanSession';
+import { SurahChallenge } from '../hafalan/SurahChallenge';
 import { SURAH_VIRTUES } from '../../data/surahVirtues';
 import { MotivationCarousel } from './MotivationCarousel';
 import { useBackHandler } from '../../utils/backNavigation';
@@ -577,6 +578,12 @@ export const MushafReader: React.FC = () => {
     if (first) runAyahAction('play', first.surah, first.ayah);
   };
 
+  /* ---------- Tantangan Surah: baca sambung beberapa ayat tanpa melihat ---------- */
+  const [surahChallengeOpen, setSurahChallengeOpen] = useState(false);
+  useEffect(() => {
+    if (showList) setSurahChallengeOpen(false);
+  }, [showList]);
+
   /* ---------- Mode Mushaf layar penuh: hanya halaman mushaf & pemutar ---------- */
   const [mushafFull, setMushafFull] = useState(false);
   const fullActive = mushafFull && readingMode === 'mushaf' && !showList;
@@ -894,7 +901,7 @@ export const MushafReader: React.FC = () => {
       </div>
 
       {/* Pilihan mode baca */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         <div className="inline-grid grid-cols-2 gap-1 p-1 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs" role="tablist" aria-label="Mode baca">
           {([
             { id: 'tadabbur', label: 'Tadabbur', hint: 'per ayat', Icon: AlignJustify },
@@ -937,6 +944,20 @@ export const MushafReader: React.FC = () => {
           >
             <Maximize2 className="w-4 h-4" />
             <span className="hidden sm:inline">Layar penuh</span>
+          </button>
+        )}
+        {loadedSurah && (
+          <button
+            type="button"
+            onClick={() => {
+              if (playerActive) player.stop();
+              setSurahChallengeOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-[#246579]/10 dark:bg-[#246579]/30 hover:bg-[#246579]/15 text-[#246579] dark:text-[#A7CDD3] text-xs font-semibold"
+            title="Tantangan Surah: baca sambung beberapa ayat tanpa melihat"
+          >
+            <Swords className="w-4 h-4" />
+            Tantangan Surah
           </button>
         )}
       </div>
@@ -1518,6 +1539,16 @@ export const MushafReader: React.FC = () => {
           />
         );
       })()}
+
+      {surahChallengeOpen && loadedSurah && !showList && (
+        <SurahChallenge
+          key={loadedSurah.number}
+          surah={loadedSurah}
+          suggestedStart={getRecentReadings().find((r) => r.number === loadedSurah.number)?.ayah}
+          onClose={() => setSurahChallengeOpen(false)}
+          onTrainAyah={(index) => setHafalanAyahIndex(index)}
+        />
+      )}
 
       {hafalanAyahIndex !== null && loadedSurah && loadedSurah.ayahs[hafalanAyahIndex] && (
         <HafalanSession
