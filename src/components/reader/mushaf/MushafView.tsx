@@ -14,6 +14,9 @@ import {
 import { AyahEndMarker } from '../AyahEndMarker';
 import { HeaderPill, MushafFrame, SurahTitleCard } from './MushafOrnaments';
 import { curlStyles, grabPoint, type Point } from './pageCurl';
+import { MushafHifzBar, useMushafHifz, hifzKey, type HifzWordState, type PageWord } from './useMushafHifz';
+import { loadTajwidSurah, type TajwidMark } from '../../../services/tajwidData';
+import { ColoredWord } from '../../tajwid/TajwidWord';
 
 /**
  * Mode Mushaf: satu halaman (atau dua halaman berdampingan di layar lebar) seperti mushaf cetak.
@@ -40,6 +43,8 @@ interface Props {
   immersive?: boolean;
   /** Layar penuh: tombol halaman tampil (muncul saat layar disentuh, hilang sendiri). */
   controlsVisible?: boolean;
+  /** Mode Hafalan: teks disembunyikan, kata muncul saat dibaca. */
+  hifz?: { active: boolean; onExit: () => void };
 }
 
 const ARABIC_FONT = '"LPMQ Isep Misbah"';
@@ -67,7 +72,7 @@ function wordEm(word: string): number {
 type AyahWords = Map<number, string[]>; // ayat → kata-kata MSI
 type TextStore = Map<number, AyahWords>; // surah → ayat
 
-type LineItem = { kind: 'word'; text: string; surah: number; ayah: number } | { kind: 'end'; surah: number; ayah: number };
+type LineItem = { kind: 'word'; text: string; surah: number; ayah: number; index: number } | { kind: 'end'; surah: number; ayah: number };
 
 /** Batas kata: posisi ke-k menurut data baris → posisi di teks MSI (jumlah kata bisa beda ±1). */
 const mapBoundary = (k: number, layoutCount: number, textCount: number) =>
@@ -92,7 +97,7 @@ function lineItems(line: Extract<MushafLine, { kind: 'text' }>, layout: MushafLa
     const layoutCount = layout.words[token.surah - 1][token.ayah - 1];
     const from = mapBoundary(tokens[i].word - 1, layoutCount, words.length);
     const to = mapBoundary(tokens[j].word, layoutCount, words.length);
-    words.slice(from, to).forEach((text) => items.push({ kind: 'word', text, surah: token.surah, ayah: token.ayah }));
+    words.slice(from, to).forEach((text, k) => items.push({ kind: 'word', text, surah: token.surah, ayah: token.ayah, index: from + k }));
     i = j + 1;
   }
   return items;
@@ -117,6 +122,28 @@ function naturalFontSize(page: number, layout: MushafLayout, texts: TextStore, w
   return innerWidthOf(width) / maxEm;
 }
 
+/** Urutan kata (urutan baca) di halaman-halaman ini; kosong bila teksnya belum dimuat. */
+function pageWords(pages: number[], layout: MushafLayout, texts: TextStore): PageWord[] {
+  const list: PageWord[] = [];
+  for (const page of pages) {
+    for (const line of layout.pages[page - 1]) {
+      if (line.kind !== 'text') continue;
+      const items = lineItems(line, layout, texts);
+      if (!items) return [];
+      items.forEach((item) => item.kind === 'word' && list.push({ surah: item.surah, ayah: item.ayah, index: item.index, text: item.text }));
+    }
+  }
+  return list;
+}
+
+/** Tampilan kata di Mode Hafalan (diteruskan ke setiap halaman). */
+interface HifzRender {
+  stateOf: (surah: number, ayah: number, index: number) => HifzWordState;
+  showMistakes: boolean;
+  /** Tanda tajwid per surah → ayat (null = warna tajwid mati). */
+  tajwid: Map<number, Map<number, TajwidMark[]>> | null;
+}
+
 /* ---------------- Satu halaman ---------------- */
 const sameAyah = (a: AyahRef | null, surah: number, ayah: number) => !!a && a.surah === surah && a.ayah === ayah;
 
@@ -136,10 +163,11 @@ interface PageProps {
   activeAyah: AyahRef | null;
   markedAyah: AyahRef | null;
   onAyahTap: (surah: number, ayah: number) => void;
+  hifz?: HifzRender;
 }
 
 const MushafPage: React.FC<PageProps> = React.memo(
-  ({ page, layout, texts, basmalah, surahs, width, fontSize: baseFont, scale, minHeight, activeAyah, markedAyah, onAyahTap }) => {
+  ({ page, layout, texts, basmalah, surahs, width, fontSize: baseFont, scale, minHeight, activeAyah, markedAyah, onAyahTap, hifz }) => {
     const lines = layout.pages[page - 1];
     const rendered = useMemo(
       () => lines.map((line) => (line.kind === 'text' ? lineItems(line, layout, texts) : null)),
@@ -159,8 +187,37 @@ const MushafPage: React.FC<PageProps> = React.memo(
     const meta = surahMeta(firstSurah);
     const odd = page % 2 === 1;
 
+    /** Kata di Mode Hafalan: tersembunyi (tetap memakan tempat), muncul saat terbaca, oranye bila salah. */
+    const wordNode = (item: Extract<LineItem, { kind: 'word' }>) => {
+      if (!hifz) return item.text;
+      const state = hifz.stateOf(item.surah, item.ayah, item.index);
+      const key = hifzKey(item.surah, item.ayah, item.index);
+      if (state === 'hidden' || state === 'current') {
+        return (
+          <span data-hifz-word={key} className={`text-transparent select-none ${state === 'current' ? 'border-b-2 border-[#D3A253]' : ''}`} aria-hidden="true">
+            {item.text}
+          </span>
+        );
+      }
+      if (state === 'missed' && hifz.showMistakes) {
+        return (
+          <span data-hifz-word={key} className="hifz-reveal rounded text-[#C2410C] dark:text-[#FDBA74] bg-amber-100/80 dark:bg-amber-900/30">
+            {item.text}
+          </span>
+        );
+      }
+      const marks = hifz.tajwid?.get(item.surah)?.get(item.ayah)?.filter((m) => m.word === item.index);
+      return (
+        <span data-hifz-word={key} className={state === 'shown' ? 'opacity-60' : 'hifz-reveal'}>
+          {marks?.length ? <ColoredWord text={item.text} marks={marks} /> : item.text}
+        </span>
+      );
+    };
+
     const toneOf = (surah: number, ayah: number) =>
-      sameAyah(activeAyah, surah, ayah)
+      hifz
+        ? ''
+        : sameAyah(activeAyah, surah, ayah)
         ? 'bg-[#D3A253]/35 dark:bg-[#D3A253]/30'
         : sameAyah(markedAyah, surah, ayah)
           ? 'bg-[#246579]/12 dark:bg-[#5FA8B8]/20'
@@ -213,7 +270,7 @@ const MushafPage: React.FC<PageProps> = React.memo(
                 } ${toneOf(item.surah, item.ayah)}`}
                 style={{ paddingInline: spare }}
               >
-                {item.kind === 'end' ? <AyahEndMarker number={item.ayah} fontSize={fontSize} /> : item.text}
+                {item.kind === 'end' ? <AyahEndMarker number={item.ayah} fontSize={fontSize} /> : wordNode(item)}
               </span>
             );
           })}
@@ -249,7 +306,7 @@ const MushafPage: React.FC<PageProps> = React.memo(
                 <AyahEndMarker number={item.ayah} fontSize={fontSize} />
               </span>
             ) : (
-              item.text
+              wordNode(item)
             )}{' '}
           </span>
         ))}
@@ -337,7 +394,7 @@ const readFontPref = (): number | null => {
   }
 };
 
-export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, activeAyah, markedAyah, onAyahTap, immersive = false, controlsVisible = true }) => {
+export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, activeAyah, markedAyah, onAyahTap, immersive = false, controlsVisible = true, hifz }) => {
   const [layout, setLayout] = useState<MushafLayout | null>(null);
   const [layoutError, setLayoutError] = useState(false);
   const [texts, setTexts] = useState<TextStore>(new Map());
@@ -407,6 +464,39 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     if (turn) around.add(turn.to);
     return { base, around: [...around] };
   }, [shown, spread, turn]);
+
+  /* ----- Mode Hafalan: teks disembunyikan, kata muncul saat dibaca ----- */
+  const hifzActive = !!hifz?.active;
+  const hifzWords = useMemo(
+    () => (hifzActive && layout ? pageWords(spread ? spreadOf(shown) : [shown], layout, texts) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hifzActive, layout, texts, shown, spread]
+  );
+  const nextPageRef = useRef<() => void>(() => undefined);
+  const hifzState = useMushafHifz({ active: hifzActive, words: hifzWords, onPageDone: () => nextPageRef.current() });
+  const [tajwidMarks, setTajwidMarks] = useState<Map<number, Map<number, TajwidMark[]>>>(new Map());
+  useEffect(() => {
+    if (!hifzActive || !hifzState.prefs.tajwid) return;
+    new Set(hifzWords.map((w) => w.surah)).forEach((surah) => {
+      if (tajwidMarks.has(surah)) return;
+      loadTajwidSurah(surah)
+        .then((map) => map && setTajwidMarks((prev) => (prev.has(surah) ? prev : new Map(prev).set(surah, map))))
+        .catch(() => undefined);
+    });
+  }, [hifzActive, hifzState.prefs.tajwid, hifzWords, tajwidMarks]);
+  const hifzTapRef = useRef<((surah: number, ayah: number) => void) | null>(null);
+  hifzTapRef.current = hifzActive ? hifzState.startAt : null;
+  const hifzRender: HifzRender | undefined = hifzActive
+    ? { stateOf: hifzState.stateOf, showMistakes: hifzState.prefs.showMistakes, tajwid: hifzState.prefs.tajwid ? tajwidMarks : null }
+    : undefined;
+  // Ikuti posisi baca: kata berikutnya tetap terlihat di atas bilah Mode Hafalan.
+  useEffect(() => {
+    if (!hifzActive || !hifzState.frontierKey) return;
+    const el = containerRef.current?.querySelector(`[data-hifz-word="${hifzState.frontierKey}"]`);
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.bottom > window.innerHeight - 170 || rect.top < 60) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [hifzActive, hifzState.frontierKey]);
 
   // Muat teks surah-surah yang tampil di halaman ini dan sekitarnya.
   useEffect(() => {
@@ -577,6 +667,7 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
 
   const next = () => goTo(spread ? spreadOf(shown)[0] + 2 : shown + 1);
   const previous = () => goTo(spread ? spreadOf(shown)[0] - 2 : shown - 1);
+  nextPageRef.current = next;
 
   // Keyboard: panah kiri = berikutnya (arah mushaf), panah kanan = sebelumnya.
   useEffect(() => {
@@ -707,6 +798,11 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
         suppressTap.current = false;
         return;
       }
+      // Mode Hafalan: ketuk ayat = mulai membaca dari ayat itu.
+      if (hifzTapRef.current) {
+        hifzTapRef.current(surah, ayah);
+        return;
+      }
       onAyahTap(surah, ayah);
     },
     [onAyahTap]
@@ -754,7 +850,8 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     minHeight,
     activeAyah,
     markedAyah,
-    onAyahTap: tap
+    onAyahTap: tap,
+    hifz: hifzRender
     };
   };
 
@@ -825,11 +922,11 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
         className={
           immersive
             ? `fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex items-center justify-between gap-2 max-w-[620px] mx-auto transition-[transform,opacity] duration-300 ${
-                controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'
+                controlsVisible && !hifzActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'
               }`
             : 'relative flex items-center justify-between gap-2 max-w-[620px] mx-auto'
         }
-        aria-hidden={immersive && !controlsVisible}
+        aria-hidden={immersive && (!controlsVisible || hifzActive)}
       >
         <button
           type="button"
@@ -875,6 +972,15 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
             document.body
           )}
       </div>
+
+      {hifzActive && hifz && (
+        <>
+          {/* Ruang agar baris terakhir tidak tertutup bilah Mode Hafalan */}
+          <div className="h-28" aria-hidden="true" />
+          <MushafHifzBar hifz={hifzState} immersive={immersive} onExit={hifz.onExit} />
+          <style>{'.hifz-reveal{animation:hifz-in .35s ease-out}@keyframes hifz-in{from{opacity:0;filter:blur(2px)}to{opacity:1;filter:none}}@media (prefers-reduced-motion:reduce){.hifz-reveal{animation:none}}'}</style>
+        </>
+      )}
     </div>
   );
 };

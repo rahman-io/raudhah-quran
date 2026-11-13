@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, Share2, ExternalLink, Languages, ListMusic, PlayCircle, Square, AlignJustify, Maximize2, Minimize2, Swords } from 'lucide-react';
+import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, Share2, ExternalLink, Languages, ListMusic, PlayCircle, Square, AlignJustify, Maximize2, Minimize2, Swords, EyeOff } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import {
@@ -584,6 +584,14 @@ export const MushafReader: React.FC = () => {
     if (showList) setSurahChallengeOpen(false);
   }, [showList]);
 
+  /* ---------- Mode Hafalan di Mode Mushaf: teks tersembunyi, muncul saat dibaca ---------- */
+  const [mushafHifz, setMushafHifz] = useState(false);
+  const hifzActive = mushafHifz && readingMode === 'mushaf' && !showList;
+  useBackHandler(hifzActive, () => setMushafHifz(false), 7);
+  useEffect(() => {
+    if (mushafHifz && (readingMode !== 'mushaf' || showList)) setMushafHifz(false);
+  }, [mushafHifz, readingMode, showList]);
+
   /* ---------- Mode Mushaf layar penuh: hanya halaman mushaf & pemutar ---------- */
   const [mushafFull, setMushafFull] = useState(false);
   const fullActive = mushafFull && readingMode === 'mushaf' && !showList;
@@ -946,7 +954,25 @@ export const MushafReader: React.FC = () => {
             <span className="hidden sm:inline">Layar penuh</span>
           </button>
         )}
-        {loadedSurah && (
+        {readingMode === 'mushaf' && (
+          <button
+            type="button"
+            onClick={() => {
+              if (playerActive) player.stop();
+              setMushafSelected(null);
+              setMushafHifz(!mushafHifz);
+            }}
+            aria-pressed={mushafHifz}
+            className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs font-semibold ${
+              mushafHifz ? 'bg-[#246579] text-white' : 'bg-[#246579]/10 dark:bg-[#246579]/30 hover:bg-[#246579]/15 text-[#246579] dark:text-[#A7CDD3]'
+            }`}
+            title="Mode Hafalan: teks disembunyikan, kata muncul saat kamu membacanya"
+          >
+            <EyeOff className="w-4 h-4" />
+            Hafalan
+          </button>
+        )}
+        {loadedSurah && readingMode === 'tadabbur' && (
           <button
             type="button"
             onClick={() => {
@@ -1005,6 +1031,7 @@ export const MushafReader: React.FC = () => {
             onAyahTap={(surah, ayah) => setMushafSelected({ surah, ayah })}
             immersive={fullActive}
             controlsVisible={fullControls}
+            hifz={{ active: hifzActive, onExit: () => setMushafHifz(false) }}
           />
           {playerActive && <div className="h-28 lg:h-20" aria-hidden="true" />}
           {loadedSurah && (

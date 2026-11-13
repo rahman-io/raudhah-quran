@@ -28,7 +28,7 @@ const LETTER_NAMES: Record<string, string> = {
 };
 
 /** Kata tanpa harakat pendek di awal surah = huruf muqatta'ah. */
-export const isMuqattaah = (arabic: string) => !/[\u064B-\u0650]/.test(arabic) && /^[\u0621-\u064A\u0653\u0670\s]+$/.test(arabic.replace(/[\u06D6-\u06ED]/g, ''));
+export const isMuqattaah = (arabic: string) => !/[\u064B-\u0650]/.test(arabic) && /^[\u0621-\u064A\u0651\u0653\u0670\s]+$/.test(arabic.replace(/[\u06D6-\u06ED]/g, ''));
 
 /**
  * Kerangka huruf tiap kata yang diharapkan, dalam satu atau dua versi. Kata pertama ayat
