@@ -104,6 +104,11 @@ export const OTHER_SOURCES: AppSource[] = [
     detail: "Dihitung di perangkat dengan pustaka Adhan (MIT). Metode mengikuti lokasi (Indonesia: kriteria Kemenag RI, Subuh −20°, Isya −18°, Ashar Syafi'i, ihtiyath 2–3 menit; Eropa: Muslim World League; dll.) dan bisa diganti serta dikoreksi per menit. Tanggal Hijriah dari kalender Umm al-Qura (bisa berbeda ±1 hari dengan ketetapan Kemenag).",
     url: 'https://github.com/batoulapps/adhan-js'
   },
+  {
+    title: 'Arah kiblat',
+    detail: "Dihitung di perangkat dengan rumus lingkaran besar ke Ka'bah (21,4225° LU, 39,8262° BT). Arah kompas HP dikoreksi deklinasi magnetik dengan World Magnetic Model 2025 dari NOAA dan British Geological Survey.",
+    url: 'https://www.ncei.noaa.gov/products/world-magnetic-model'
+  },
   { title: 'Font tampilan', detail: 'Amiri, Scheherazade New, dan Plus Jakarta Sans dari Google Fonts.', url: 'https://fonts.google.com/' },
   { title: 'Ikon', detail: 'Lucide Icons.', url: 'https://lucide.dev/' }
 ];
