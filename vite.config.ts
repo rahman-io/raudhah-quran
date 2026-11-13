@@ -7,6 +7,11 @@ export default defineConfig(() => {
   return {
     base: process.env.GITHUB_PAGES === 'true' ? '/raudhah-quran/' : '/',
     plugins: [react(), tailwindcss()],
+    build: {
+      // Jangan terbitkan source map: tanpa berkas ini kode hasil build (sudah dipadatkan) tidak bisa
+      // dikembalikan ke kode sumber aslinya.
+      sourcemap: false,
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

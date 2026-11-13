@@ -1,8 +1,10 @@
 {
+  "id": "./",
   "name": "Raudhah Qur'an - Gamifikasi Tahfidz & Tadabbur",
   "short_name": "Raudhah",
   "description": "Aplikasi gamifikasi hafalan dan tadabbur Al-Qur'an 2D interaktif dan menenangkan.",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#F7F4EF",
   "theme_color": "#246579",
@@ -11,6 +13,24 @@
       "src": "./icon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
+    },
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

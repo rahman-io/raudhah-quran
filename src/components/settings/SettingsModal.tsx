@@ -4,6 +4,7 @@ import { X, Volume2, VolumeX, Sparkles, Type, Sliders, RefreshCw, Moon, Sun, Che
 import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
 import { RECITERS } from '../../data/reciters';
+import { InstallAppSettingsRow } from '../InstallAppPrompt';
 
 const TEXT_SIZE_MIN = 11;
 const TEXT_SIZE_MAX = 24;
@@ -390,6 +391,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               </button>
             </div>
           </div>
+
+          {/* Pasang aplikasi (PWA) */}
+          <InstallAppSettingsRow />
 
           {/* Firebase account and progress sync */}
           <div className="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-2 text-xs">

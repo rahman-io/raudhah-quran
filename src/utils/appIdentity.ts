@@ -24,7 +24,7 @@ interface Manifest {
   name?: string;
   short_name?: string;
   start_url?: string;
-  icons?: ManifestIcon[];
+  icons?: (ManifestIcon & { purpose?: string })[];
 }
 
 /** Ukuran ikon untuk memilih yang paling tajam: "any" (SVG) dianggap paling besar. */
@@ -52,7 +52,9 @@ export function loadAppIdentity(): Promise<AppIdentity> {
       const manifest = (await response.json()) as Manifest;
       const fallback = fromDocument();
       const name = manifest.name ? displayName(manifest.name) : fallback.name;
-      const icon = [...(manifest.icons ?? [])].sort((a, b) => iconSize(b) - iconSize(a))[0];
+      // Ikon "maskable" (latar penuh untuk layar utama HP) tidak dipakai sebagai logo.
+      const icons = (manifest.icons ?? []).filter((icon) => !(icon.purpose ?? 'any').split(/\s+/).every((p) => p === 'maskable'));
+      const icon = [...icons].sort((a, b) => iconSize(b) - iconSize(a))[0];
       return {
         name,
         shortName: manifest.short_name?.trim() || name,

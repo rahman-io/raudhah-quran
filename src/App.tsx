@@ -14,6 +14,7 @@ import { TamanSurga } from './components/garden/TamanSurga';
 import { AchievementsView } from './components/achievements/AchievementsView';
 import { WordExplorerModal } from './components/tadabbur/WordExplorerModal';
 import { SettingsModal } from './components/settings/SettingsModal';
+import { InstallAppPrompt } from './components/InstallAppPrompt';
 import { BelajarTajwidView } from './components/tajwid/BelajarTajwidView';
 import { IqroDigitalView } from './components/iqro/IqroDigitalView';
 import { useBackHandler, useExitPrompt } from './utils/backNavigation';
@@ -155,6 +156,9 @@ function MainApp() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Ajakan memasang app (PWA) agar terbuka layar penuh tanpa bilah browser */}
+      <InstallAppPrompt />
 
       {/* Modals */}
       <WordExplorerModal />
