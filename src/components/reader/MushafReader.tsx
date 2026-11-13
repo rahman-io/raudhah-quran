@@ -12,7 +12,7 @@ import { SURAH_VIRTUES } from '../../data/surahVirtues';
 import { MotivationCarousel } from './MotivationCarousel';
 import { useBackHandler } from '../../utils/backNavigation';
 import { getCompletedStages, getSurahsWithHafalanProgress, STAGES } from '../hafalan/hafalanPlan';
-import { useSurahPlayer } from './useSurahPlayer';
+import { isOpeningPart, useSurahPlayer } from './useSurahPlayer';
 import { PlayerDock, PlayerOptions } from './SurahPlayerBar';
 import { RecentReadingCard } from './RecentReadingCard';
 import { MemorizingCard } from './MemorizingCard';
@@ -276,12 +276,17 @@ export const MushafReader: React.FC = () => {
   // Gulir otomatis mengikuti ayat yang sedang dibaca. Bila pengguna baru saja menggulir
   // sendiri, tunggu sampai ia berhenti; gulir otomatis lanjut lagi di ayat berikutnya
   // (pilihan gulir otomatis tidak pernah mati karena sentuhan).
+  const openingPart = playerActive && playerState.status !== 'done' && isOpeningPart(playerState.part) ? playerState.part : null;
+  const headerRef = useRef<HTMLDivElement>(null);
+  // Sasaran gulir: kepala surah selama pembuka (ta'awudz & basmalah), lalu kartu ayat.
+  const scrollTarget = openingPart ? 'opening' : playerState.index;
   useEffect(() => {
     if (playerState.status !== 'playing' || playerState.single) return;
     if (Date.now() - lastUserScrollRef.current < FOLLOW_RESUME_MS) return;
-    scrollToAyah(playerState.index);
+    if (scrollTarget === 'opening') headerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else scrollToAyah(playerState.index);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playerState.index, playerState.status]);
+  }, [scrollTarget, playerState.status]);
 
   // Catat guliran oleh pengguna (bukan guliran otomatis); sentuhan di pemutar tidak dihitung.
   useEffect(() => {
@@ -583,7 +588,7 @@ export const MushafReader: React.FC = () => {
         return (
       <>
       {/* Surah Header Banner */}
-      <div className="relative overflow-hidden bg-[#246579] text-white rounded-3xl p-6 sm:p-8 text-center shadow-sm">
+      <div ref={headerRef} className="relative overflow-hidden bg-[#246579] text-white rounded-3xl p-6 sm:p-8 text-center shadow-sm scroll-mt-24">
         {/* Subtle geometric pattern overlay */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D3A253_1px,transparent_1px)] [background-size:16px_16px]" />
 
@@ -599,10 +604,28 @@ export const MushafReader: React.FC = () => {
           </p>
         </div>
 
+        {/* Ta'awudz: tampil saat pembuka bacaan surah sedang diputar */}
+        {openingPart && (
+          <div className="relative z-10 mt-6 pt-4 border-t border-white/20">
+            <p
+              className={`font-arabic text-xl sm:text-2xl transition-all duration-500 ${
+                openingPart === 'taawudz' ? 'text-[#F5D58A] scale-105 drop-shadow-[0_0_14px_rgba(211,162,83,0.75)]' : 'text-white/55'
+              }`}
+            >
+              أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ
+            </p>
+            <p className="mt-1 text-[11px] text-[#A7CDD3]">A'ūdzu billāhi minasy-syaiṭānir-rajīm</p>
+          </div>
+        )}
+
         {/* Bismillah Banner if not At-Taubah */}
         {activeSurah.bismillahPre && (
           <div className="mt-6 pt-4 border-t border-white/20">
-            <p className="font-arabic text-2xl sm:text-3xl text-[#F8F6F1]">
+            <p
+              className={`font-arabic text-2xl sm:text-3xl transition-all duration-500 ${
+                openingPart === 'basmalah' ? 'text-[#F5D58A] scale-105 drop-shadow-[0_0_14px_rgba(211,162,83,0.75)]' : 'text-[#F8F6F1]'
+              }`}
+            >
               بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
             </p>
           </div>
@@ -718,7 +741,7 @@ export const MushafReader: React.FC = () => {
           const msiText = kemenagText?.surah === ayah.surahNumber ? kemenagText.ayahs.get(ayah.ayahNumber) : undefined;
           const msiWords = msiText ? splitKemenagWords(msiText) : null;
           const msiWordsMatch = msiWords?.length === ayah.words.length;
-          const isPlayerHere = playerActive && playerState.index === ayahIndex && playerState.status !== 'done';
+          const isPlayerHere = playerActive && playerState.index === ayahIndex && playerState.status !== 'done' && !openingPart;
           const readingArab = isPlayerHere && playerState.part === 'arab';
           const readingArti = isPlayerHere && playerState.part === 'arti';
           const artiSpeaking = readingArti && playerState.status === 'playing';

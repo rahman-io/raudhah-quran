@@ -64,6 +64,17 @@ export const PlayerOptions: React.FC<PrefsProps> = ({ prefs, setPrefs, canSpeak,
         </button>
       ))}
     </div>
+    {!compact && (
+      <label className="flex items-center gap-2 text-[11px] font-medium text-[#246579] dark:text-[#A7CDD3] cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={prefs.opening}
+          onChange={(event) => setPrefs({ opening: event.target.checked })}
+          className="w-3.5 h-3.5 accent-[#246579]"
+        />
+        Awali dengan ta'awudz &amp; basmalah
+      </label>
+    )}
   </div>
 );
 
@@ -121,13 +132,18 @@ export const PlayerDock: React.FC<DockProps> = ({
 
   const ayahNumber = state.index + 1;
   // Ulangan berlaku untuk bacaan ayat; pada mode "Arti saja" berlaku untuk artinya.
-  const repeating = prefs.repeat > 1 && !state.single && (state.part === 'arab' ? prefs.mode !== 'arti' : prefs.mode === 'arti');
+  const opening = state.part === 'taawudz' || state.part === 'basmalah';
+  const repeating = !opening && prefs.repeat > 1 && !state.single && (state.part === 'arab' ? prefs.mode !== 'arti' : prefs.mode === 'arti');
   const repeatInfo = repeating
     ? ` · ulang ${Math.min(state.rep + 1, prefs.repeat)}/${prefs.repeat}`
     : '';
   const status = state.status === 'done'
     ? 'Selesai, surah sudah dibacakan sampai akhir'
-    : `${state.part === 'arab' ? 'Membaca ayat' : 'Membacakan arti'}${repeatInfo}`;
+    : state.part === 'taawudz'
+      ? `Ta'awudz${state.otherVoice ? ' · suara Al-Husary' : ''}`
+      : state.part === 'basmalah'
+        ? 'Basmalah'
+        : `${state.part === 'arab' ? 'Membaca ayat' : 'Membacakan arti'}${repeatInfo}`;
 
   return (
     <AnimatePresence>
@@ -176,7 +192,7 @@ export const PlayerDock: React.FC<DockProps> = ({
 
               <div className="flex-1 min-w-0 px-1" aria-live="polite">
                 <p className="text-xs font-bold text-[#173B4E] dark:text-white truncate">
-                  {surahName} · Ayat {ayahNumber}/{total}
+                  {surahName} · {opening ? 'Pembuka' : `Ayat ${ayahNumber}/${total}`}
                 </p>
                 <p className="text-[11px] text-[#477F8D] dark:text-[#94A3B8] truncate">
                   {state.status === 'paused' ? 'Dijeda' : status}

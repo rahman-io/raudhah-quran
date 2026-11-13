@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { reciterAudioUrl } from '../../data/reciters';
+import { openingAudio, reciterAudioUrl } from '../../data/reciters';
 import { primeSpeech, speak, speechSupported } from '../../utils/speech';
 import type { ReaderAyah } from '../../services/quranReaderData';
 
@@ -13,11 +13,15 @@ import type { ReaderAyah } from '../../services/quranReaderData';
 
 export type PlayMode = 'arab' | 'arab_arti' | 'arti';
 export type RepeatCount = 1 | 3 | 5;
-export type PlayPart = 'arab' | 'arti';
+/** "taawudz" dan "basmalah": pembuka sebelum ayat pertama surah. */
+export type PlayPart = 'taawudz' | 'basmalah' | 'arab' | 'arti';
+export const isOpeningPart = (part: PlayPart) => part === 'taawudz' || part === 'basmalah';
 
 export interface PlayerPrefs {
   mode: PlayMode;
   repeat: RepeatCount;
+  /** Diawali ta'awudz dan basmalah bila diputar dari ayat pertama. */
+  opening: boolean;
 }
 
 export interface PlayerState {
@@ -30,6 +34,8 @@ export interface PlayerState {
   wordChar: number | null;
   /** true bila hanya satu ayat (tombol "Arti" per ayat), tidak lanjut ke ayat berikutnya. */
   single: boolean;
+  /** Pembuka (ta'awudz) memakai suara qari lain karena qari terpilih tidak punya rekamannya. */
+  otherVoice?: boolean;
 }
 
 const PREFS_KEY = 'raudhah_reader_player_v1';
@@ -40,10 +46,11 @@ function loadPrefs(): PlayerPrefs {
     const saved = JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}');
     return {
       mode: ['arab', 'arab_arti', 'arti'].includes(saved.mode) ? saved.mode : 'arab',
-      repeat: [1, 3, 5].includes(saved.repeat) ? saved.repeat : 1
+      repeat: [1, 3, 5].includes(saved.repeat) ? saved.repeat : 1,
+      opening: saved.opening !== false
     };
   } catch {
-    return { mode: 'arab', repeat: 1 };
+    return { mode: 'arab', repeat: 1, opening: true };
   }
 }
 
@@ -99,6 +106,12 @@ export function useSurahPlayer(ayahs: ReaderAyah[], reciterId: string, speed: nu
     const after = () => {
       if (run !== runRef.current) return;
       const { mode, repeat } = prefsRef.current;
+      if (part === 'taawudz') {
+        // Al-Fatihah: basmalah adalah ayat 1. At-Taubah: tidak diawali basmalah.
+        const surah = ayahsRef.current[0]?.surahNumber;
+        return playUnit(0, surah === 1 || surah === 9 ? firstPart() : 'basmalah', 0, run, false);
+      }
+      if (part === 'basmalah') return playUnit(0, firstPart(), 0, run, false);
       if (!single) {
         if (part === 'arab' && rep + 1 < repeat) return playUnit(index, 'arab', rep + 1, run, false);
         if (part === 'arab' && mode === 'arab_arti' && canSpeak) return playUnit(index, 'arti', 0, run, false);
@@ -111,17 +124,20 @@ export function useSurahPlayer(ayahs: ReaderAyah[], reciterId: string, speed: nu
       playUnit(index + 1, firstPart(), 0, run, false);
     };
 
-    if (part === 'arab') {
+    if (part !== 'arti') {
       audioRef.current ??= new Audio();
       const audio = audioRef.current;
       const { reciterId: qari, speed: rate } = settingsRef.current;
-      const primary = reciterAudioUrl(qari, ayah) || ayah.audioUrl;
+      const opening = isOpeningPart(part) ? openingAudio(qari, part as 'taawudz' | 'basmalah') : null;
+      if (opening && !opening.ownVoice) setState((s) => ({ ...s, otherVoice: true }));
+      const fallback = opening ? '' : ayah.audioUrl;
+      const primary = opening ? opening.url : reciterAudioUrl(qari, ayah) || ayah.audioUrl;
       audio.onended = after;
       audio.onerror = () => {
         if (run !== runRef.current) return;
         // Audio qari pilihan gagal: coba audio bawaan ayat, lalu lewati bila tetap gagal.
-        if (ayah.audioUrl && audio.src !== ayah.audioUrl) {
-          audio.src = ayah.audioUrl;
+        if (fallback && audio.src !== fallback) {
+          audio.src = fallback;
           audio.playbackRate = rate;
           audio.play().catch(() => {});
           return;
@@ -147,8 +163,11 @@ export function useSurahPlayer(ayahs: ReaderAyah[], reciterId: string, speed: nu
   const playFrom = useCallback((index: number) => {
     const run = ++runRef.current;
     haltMedia();
-    if (prefsRef.current.mode !== 'arab') primeSpeech();
-    playUnit(index, firstPart(), 0, run, false);
+    const { mode, opening } = prefsRef.current;
+    if (mode !== 'arab') primeSpeech();
+    // Dari ayat pertama: biasakan diawali ta'awudz dan basmalah (kecuali mode "Arti saja").
+    const withOpening = index === 0 && opening && mode !== 'arti';
+    playUnit(index, withOpening ? 'taawudz' : firstPart(), 0, run, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playUnit]);
 
@@ -169,7 +188,7 @@ export function useSurahPlayer(ayahs: ReaderAyah[], reciterId: string, speed: nu
   const pause = useCallback(() => {
     const s = stateRef.current;
     if (s.status !== 'playing') return;
-    if (s.part === 'arab') audioRef.current?.pause();
+    if (s.part !== 'arti') audioRef.current?.pause();
     else {
       stopSpeechRef.current();
       stopSpeechRef.current = () => {};
@@ -181,7 +200,7 @@ export function useSurahPlayer(ayahs: ReaderAyah[], reciterId: string, speed: nu
     const s = stateRef.current;
     if (s.status === 'done') return playFrom(0);
     if (s.status !== 'paused') return;
-    if (s.part === 'arab' && audioRef.current?.src) {
+    if (s.part !== 'arti' && audioRef.current?.src) {
       setState({ ...s, status: 'playing' });
       audioRef.current.play().catch(() => setState((p) => ({ ...p, status: 'paused' })));
     } else {
