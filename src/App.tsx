@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, Sparkles, X, Heart } from 'lucide-react';
 import { QuranGameProvider, useQuranGame } from './context/QuranGameContext';
@@ -17,9 +17,20 @@ import { SettingsModal } from './components/settings/SettingsModal';
 import { BelajarTajwidView } from './components/tajwid/BelajarTajwidView';
 import { IqroDigitalView } from './components/iqro/IqroDigitalView';
 import { useBackHandler, useExitPrompt } from './utils/backNavigation';
+import { loadView, saveView } from './utils/viewState';
+
+type Tab = 'games' | 'iqro' | 'reader' | 'tajwid' | 'garden' | 'achievements';
+const TABS: Tab[] = ['games', 'iqro', 'reader', 'tajwid', 'garden', 'achievements'];
 
 function MainApp() {
-  const [activeTab, setActiveTab] = useState<'games' | 'iqro' | 'reader' | 'tajwid' | 'garden' | 'achievements'>('games');
+  // Menu terakhir dipulihkan setelah halaman di-refresh.
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    const saved = loadView().tab as Tab | undefined;
+    return saved && TABS.includes(saved) ? saved : 'games';
+  });
+  useEffect(() => {
+    saveView({ tab: activeTab });
+  }, [activeTab]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { recentAchievement, clearRecentAchievement, mode, selectedWordForTadabbur, setSelectedWordForTadabbur } = useQuranGame();
   const [showExitHint, setShowExitHint] = useState(false);
@@ -27,9 +38,9 @@ function MainApp() {
   // Tombol back HP: tutup jendela yang terbuka, lalu kembali ke menu depan,
   // dan di menu depan minta tekan sekali lagi sebelum keluar.
   useExitPrompt(setShowExitHint);
-  useBackHandler(activeTab !== 'games', () => setActiveTab('games'));
-  useBackHandler(isSettingsOpen, () => setIsSettingsOpen(false));
-  useBackHandler(!!selectedWordForTadabbur, () => setSelectedWordForTadabbur(null));
+  useBackHandler(activeTab !== 'games', () => setActiveTab('games'), 0);
+  useBackHandler(isSettingsOpen, () => setIsSettingsOpen(false), 10);
+  useBackHandler(!!selectedWordForTadabbur, () => setSelectedWordForTadabbur(null), 10);
 
   return (
     <div className={`raudhah-ui min-h-screen flex flex-col font-sans transition-colors duration-300 ${

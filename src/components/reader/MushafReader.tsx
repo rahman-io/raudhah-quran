@@ -15,7 +15,8 @@ import { getCompletedStages, getSurahsWithHafalanProgress, STAGES } from '../haf
 import { useSurahPlayer } from './useSurahPlayer';
 import { PlayerDock, PlayerOptions } from './SurahPlayerBar';
 import { RecentReadingCard } from './RecentReadingCard';
-import { recordReading } from './recentReading';
+import { getRecentReadings, recordReading } from './recentReading';
+import { loadView, saveView } from '../../utils/viewState';
 
 const NO_AYAHS: ReaderAyah[] = [];
 /** Gulir otomatis berlanjut bila pengguna sudah berhenti menggulir selama ini. */
@@ -66,18 +67,32 @@ export const MushafReader: React.FC = () => {
     reciterSpeed
   } = useQuranGame();
 
+  // Posisi sebelum halaman di-refresh: surah yang terbuka, ayat, dan mode Hafalkan.
+  const [restored] = useState(() => {
+    const reader = loadView().reader;
+    const open = !!reader?.open;
+    const recent = getRecentReadings()[0];
+    return {
+      surah: reader?.surah ?? activeSurah.number,
+      open,
+      hafalanAyah: open ? reader?.hafalanAyah ?? null : null,
+      ayah: open && recent?.number === reader?.surah && recent.ayah > 1 ? recent.ayah : null,
+      listTopSurah: !open ? reader?.listTopSurah ?? 0 : 0
+    };
+  });
+
   const [surahIndex, setSurahIndex] = useState<ReaderIndex | null>(null);
-  const [surahNumber, setSurahNumber] = useState<number>(activeSurah.number);
+  const [surahNumber, setSurahNumber] = useState<number>(restored.surah);
   const [loadedSurah, setLoadedSurah] = useState<ReaderSurah | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const topRef = useRef<HTMLDivElement>(null);
-  const [hafalanAyahIndex, setHafalanAyahIndex] = useState<number | null>(null);
-  const [showList, setShowList] = useState(true);
-  /** Ayat yang dituju saat membuka surah dari "Terakhir Dibaca". */
-  const [pendingAyah, setPendingAyah] = useState<number | null>(null);
+  const [hafalanAyahIndex, setHafalanAyahIndex] = useState<number | null>(restored.hafalanAyah);
+  const [showList, setShowList] = useState(!restored.open);
+  /** Ayat yang dituju saat membuka surah dari "Terakhir Dibaca" (atau setelah refresh). */
+  const [pendingAyah, setPendingAyah] = useState<number | null>(restored.ayah);
   const [infoIndex, setInfoIndex] = useState<Map<number, SurahInfoSummary>>(new Map());
   const [surahInfo, setSurahInfo] = useState<SurahInfoDetail | null>(null);
   const [infoExpanded, setInfoExpanded] = useState(false);
@@ -127,6 +142,41 @@ export const MushafReader: React.FC = () => {
   }, [surahNumber, reloadKey]);
 
   const surahList = surahIndex?.surahs ?? [];
+
+  // Simpan posisi tampilan agar refresh kembali ke tempat yang sama.
+  useEffect(() => {
+    saveView({ reader: { surah: surahNumber, open: !showList, hafalanAyah: hafalanAyahIndex } });
+  }, [surahNumber, showList, hafalanAyahIndex]);
+
+  // Posisi gulir Daftar Surah: dicatat sebagai surah paling atas yang terlihat
+  // (tetap tepat walau tinggi kartu berubah saat ringkasan surah dimuat), dipulihkan sekali.
+  const listScrollRestored = useRef(false);
+  useEffect(() => {
+    if (!showList) return;
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const items = document.querySelectorAll<HTMLElement>('[data-surah-item]');
+        const top = [...items].find((el) => el.getBoundingClientRect().bottom > 110);
+        saveView({ reader: { listTopSurah: window.scrollY < 200 || !top ? 0 : Number(top.dataset.surahItem) } });
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [showList]);
+  useEffect(() => {
+    if (listScrollRestored.current || !showList || surahList.length === 0) return;
+    listScrollRestored.current = true;
+    if (!restored.listTopSurah) return;
+    requestAnimationFrame(() => {
+      document.querySelector(`[data-surah-item="${restored.listTopSurah}"]`)?.scrollIntoView({ block: 'start' });
+    });
+  }, [showList, surahList.length, restored.listTopSurah]);
+
   const surahPosition = surahList.findIndex((s) => s.number === surahNumber);
   const previousSurah = surahPosition > 0 ? surahList[surahPosition - 1] : null;
   const nextSurah = surahPosition >= 0 && surahPosition < surahList.length - 1 ? surahList[surahPosition + 1] : null;
@@ -182,8 +232,8 @@ export const MushafReader: React.FC = () => {
   };
 
   // Tombol back HP: tutup mode Hafalkan dulu, lalu kembali dari surah ke Daftar Surah.
-  useBackHandler(!showList, backToList);
-  useBackHandler(hafalanAyahIndex !== null, () => setHafalanAyahIndex(null));
+  useBackHandler(!showList, backToList, 1);
+  useBackHandler(hafalanAyahIndex !== null, () => setHafalanAyahIndex(null), 2);
 
   /* ---------- Pemutar surah berurutan + suara arti ---------- */
   const player = useSurahPlayer(loadedSurah?.ayahs ?? NO_AYAHS, reciterId, reciterSpeed);
@@ -344,8 +394,9 @@ export const MushafReader: React.FC = () => {
             {surahList.map((s) => (
               <button
                 key={`surah_list_${s.number}`}
+                data-surah-item={s.number}
                 onClick={() => openSurah(s.number)}
-                className="w-full flex items-center gap-4 px-4 sm:px-6 py-4 text-left hover:bg-[#F8F6F1] dark:hover:bg-slate-700/40 transition-colors"
+                className="scroll-mt-24 w-full flex items-center gap-4 px-4 sm:px-6 py-4 text-left hover:bg-[#F8F6F1] dark:hover:bg-slate-700/40 transition-colors"
               >
                 <SurahNumberBadge number={s.number} />
                 <span className="flex-1 min-w-0">

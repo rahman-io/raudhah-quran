@@ -11,9 +11,24 @@ import { useEffect, useRef } from 'react';
 
 interface Layer {
   onBack: () => void;
+  /** Tingkat tampilan: yang lebih tinggi ditutup lebih dulu. */
+  level: number;
+  seq: number;
 }
 
 const layers: Layer[] = [];
+let layerSeq = 0;
+
+/** Ambil tampilan teratas (tingkat tertinggi, lalu yang paling baru dibuka). */
+function popTopLayer(): Layer | undefined {
+  if (!layers.length) return undefined;
+  let top = 0;
+  layers.forEach((layer, i) => {
+    const best = layers[top];
+    if (layer.level > best.level || (layer.level === best.level && layer.seq > best.seq)) top = i;
+  });
+  return layers.splice(top, 1)[0];
+}
 let ignorePops = 0;
 let initialized = false;
 let exitArmed = false;
@@ -21,27 +36,43 @@ let exitTimer: ReturnType<typeof setTimeout> | undefined;
 let exitPrompt: ((visible: boolean) => void) | null = null;
 
 const EXIT_WINDOW_MS = 2000;
-const GUARD_STATE = { raudhahGuard: true };
+
+/**
+ * Setiap catatan riwayat milik aplikasi menyimpan kedalamannya. Setelah halaman
+ * di-refresh, catatan lama masih ada di riwayat browser; dengan kedalaman ini
+ * tombol back kedua di menu depan bisa melompati semuanya dan benar-benar keluar.
+ */
+const currentDepth = (): number => {
+  const depth = (window.history.state as { raudhahDepth?: unknown } | null)?.raudhahDepth;
+  return typeof depth === 'number' ? depth : 0;
+};
+const pushEntry = (kind: 'guard' | 'layer') =>
+  window.history.pushState({ raudhah: kind, raudhahDepth: currentDepth() + 1 }, '');
 
 function onPopState() {
   if (ignorePops > 0) {
     ignorePops -= 1;
     return;
   }
-  const top = layers.pop();
+  const top = popTopLayer();
   if (top) {
     top.onBack();
     return;
   }
   // Menu depan: back pertama hanya memberi peringatan, back kedua keluar.
-  if (exitArmed) return;
+  if (exitArmed) {
+    // Masih ada catatan lama (dari sebelum refresh): lompati semuanya sekaligus.
+    const stale = currentDepth();
+    if (stale > 0) window.history.go(-stale);
+    return;
+  }
   exitArmed = true;
   exitPrompt?.(true);
   clearTimeout(exitTimer);
   exitTimer = setTimeout(() => {
     exitArmed = false;
     exitPrompt?.(false);
-    window.history.pushState(GUARD_STATE, '');
+    pushEntry('guard');
   }, EXIT_WINDOW_MS);
 }
 
@@ -62,7 +93,7 @@ function removeEntries() {
 function init() {
   if (initialized || typeof window === 'undefined') return;
   initialized = true;
-  window.history.pushState(GUARD_STATE, '');
+  pushEntry('guard');
   window.addEventListener('popstate', onPopState);
 }
 
@@ -79,9 +110,10 @@ export function useExitPrompt(setVisible: (visible: boolean) => void) {
 
 /**
  * Selama `active` bernilai true, tombol back menjalankan `onBack` (menutup tampilan ini)
- * alih-alih keluar dari aplikasi.
+ * alih-alih keluar dari aplikasi. `level` menentukan urutan tutup saat beberapa tampilan
+ * terbuka bersamaan (mis. setelah refresh): menu 0, surah 1, mode Hafalkan 2, jendela 10.
  */
-export function useBackHandler(active: boolean, onBack: () => void) {
+export function useBackHandler(active: boolean, onBack: () => void, level = 5) {
   const callback = useRef(onBack);
   callback.current = onBack;
 
@@ -93,11 +125,11 @@ export function useBackHandler(active: boolean, onBack: () => void) {
       exitArmed = false;
       clearTimeout(exitTimer);
       exitPrompt?.(false);
-      window.history.pushState(GUARD_STATE, '');
+      pushEntry('guard');
     }
-    const layer: Layer = { onBack: () => callback.current() };
+    const layer: Layer = { onBack: () => callback.current(), level, seq: ++layerSeq };
     layers.push(layer);
-    window.history.pushState({ raudhahLayer: true }, '');
+    pushEntry('layer');
     return () => {
       const index = layers.indexOf(layer);
       if (index === -1) return; // sudah ditutup lewat tombol back
