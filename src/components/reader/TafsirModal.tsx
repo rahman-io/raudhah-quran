@@ -141,7 +141,6 @@ export const TafsirModal: React.FC<Props> = ({
                   <Paragraphs text={current.tahlili} />
                 </section>
               )}
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">Sumber: Tafsir Kemenag (quran.kemenag.go.id)</p>
             </div>
           )}
         </div>

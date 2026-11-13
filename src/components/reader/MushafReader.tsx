@@ -806,10 +806,7 @@ export const MushafReader: React.FC = () => {
           ) : (
             <p className="text-sm leading-relaxed text-[#293640] dark:text-[#CBD5E1]">{surahInfo.summary}</p>
           )}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-            <p className="text-[10px] text-slate-500 dark:text-slate-400">
-              Sumber: {surahInfo.source}{surahInfo.language && surahInfo.language !== 'indonesian' ? ` (bahasa ${surahInfo.language === 'english' ? 'Inggris' : surahInfo.language})` : ''} · via Quran.com API
-            </p>
+          <div className="flex items-center justify-end pt-1">
             <button
               onClick={() => setInfoExpanded(!infoExpanded)}
               className="text-xs font-semibold text-[#246579] dark:text-[#A7CDD3] hover:underline"
@@ -844,9 +841,6 @@ export const MushafReader: React.FC = () => {
               </li>
             ))}
           </ul>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400">
-            Hanya keutamaan dari hadits sahih atau hasan yang ditampilkan. Rujukan: Sunnah.com.
-          </p>
         </div>
       )}
 
@@ -860,13 +854,6 @@ export const MushafReader: React.FC = () => {
           Font: {fontSize}px
         </span>
       </div>
-      {surahIndex?.source && (
-        <p className="px-2 -mt-3 text-[10px] text-slate-500 dark:text-slate-400">
-          {kemenagText?.surah === surahNumber
-            ? <>Teks Arab{kemenagLatin?.surah === surahNumber ? ' & latin' : ''}: Mushaf Standar Indonesia (Qur'an Kemenag) · Arti per kata: {surahIndex.source.api} · Terjemah: {surahIndex.source.translation.name}</>
-            : <>Teks & arti per kata: {surahIndex.source.api} · Terjemah: {surahIndex.source.translation.name}</>}
-        </p>
-      )}
 
       {/* Putar surah berurutan */}
       <div className="bg-white dark:bg-slate-800/80 rounded-3xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">

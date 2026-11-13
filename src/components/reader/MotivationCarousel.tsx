@@ -158,7 +158,6 @@ export const MotivationCarousel: React.FC = () => {
                   </span>
                 )
               )}
-              <p className="mt-3 text-[11px] text-white/60">Disarikan dari kajian {item.source}</p>
             </article>
           ))}
         </div>

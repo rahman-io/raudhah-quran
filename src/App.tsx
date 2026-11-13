@@ -136,9 +136,6 @@ function MainApp() {
           <span>·</span>
           <span>Menghafal, Membaca & Memahami Al-Qur'an dengan Damai</span>
         </p>
-        <p className="text-[11px] opacity-75">
-          Data offline Juz 30 · Audio Murottal Syaikh Misyari Rasyid Al-Afasy · Siap Deploy ke Cloudflare Pages
-        </p>
       </footer>
 
       {/* Pesan sebelum keluar aplikasi lewat tombol back */}

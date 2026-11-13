@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Volume2, VolumeX, Sparkles, Type, Sliders, RefreshCw, Moon, Sun, Check, Mic, Play, Pause } from 'lucide-react';
+import { X, Volume2, VolumeX, Sparkles, Type, Sliders, RefreshCw, Moon, Sun, Check, Mic, Play, Pause, Library, ChevronRight } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
 import { RECITERS } from '../../data/reciters';
 import { InstallAppSettingsRow } from '../InstallAppPrompt';
+import { SourcesModal } from './SourcesModal';
 
 const TEXT_SIZE_MIN = 11;
 const TEXT_SIZE_MAX = 24;
@@ -89,6 +90,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     signOut,
     resetProgress
   } = useQuranGame();
+
+  // Jendela "Sumber & Rujukan"
+  const [sourcesOpen, setSourcesOpen] = useState(false);
 
   // Pratinjau suara qari di dalam pengaturan
   const previewRef = useRef<HTMLAudioElement | null>(null);
@@ -405,6 +409,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               (firebaseUser ? signOut() : signIn()).catch((error) => window.alert(`Akun Firebase: ${String(error)}`));
             }}>{firebaseUser ? 'Keluar dari Google' : 'Masuk dengan Google'}</button>}
           </div>
+          {/* Sumber & rujukan konten (dipindah dari setiap layar ke sini) */}
+          <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+            <button
+              type="button"
+              onClick={() => setSourcesOpen(true)}
+              className="w-full flex items-center gap-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2.5 text-left hover:border-[#246579]/40 transition-colors"
+            >
+              <span className="w-8 h-8 shrink-0 rounded-xl bg-[#246579]/10 text-[#246579] dark:text-[#A7CDD3] flex items-center justify-center">
+                <Library className="w-4 h-4" />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block text-xs font-semibold text-[#293640] dark:text-white">Sumber & Rujukan</span>
+                <span className="block text-[11px] text-[#246579] dark:text-[#94A3B8]">Asal teks, terjemah, tafsir, hadits, dan audio</span>
+              </span>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+            {sourcesOpen && <SourcesModal onClose={() => setSourcesOpen(false)} />}
+          </div>
+
           {/* Reset Progress */}
           <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
             <button
