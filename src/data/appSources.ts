@@ -110,6 +110,11 @@ export const OTHER_SOURCES: AppSource[] = [
     url: 'https://github.com/batoulapps/adhan-js'
   },
   {
+    title: 'Langit Beranda',
+    detail: "Posisi matahari, bulan, dan fase bulan dihitung di perangkat dengan pustaka SunCalc (BSD-2). Awal Dhuha saat matahari ±4,5° di atas ufuk; sepertiga malam terakhir dihitung dari Maghrib sampai Subuh (HR. Bukhari no. 1145). Keutamaan Dhuha: HR. Muslim no. 720.",
+    url: 'https://github.com/mourner/suncalc'
+  },
+  {
     title: 'Arah kiblat',
     detail: "Dihitung di perangkat dengan rumus lingkaran besar ke Ka'bah (21,4225° LU, 39,8262° BT). Arah kompas HP dikoreksi deklinasi magnetik dengan World Magnetic Model 2025 dari NOAA dan British Geological Survey.",
     url: 'https://www.ncei.noaa.gov/products/world-magnetic-model'

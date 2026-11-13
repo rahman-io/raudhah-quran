@@ -19,6 +19,8 @@ import { TasbihView } from '../tasbih/TasbihView';
 import { MenuIcon, type MenuIconId } from '../MenuIcon';
 import { QiblaView } from '../qibla/QiblaView';
 import { DoaView } from '../doa/DoaView';
+import { HeroSky } from './HeroSky';
+import { phaseAt, skyTimes } from '../../services/sky';
 
 /** Tujuan dari Beranda (ditangani App: pindah menu / buka surah). */
 export type HomeTarget = 'quran' | 'continue' | 'setor' | 'challenge' | 'hafalan' | 'tajwid' | 'iqro' | 'garden' | 'achievements';
@@ -36,30 +38,6 @@ const ACTIVITY_TARGET: Record<ActivityId, HomeTarget | 'dzikir'> = {
   murottal: 'continue',
   dzikir: 'dzikir'
 };
-
-/** Siluet masjid sederhana (ornamen latar). */
-const MosqueSilhouette: React.FC<{ className?: string }> = ({ className }) => (
-  <svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMax slice" className={className} aria-hidden="true">
-    <g fill="currentColor">
-      {/* menara kiri */}
-      <rect x="40" y="38" width="12" height="82" />
-      <path d="M38 40 L46 22 L54 40 Z" />
-      <circle cx="46" cy="18" r="3" />
-      {/* menara kanan */}
-      <rect x="348" y="38" width="12" height="82" />
-      <path d="M346 40 L354 22 L362 40 Z" />
-      <circle cx="354" cy="18" r="3" />
-      {/* kubah kecil */}
-      <path d="M92 120 V92 a28 28 0 0 1 56 0 V120 Z" />
-      <path d="M252 120 V92 a28 28 0 0 1 56 0 V120 Z" />
-      {/* kubah utama */}
-      <path d="M140 120 V78 C140 46 170 30 200 18 C230 30 260 46 260 78 V120 Z" />
-      <rect x="198" y="4" width="4" height="16" />
-      <circle cx="200" cy="4" r="3" />
-      <rect x="0" y="112" width="400" height="8" />
-    </g>
-  </svg>
-);
 
 const LocationSheet: React.FC<{ current: UserLocation | null; onClose: () => void }> = ({ current, onClose }) => {
   const [query, setQuery] = useState('');
@@ -273,6 +251,21 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
     [location, dayKey, method, prayerSettings]
   );
   const upcoming = location ? nextPrayer(location.lat, location.lng, tz, now, method, prayerSettings.offsets) : null;
+  const minute = Math.floor(now.getTime() / 60000);
+  const sky = useMemo(
+    () => (location ? skyTimes(location.lat, location.lng, tz, now, method, prayerSettings.offsets) : null),
+    [location, tz, minute, method, prayerSettings] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const sunnah = useMemo((): { kind: 'dhuha' | 'tahajud'; text: string } | null => {
+    if (!sky) return null;
+    const phase = phaseAt(sky, now);
+    if (phase === 'tahajud') return { kind: 'tahajud', text: `Waktu Tahajud · sampai Subuh ${formatClock(sky.nightEnd, tz)}` };
+    if (phase === 'isya') return { kind: 'tahajud', text: `Sepertiga malam terakhir mulai ${formatClock(sky.lastThird, tz)}` };
+    if (phase === 'subuh' || phase === 'syuruq') return { kind: 'dhuha', text: `Waktu Dhuha mulai ${formatClock(sky.dhuhaStart, tz)}` };
+    if (phase === 'dhuha') return { kind: 'dhuha', text: 'Waktu Dhuha · sampai menjelang Dzuhur' };
+    return null;
+  }, [sky, minute, tz]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [sunnahInfo, setSunnahInfo] = useState(false);
 
   const doneCount = ACTIVITIES.filter((a) => activities[a.id]).length;
   const percent = Math.round((doneCount / ACTIVITIES.length) * 100);
@@ -317,9 +310,12 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
   return (
     <div className="space-y-5">
       {/* Kepala: tanggal, jam, sholat berikutnya, jadwal hari ini */}
-      <section className="relative -mx-3 sm:-mx-6 lg:-mx-8 -mt-5 sm:-mt-8 overflow-hidden bg-gradient-to-b from-[#246579] to-[#1C5668] text-white px-5 pt-4 pb-20 sm:rounded-b-[2.5rem]">
-        <div className="pointer-events-none absolute inset-0 opacity-[0.10] bg-[radial-gradient(#D3A253_1px,transparent_1px)] [background-size:14px_14px]" aria-hidden="true" />
-        <MosqueSilhouette className="pointer-events-none absolute inset-x-0 bottom-14 h-40 w-full text-white/[0.07]" />
+      <section className={`relative -mx-3 sm:-mx-6 lg:-mx-8 -mt-5 sm:-mt-8 overflow-hidden bg-gradient-to-b from-[#246579] to-[#1C5668] text-white px-5 pt-4 sm:rounded-b-[2.5rem] [text-shadow:0_1px_3px_rgba(0,0,0,0.3)] ${location ? 'pb-[9.5rem]' : 'pb-20'}`}>
+        {location ? (
+          <HeroSky lat={location.lat} lng={location.lng} tz={tz} now={now} method={method} offsets={prayerSettings.offsets} />
+        ) : (
+          <div className="pointer-events-none absolute inset-0 opacity-[0.10] bg-[radial-gradient(#D3A253_1px,transparent_1px)] [background-size:14px_14px]" aria-hidden="true" />
+        )}
         <div className="relative max-w-3xl mx-auto">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -353,6 +349,26 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
                 {gpsState === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : <LocateFixed className="w-4 h-4" />}
                 Aktifkan lokasi untuk jadwal sholat
               </button>
+            )}
+            {upcoming && sunnah && (
+              <div className="mt-2">
+                <button
+                  type="button"
+                  onClick={() => setSunnahInfo((v) => !v)}
+                  aria-expanded={sunnahInfo}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/15 ring-1 ring-white/15 text-[11px] font-semibold text-white/90"
+                >
+                  {sunnah.kind === 'dhuha' ? <Sun className="w-3.5 h-3.5 text-[#F5D58A]" /> : <MoonStar className="w-3.5 h-3.5 text-[#F5D58A]" />}
+                  {sunnah.text}
+                </button>
+                {sunnahInfo && (
+                  <p className="mt-2 mx-auto max-w-sm text-[11px] leading-relaxed text-white/85">
+                    {sunnah.kind === 'dhuha'
+                      ? 'Waktu Dhuha dimulai saat matahari naik ±4,5° (kira-kira setinggi tombak) hingga menjelang Dzuhur. Dua rakaat Dhuha mencukupi sedekah untuk seluruh persendian (HR. Muslim no. 720).'
+                      : 'Sepertiga malam terakhir dihitung dari Maghrib sampai Subuh. Pada waktu itu Allah turun ke langit dunia dan mengabulkan doa hamba-Nya (HR. Bukhari no. 1145).'}
+                  </p>
+                )}
+              </div>
             )}
           </div>
 

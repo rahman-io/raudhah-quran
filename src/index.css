@@ -74,3 +74,70 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(36, 101, 121, 0.45);
 }
+
+/* Langit Beranda: bintang berkelip & cahaya matahari */
+@keyframes sky-twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+.sky-star {
+  animation-name: sky-twinkle;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+.sky-sparkle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  background:
+    linear-gradient(to right, transparent 0%, rgba(255, 240, 200, 0.85) 50%, transparent 100%) center / 100% 1px no-repeat,
+    linear-gradient(to bottom, transparent 0%, rgba(255, 240, 200, 0.85) 50%, transparent 100%) center / 1px 100% no-repeat;
+}
+@keyframes sky-sun-pulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+.sky-sun-glow {
+  animation: sky-sun-pulse 6s ease-in-out infinite;
+}
+@keyframes sky-cloud-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(26px); }
+}
+.sky-cloud-a {
+  animation: sky-cloud-drift 38s ease-in-out infinite alternate;
+}
+.sky-cloud-b {
+  animation: sky-cloud-drift 52s ease-in-out infinite alternate-reverse;
+}
+@keyframes sky-caravan-walk {
+  from { left: -150px; }
+  to { left: calc(100% + 20px); }
+}
+.sky-caravan {
+  animation: sky-caravan-walk 150s linear infinite;
+  animation-delay: -45s;
+}
+@keyframes sky-camel-bob {
+  from { transform: translateY(0); }
+  to { transform: translateY(-1.5px); }
+}
+.sky-camel {
+  animation: sky-camel-bob 0.9s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sky-star,
+  .sky-sun-glow,
+  .sky-cloud-a,
+  .sky-cloud-b,
+  .sky-camel {
+    animation: none;
+  }
+  .sky-caravan {
+    animation: none;
+    left: 12%;
+  }
+}
