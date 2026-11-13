@@ -7,6 +7,7 @@ import { loadKemenagSurah, loadReaderIndex, splitKemenagWords } from '../../serv
 import { useQuranGame } from '../../context/QuranGameContext';
 import { useBackHandler } from '../../utils/backNavigation';
 import { TajwidGuideModal } from './TajwidGuideModal';
+import { markActivity } from '../../services/dailyActivity';
 
 /**
  * Tajwid langsung dari ayat: kata dengan huruf berwarna sesuai hukumnya, penjelasan, tautan ke
@@ -59,6 +60,7 @@ export const ColoredWord: React.FC<{
 /** Materi Belajar Tajwid di atas jendela lain (tombol back menutupnya lebih dulu). */
 const LessonModal: React.FC<{ lesson: string; onClose: () => void }> = ({ lesson, onClose }) => {
   useBackHandler(true, onClose, 12);
+  useEffect(() => markActivity('tajwid'), []);
   return createPortal(
     <div style={{ position: 'relative', zIndex: 95 }}>
       <TajwidGuideModal isOpen onClose={onClose} initialRuleId={lesson} />

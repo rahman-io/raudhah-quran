@@ -26,6 +26,8 @@ import { loadView, saveView } from '../../utils/viewState';
 import { useIdleVisibility } from '../../utils/useIdleVisibility';
 import { MushafView, type AyahRef } from './mushaf/MushafView';
 import { MushafAyahSheet } from './mushaf/MushafAyahSheet';
+import { takeReaderIntent } from '../../utils/readerIntent';
+import { markActivity, noteAyahRead } from '../../services/dailyActivity';
 import { firstAyahOnPage, loadMushafLayout, surahsOnPage, type MushafLayout } from '../../services/mushafLayout';
 
 const NO_AYAHS: ReaderAyah[] = [];
@@ -139,8 +141,13 @@ export const MushafReader: React.FC = () => {
   // Transliterasi latin versi Kemenag (mis. "Bismillāhir-raḥmānir-raḥīm(i).").
   const [kemenagLatin, setKemenagLatin] = useState<{ surah: number; ayahs: Map<number, string> } | null>(null);
 
+  /** Perintah dari Beranda (Setor Hafalan, Tantangan Surah, Mode Hafalkan), dipakai sekali. */
+  const [intent] = useState(takeReaderIntent);
+
   /* ---------- Mode baca: Tadabbur (per ayat) atau Mushaf (per halaman) ---------- */
   const [readingMode, setReadingModeState] = useState<ReadingMode>(() => {
+    if (intent?.kind === 'setor') return 'mushaf';
+    if (intent?.kind === 'challenge' || intent?.kind === 'hafalan') return 'tadabbur';
     try {
       return localStorage.getItem(READING_MODE_KEY) === 'mushaf' ? 'mushaf' : 'tadabbur';
     } catch {
@@ -640,6 +647,36 @@ export const MushafReader: React.FC = () => {
   }, [mushafFull, readingMode, showList]);
   // Setor Hafalan selalu di layar penuh; keluar dari layar penuh = selesai setoran.
   const hifzActive = mushafHifz && fullActive;
+
+  // Perintah dari Beranda: langsung masuk ke fiturnya.
+  useEffect(() => {
+    if (intent?.kind === 'setor') {
+      setMushafHifz(true);
+      setMushafFull(true);
+    } else if (intent?.kind === 'challenge') {
+      setSurahChallengeOpen(true);
+    } else if (intent?.kind === 'hafalan') {
+      setPendingHafalan(Math.max(0, intent.ayah - 1));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Aktivitas Hari Ini: satu halaman Mode Mushaf dibaca (tampil ≥ 30 detik).
+  useEffect(() => {
+    if (readingMode !== 'mushaf' || showList || hifzActive) return;
+    const timer = setTimeout(() => markActivity('baca'), 30000);
+    return () => clearTimeout(timer);
+  }, [readingMode, showList, mushafPage, hifzActive]);
+
+  // Aktivitas Hari Ini: murottal sudah memperdengarkan minimal satu ayat.
+  const lastPlayer = useRef(playerState);
+  useEffect(() => {
+    const prev = lastPlayer.current;
+    if (prev.status === 'playing' && (playerState.index !== prev.index || playerState.status === 'done' || playerState.status === 'idle')) {
+      markActivity('murottal');
+    }
+    lastPlayer.current = playerState;
+  }, [playerState]);
   // Dari hasil setoran: latih satu ayat di Mode Hafalkan (muat surahnya dulu bila berbeda).
   const trainFromSetor = (surah: number, ayah: number) => {
     if (surahReady && loadedSurah?.number === surah) {
@@ -657,8 +694,10 @@ export const MushafReader: React.FC = () => {
   useEffect(() => {
     if (!surahReady || !loadedSurah || readingMode === 'mushaf') return;
     const surah = loadedSurah;
-    const save = (ayah: number) =>
+    const save = (ayah: number) => {
       recordReading({ number: surah.number, nameLatin: surah.nameLatin, ayah, totalAyahs: surah.ayahs.length });
+      noteAyahRead(surah.number, ayah);
+    };
     save(pendingAyah ?? 1);
     if (typeof IntersectionObserver === 'undefined') return;
     const visible = new Set<number>();

@@ -8,7 +8,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, Sparkles, X, Heart } from 'lucide-react';
 import { QuranGameProvider, useQuranGame } from './context/QuranGameContext';
 import { Header } from './components/Header';
-import { GameHub } from './components/games/GameHub';
+import { HomeView, type HomeTarget } from './components/home/HomeView';
+import { getRecentReadings } from './components/reader/recentReading';
+import { setReaderIntent, type ReaderIntent } from './utils/readerIntent';
 import { MushafReader } from './components/reader/MushafReader';
 import { TamanSurga } from './components/garden/TamanSurga';
 import { AchievementsView } from './components/achievements/AchievementsView';
@@ -20,14 +22,14 @@ import { IqroDigitalView } from './components/iqro/IqroDigitalView';
 import { useBackHandler, useExitPrompt } from './utils/backNavigation';
 import { loadView, saveView } from './utils/viewState';
 
-type Tab = 'games' | 'iqro' | 'reader' | 'tajwid' | 'garden' | 'achievements';
-const TABS: Tab[] = ['games', 'iqro', 'reader', 'tajwid', 'garden', 'achievements'];
+type Tab = 'home' | 'iqro' | 'reader' | 'tajwid' | 'garden' | 'achievements';
+const TABS: Tab[] = ['home', 'iqro', 'reader', 'tajwid', 'garden', 'achievements'];
 
 function MainApp() {
   // Menu terakhir dipulihkan setelah halaman di-refresh.
   const [activeTab, setActiveTab] = useState<Tab>(() => {
     const saved = loadView().tab as Tab | undefined;
-    return saved && TABS.includes(saved) ? saved : 'games';
+    return saved && TABS.includes(saved) ? saved : 'home';
   });
   useEffect(() => {
     saveView({ tab: activeTab });
@@ -39,9 +41,29 @@ function MainApp() {
   // Tombol back HP: tutup jendela yang terbuka, lalu kembali ke menu depan,
   // dan di menu depan minta tekan sekali lagi sebelum keluar.
   useExitPrompt(setShowExitHint);
-  useBackHandler(activeTab !== 'games', () => setActiveTab('games'), 0);
+  useBackHandler(activeTab !== 'home', () => setActiveTab('home'), 0);
   useBackHandler(isSettingsOpen, () => setIsSettingsOpen(false), 10);
   useBackHandler(!!selectedWordForTadabbur, () => setSelectedWordForTadabbur(null), 10);
+
+  // Dari Beranda: pindah menu, atau buka surah terakhir dibaca lalu langsung ke fiturnya.
+  const goFromHome = (target: HomeTarget) => {
+    const recent = getRecentReadings()[0];
+    const openReader = (intent: ReaderIntent) => {
+      saveView({ reader: { surah: recent?.number ?? 1, open: true, hafalanAyah: null, mushafPage: undefined } });
+      setReaderIntent(intent);
+      setActiveTab('reader');
+    };
+    if (target === 'quran' || (target === 'continue' && !recent)) {
+      saveView({ reader: { open: false } });
+      setActiveTab('reader');
+    } else if (target === 'continue' || target === 'setor' || target === 'challenge') {
+      openReader({ kind: target });
+    } else if (target === 'hafalan') {
+      openReader({ kind: 'hafalan', ayah: recent?.ayah ?? 1 });
+    } else {
+      setActiveTab(target);
+    }
+  };
 
   return (
     <div className={`raudhah-ui min-h-screen flex flex-col font-sans transition-colors duration-300 ${
@@ -91,21 +113,16 @@ function MainApp() {
         </AnimatePresence>
 
         {/* View Router */}
-        {activeTab === 'games' && (
-          <div className="space-y-5 sm:space-y-6">
-            <TamanSurga compact />
-            <GameHub />
-          </div>
-        )}
+        {activeTab === 'home' && <HomeView onGo={goFromHome} />}
 
         {activeTab === 'iqro' && (
-          <IqroDigitalView onGoToQuiz={() => setActiveTab('games')} />
+          <IqroDigitalView />
         )}
 
         {activeTab === 'reader' && <MushafReader />}
 
         {activeTab === 'tajwid' && (
-          <BelajarTajwidView onGoToQuiz={() => setActiveTab('games')} />
+          <BelajarTajwidView />
         )}
 
         {activeTab === 'garden' && (

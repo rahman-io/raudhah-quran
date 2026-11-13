@@ -17,6 +17,7 @@ import { TaisirStage } from './stages/TaisirStage';
 import { ReciteStage } from './stages/ReciteStage';
 import { isBrowserRecitationSupported } from '../../services/recitation/browserListener';
 import { useBackHandler } from '../../utils/backNavigation';
+import { markActivity } from '../../services/dailyActivity';
 
 const STAGE_XP = 20;
 
@@ -82,6 +83,7 @@ export const HafalanSession: React.FC<{
 
   const passStage = (id: StageId) => {
     pauseMurottal();
+    markActivity('game');
     const firstTime = !completed.includes(id);
     const next = markStageCompleted(ayah.id, id);
     setCompleted(next);

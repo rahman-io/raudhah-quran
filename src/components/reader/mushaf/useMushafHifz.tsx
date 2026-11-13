@@ -6,6 +6,7 @@ import { useBackHandler } from '../../../utils/backNavigation';
 import { arabicSkeleton } from '../../../services/arabicSkeleton';
 import { alignRecitationFrom, anchoredEnd, expectedSkeletons, type RecitationProgressFrom } from '../../../services/recitation/recitationAlign';
 import { MicButton, useRecitation } from '../../hafalan/stages/reciteShared';
+import { markActivity } from '../../../services/dailyActivity';
 
 /**
  * Setor Hafalan di Mode Mushaf (seperti "Hidden Verses" di Tarteel).
@@ -184,6 +185,7 @@ export function useMushafHifz({
       if (end >= 0) setConsumed(end);
       const ratio = entries.filter((e) => e.status === 'ok').length / Math.max(1, entries.length);
       if (ratio >= 0.9) addXP(5, 'Setor hafalan');
+      markActivity('setor');
       // Berhenti merekam: hasil halaman ini muncul (lihat efek rec.listening di bawah).
       rec.stop();
       return;

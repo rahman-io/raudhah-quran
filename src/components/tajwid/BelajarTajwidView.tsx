@@ -6,6 +6,7 @@ import { useFirebaseCollection } from '../../services/firebaseContent';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
 import { LetterAudioModal } from './LetterAudioModal';
+import { markActivity } from '../../services/dailyActivity';
 import {
   playPronunciation,
   stopPronunciation,
@@ -68,6 +69,7 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
   const toggleExpand = (id: string) => {
     sounds.playWordClick();
     setExpandedRuleId((prev) => (prev === id ? null : id));
+    if (expandedRuleId !== id) markActivity('tajwid');
   };
 
   return (

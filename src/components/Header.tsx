@@ -1,7 +1,7 @@
 import React from 'react';
-import { Award, BookMarked, BookOpen, GraduationCap, Puzzle, Settings, Trees } from 'lucide-react';
+import { Award, BookMarked, BookOpen, GraduationCap, House, Settings, Trees } from 'lucide-react';
 
-type Tab = 'games' | 'iqro' | 'reader' | 'tajwid' | 'garden' | 'achievements';
+type Tab = 'home' | 'iqro' | 'reader' | 'tajwid' | 'garden' | 'achievements';
 
 interface HeaderProps {
   activeTab: Tab;
@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 const navigation = [
-  { id: 'games', label: 'Tahfidz Game', short: 'Tahfidz', icon: Puzzle },
+  { id: 'home', label: 'Beranda', short: 'Beranda', icon: House },
   { id: 'iqro', label: 'Iqro Digital', short: 'Iqro', icon: BookMarked },
   { id: 'reader', label: 'Baca & Tadabbur', short: 'Baca', icon: BookOpen },
   { id: 'tajwid', label: 'Belajar Tajwid', short: 'Tajwid', icon: GraduationCap },
@@ -28,9 +28,9 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenS
         <div className="relative mx-auto flex h-[64px] w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-7 xl:h-[72px]">
           <button
             type="button"
-            onClick={() => setActiveTab('games')}
+            onClick={() => setActiveTab('home')}
             className="flex min-w-0 items-center gap-3 text-left"
-            aria-label="Raudhah Qur'an, kembali ke Tahfidz"
+            aria-label="Raudhah Qur'an, kembali ke Beranda"
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/12 ring-1 ring-[#D3A253]/60 font-arabic text-xl text-[#F5D58A] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
               ر

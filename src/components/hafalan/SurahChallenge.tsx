@@ -11,6 +11,7 @@ import { alignRecitationFrom, anchoredEnd, expectedSkeletons, type RecitationPro
 import { arabicSkeleton } from '../../services/arabicSkeleton';
 import { AyahEndMarker } from '../reader/AyahEndMarker';
 import { MicButton, useRecitation } from './stages/reciteShared';
+import { markActivity } from '../../services/dailyActivity';
 
 /**
  * Tantangan Surah: Tantangan Bacaan di tingkat surah (seperti Tarteel).
@@ -144,6 +145,7 @@ export const SurahChallenge: React.FC<{
     rec.stop();
     const result = statuses.map((s): WordStatus => (s === 'ok' ? 'ok' : 'missed'));
     const ratio = result.filter((s) => s === 'ok').length / Math.max(1, result.length);
+    if (ratio > 0) markActivity('setor');
     if (ratio >= 0.7) {
       sounds.playAyahComplete();
       addXP(10, 'Tantangan surah');

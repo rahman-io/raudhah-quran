@@ -94,6 +94,11 @@ export const AUDIO_PROVIDERS: Record<string, AppSource> = {
 export const OTHER_SOURCES: AppSource[] = [
   { title: 'Suara terjemah', detail: 'Dibacakan dengan suara bawaan perangkat (Text-to-Speech).' },
   { title: 'Cari ayat dengan suara', detail: 'Pengenal suara bawaan browser (Web Speech API). Suara diubah menjadi teks oleh layanan Google atau Apple, lalu dicocokkan ke teks Mushaf Standar Indonesia di perangkat.' },
+  {
+    title: 'Jadwal sholat',
+    detail: "Dihitung di perangkat dengan pustaka Adhan (MIT) memakai kriteria Kemenag RI: Subuh −20°, Isya −18°, Ashar Syafi'i, ihtiyath 2–3 menit. Tanggal Hijriah dari kalender Umm al-Qura bawaan browser (bisa berbeda ±1 hari dengan ketetapan Kemenag).",
+    url: 'https://github.com/batoulapps/adhan-js'
+  },
   { title: 'Font tampilan', detail: 'Amiri, Scheherazade New, dan Plus Jakarta Sans dari Google Fonts.', url: 'https://fonts.google.com/' },
   { title: 'Ikon', detail: 'Lucide Icons.', url: 'https://lucide.dev/' }
 ];
