@@ -80,6 +80,11 @@ export const APP_SOURCE_GROUPS: AppSourceGroup[] = [
         title: 'Motivasi membaca & menghafal',
         detail: 'Disarikan dari kajian Ustadz Adi Hidayat dan Ustadz Abdul Somad. Hadits rujukannya dicek ke Sunnah.com dan HadeethEnc.',
         url: 'https://hadeethenc.com/'
+      },
+      {
+        title: 'Dzikir di Tasbih',
+        detail: 'Bacaan dan keutamaan dzikir dari HR. Muslim 597 dan 408, HR. Bukhari 6405, 6307, dan 6384, serta HR. Tirmidzi 3383 (hasan), dicocokkan ke Sunnah.com.',
+        url: 'https://sunnah.com/'
       }
     ]
   }

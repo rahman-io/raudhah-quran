@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import {
   Award, BookMarked, BookOpen, CheckCircle2, ChevronRight, Circle, CloudSun, Flame, GraduationCap, History, Loader2, LocateFixed, MapPin,
-  MicVocal, Minus, Moon, MoonStar, Plus, Search, SlidersHorizontal, Sun, Sunrise, Sunset, Swords, Trees, X
+  MicVocal, Minus, Moon, MoonStar, Plus, Search, SlidersHorizontal, Sun, Sunrise, Sunset, Swords, X
 } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { useBackHandler } from '../../utils/backNavigation';
@@ -15,6 +15,7 @@ import {
 } from '../../services/prayerTimes';
 import { ACTIVITIES, claimDailyBonus, useTodayActivities, type ActivityId } from '../../services/dailyActivity';
 import { getRecentReadings } from '../reader/recentReading';
+import { TasbihIcon, TasbihView } from '../tasbih/TasbihView';
 
 /** Tujuan dari Beranda (ditangani App: pindah menu / buka surah). */
 export type HomeTarget = 'quran' | 'continue' | 'setor' | 'challenge' | 'hafalan' | 'tajwid' | 'iqro' | 'garden' | 'achievements';
@@ -248,6 +249,7 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
   const [now, setNow] = useState(() => new Date());
   const [locationOpen, setLocationOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [tasbihOpen, setTasbihOpen] = useState(false);
   const prayerSettings = usePrayerSettings();
   const [gpsState, setGpsState] = useState<'idle' | 'loading' | 'error'>('idle');
 
@@ -289,14 +291,14 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
       });
   };
 
-  const shortcuts: { label: string; Icon: React.ElementType; target: HomeTarget; note?: string }[] = [
+  const shortcuts: { label: string; Icon: React.ElementType; target: HomeTarget | 'tasbih'; note?: string }[] = [
     { label: 'Lanjut Baca', Icon: History, target: 'continue', note: recent ? `${recent.nameLatin} ${recent.ayah}` : undefined },
     { label: "Al-Qur'an", Icon: BookOpen, target: 'quran' },
     { label: 'Setor Hafalan', Icon: MicVocal, target: 'setor' },
     { label: 'Tantangan', Icon: Swords, target: 'challenge' },
     { label: 'Tajwid', Icon: GraduationCap, target: 'tajwid' },
     { label: 'Iqro', Icon: BookMarked, target: 'iqro' },
-    { label: 'Taman', Icon: Trees, target: 'garden' },
+    { label: 'Tasbih', Icon: TasbihIcon, target: 'tasbih' },
     { label: 'Prestasi', Icon: Award, target: 'achievements' }
   ];
 
@@ -377,7 +379,7 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
       {/* Pintasan */}
       <section className="relative -mt-16 max-w-3xl mx-auto bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_10px_30px_rgba(23,59,78,0.10)] px-2 py-4 grid grid-cols-4 gap-y-4" aria-label="Menu pintasan">
         {shortcuts.map(({ label, Icon, target, note }) => (
-          <button key={label} type="button" onClick={() => onGo(target)} className="flex flex-col items-center gap-1.5 px-1 rounded-2xl hover:bg-[#F8F6F1] dark:hover:bg-slate-700/40 py-1">
+          <button key={label} type="button" onClick={() => (target === 'tasbih' ? setTasbihOpen(true) : onGo(target))} className="flex flex-col items-center gap-1.5 px-1 rounded-2xl hover:bg-[#F8F6F1] dark:hover:bg-slate-700/40 py-1">
             <Icon className="w-7 h-7 text-[#BE9452]" strokeWidth={1.6} />
             <span className="text-[12px] font-medium text-[#293640] dark:text-slate-200 text-center leading-tight">{label}</span>
             {note && <span className="text-[9px] text-[#477F8D] leading-none truncate max-w-full">{note}</span>}
@@ -438,6 +440,7 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
 
       {locationOpen && <LocationSheet current={location} onClose={() => setLocationOpen(false)} />}
       {settingsOpen && location && <PrayerSettingsSheet location={location} onClose={() => setSettingsOpen(false)} />}
+      {tasbihOpen && <TasbihView onClose={() => setTasbihOpen(false)} />}
     </div>
   );
 };
