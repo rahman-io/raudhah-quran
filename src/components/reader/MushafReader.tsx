@@ -18,8 +18,11 @@ import { RecentReadingCard } from './RecentReadingCard';
 import { MemorizingCard } from './MemorizingCard';
 import { getRecentReadings, recordReading } from './recentReading';
 import { loadView, saveView } from '../../utils/viewState';
+import { useIdleVisibility } from '../../utils/useIdleVisibility';
 
 const NO_AYAHS: ReaderAyah[] = [];
+/** Jarak bar navigasi surah dari bawah header saat menempel. */
+const NAV_GAP = 8;
 /** Gulir otomatis berlanjut bila pengguna sudah berhenti menggulir selama ini. */
 const FOLLOW_RESUME_MS = 3500;
 
@@ -383,6 +386,29 @@ export const MushafReader: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showList, hafalanAyahIndex]);
 
+  /* ---------- Bar navigasi surah: menempel di bawah header, sembunyi otomatis ---------- */
+  const navRef = useRef<HTMLDivElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(64);
+  const headerHeightRef = useRef(headerHeight);
+  headerHeightRef.current = headerHeight;
+  const [navHeld, setNavHeld] = useState(false);
+  useEffect(() => {
+    const header = document.querySelector('header');
+    if (!header) return;
+    const update = () => setHeaderHeight(Math.round(header.getBoundingClientRect().height));
+    update();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+  // Hanya disembunyikan saat sedang menempel (sudah digulir), bukan di posisi aslinya.
+  const navIsStuck = () => {
+    const el = navRef.current;
+    return !!el && el.getBoundingClientRect().top <= headerHeightRef.current + NAV_GAP + 2 && window.scrollY > 40;
+  };
+  const navVisible = useIdleVisibility(!showList, { hold: isPickerOpen || navHeld, canHide: navIsStuck });
+
   // Halaman awal menu Baca: daftar lengkap 114 surah.
   if (showList) {
     // Progres hafalan per surah: jumlah ayat yang sudah ditandai hafal.
@@ -473,59 +499,82 @@ export const MushafReader: React.FC = () => {
 
   return (
     <div ref={topRef} className="w-full space-y-6 scroll-mt-24">
-      <button
-        onClick={backToList}
-        className="-mb-2 inline-flex items-center gap-1.5 px-1 text-sm font-semibold text-[#246579] dark:text-[#A7CDD3] hover:underline"
+      {/* Bar navigasi surah: kembali ke daftar, surah sebelumnya/berikutnya, dan pilih surah.
+          Menempel di bawah header saat digulir dan sembunyi otomatis bila layar tidak disentuh. */}
+      <div
+        ref={navRef}
+        className={`sticky z-30 transition-[transform,opacity] duration-300 ease-out ${
+          navVisible ? 'translate-y-0 opacity-100' : '-translate-y-[140%] opacity-0 pointer-events-none'
+        }`}
+        style={{ top: headerHeight + NAV_GAP }}
+        aria-hidden={!navVisible}
+        onPointerEnter={(event) => event.pointerType === 'mouse' && setNavHeld(true)}
+        onPointerLeave={(event) => event.pointerType === 'mouse' && setNavHeld(false)}
+        onFocus={(event) => setNavHeld((event.target as HTMLElement).matches?.(':focus-visible') ?? false)}
+        onBlur={() => setNavHeld(false)}
       >
-        <ChevronLeft className="w-4 h-4" />
-        <span>Daftar Surah</span>
-      </button>
+        <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-3xl border border-slate-200 dark:border-slate-700 shadow-[0_8px_24px_rgba(23,59,78,0.10)]">
+          <div className="flex items-center gap-1 sm:gap-1.5 p-1.5 sm:p-2">
+            <button
+              onClick={backToList}
+              className="shrink-0 h-11 flex items-center gap-0.5 pl-2 pr-3 rounded-2xl bg-[#246579]/10 dark:bg-[#246579]/30 text-[#246579] dark:text-[#A7CDD3] hover:bg-[#246579]/15 text-xs font-semibold transition-colors"
+              aria-label="Kembali ke Daftar Surah"
+              title="Kembali ke Daftar Surah"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Daftar</span>
+            </button>
 
-      {/* Surah Navigator (114 Surah) */}
-      <div className="bg-white dark:bg-slate-800/80 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xs">
-        <div className="flex items-center gap-2 p-2">
-          <button
-            onClick={() => previousSurah && openSurah(previousSurah.number)}
-            disabled={!previousSurah}
-            className="p-2.5 rounded-2xl text-[#246579] dark:text-[#A7CDD3] hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-            title={previousSurah ? `Surah sebelumnya: ${previousSurah.nameLatin}` : 'Tidak ada surah sebelumnya'}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
+            <span className="w-px h-7 shrink-0 bg-slate-200 dark:bg-slate-700 mx-0.5" aria-hidden="true" />
 
-          <button
-            onClick={() => setIsPickerOpen((open) => !open)}
-            className="flex-1 min-w-0 flex items-center justify-center gap-2 px-3 py-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors"
-            aria-expanded={isPickerOpen}
-          >
-            <span className="w-7 h-7 shrink-0 rounded-full bg-[#246579]/10 dark:bg-[#246579]/30 text-[#246579] dark:text-[#A7CDD3] flex items-center justify-center font-bold text-[11px]">
-              {surahNumber}
-            </span>
-            <span className="truncate text-sm font-bold text-[#173B4E] dark:text-white">
-              {currentMeta ? currentMeta.nameLatin : 'Memuat…'}
-            </span>
-            <span className="hidden sm:inline text-xs text-[#477F8D] dark:text-[#94A3B8] truncate">
-              {surahList.length > 0 && `· Pilih dari ${surahList.length} surah`}
-            </span>
-            <ChevronDown className={`w-4 h-4 shrink-0 text-[#477F8D] transition-transform ${isPickerOpen ? 'rotate-180' : ''}`} />
-          </button>
+            <button
+              onClick={() => previousSurah && openSurah(previousSurah.number)}
+              disabled={!previousSurah}
+              className="shrink-0 w-9 h-11 flex items-center justify-center rounded-2xl text-[#246579] dark:text-[#A7CDD3] hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              aria-label={previousSurah ? `Surah sebelumnya: ${previousSurah.nameLatin}` : 'Tidak ada surah sebelumnya'}
+              title={previousSurah ? `Surah sebelumnya: ${previousSurah.nameLatin}` : 'Tidak ada surah sebelumnya'}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
 
-          <button
-            onClick={() => nextSurah && openSurah(nextSurah.number)}
-            disabled={!nextSurah}
-            className="p-2.5 rounded-2xl text-[#246579] dark:text-[#A7CDD3] hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-            title={nextSurah ? `Surah berikutnya: ${nextSurah.nameLatin}` : 'Tidak ada surah berikutnya'}
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
+            <button
+              onClick={() => setIsPickerOpen((open) => !open)}
+              className={`flex-1 min-w-0 h-11 flex items-center gap-2 px-2 rounded-2xl transition-colors ${
+                isPickerOpen ? 'bg-[#D3A253]/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700/60'
+              }`}
+              aria-expanded={isPickerOpen}
+              aria-label="Pilih surah"
+            >
+              <span className="w-8 h-8 shrink-0 rounded-full bg-[#246579] text-white flex items-center justify-center font-bold text-[11px]">
+                {surahNumber}
+              </span>
+              <span className="flex-1 min-w-0 text-left leading-tight">
+                <span className="block truncate text-sm font-bold text-[#173B4E] dark:text-white">
+                  {currentMeta ? currentMeta.nameLatin : 'Memuat…'}
+                </span>
+                <span className="block truncate text-[10px] text-[#477F8D] dark:text-[#94A3B8]">
+                  {currentMeta ? `${currentMeta.translationLatin} · ${currentMeta.numberOfAyahs} ayat` : ''}
+                </span>
+              </span>
+              <ChevronDown className={`w-4 h-4 shrink-0 text-[#477F8D] transition-transform ${isPickerOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            <button
+              onClick={() => nextSurah && openSurah(nextSurah.number)}
+              disabled={!nextSurah}
+              className="shrink-0 w-9 h-11 flex items-center justify-center rounded-2xl text-[#246579] dark:text-[#A7CDD3] hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              aria-label={nextSurah ? `Surah berikutnya: ${nextSurah.nameLatin}` : 'Tidak ada surah berikutnya'}
+              title={nextSurah ? `Surah berikutnya: ${nextSurah.nameLatin}` : 'Tidak ada surah berikutnya'}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
 
         {isPickerOpen && (
           <div className="border-t border-slate-100 dark:border-slate-700/60 p-3 sm:p-4 space-y-3">
             <label className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-[#F8F6F1] dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
               <Search className="w-4 h-4 text-[#477F8D] shrink-0" />
               <input
-                autoFocus
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Cari nama surah, arti, atau nomor…"
@@ -562,6 +611,7 @@ export const MushafReader: React.FC = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {loadError && (
