@@ -15,6 +15,7 @@ import { getCompletedStages, getSurahsWithHafalanProgress, STAGES } from '../haf
 import { useSurahPlayer } from './useSurahPlayer';
 import { PlayerDock, PlayerOptions } from './SurahPlayerBar';
 import { RecentReadingCard } from './RecentReadingCard';
+import { MemorizingCard } from './MemorizingCard';
 import { getRecentReadings, recordReading } from './recentReading';
 import { loadView, saveView } from '../../utils/viewState';
 
@@ -93,6 +94,8 @@ export const MushafReader: React.FC = () => {
   const [showList, setShowList] = useState(!restored.open);
   /** Ayat yang dituju saat membuka surah dari "Terakhir Dibaca" (atau setelah refresh). */
   const [pendingAyah, setPendingAyah] = useState<number | null>(restored.ayah);
+  /** Mode Hafalkan yang dibuka setelah surah selesai dimuat (dari kartu "Sedang Dihafal"). */
+  const [pendingHafalan, setPendingHafalan] = useState<number | null>(null);
   const [infoIndex, setInfoIndex] = useState<Map<number, SurahInfoSummary>>(new Map());
   const [surahInfo, setSurahInfo] = useState<SurahInfoDetail | null>(null);
   const [infoExpanded, setInfoExpanded] = useState(false);
@@ -328,6 +331,18 @@ export const MushafReader: React.FC = () => {
     return () => clearTimeout(timer);
   }, [surahReady, pendingAyah]);
 
+  // Dari "Sedang Dihafal": buka mode Hafalkan begitu surahnya siap.
+  useEffect(() => {
+    if (!surahReady || pendingHafalan === null) return;
+    setHafalanAyahIndex(pendingHafalan);
+    setPendingHafalan(null);
+  }, [surahReady, pendingHafalan]);
+
+  const continueHafalan = (surah: number, ayah: number) => {
+    openSurah(surah, ayah);
+    setPendingHafalan(ayah - 1);
+  };
+
   // Catat surah yang dibuka dan ayat teratas yang sedang terlihat di layar.
   useEffect(() => {
     if (!surahReady || !loadedSurah) return;
@@ -378,6 +393,8 @@ export const MushafReader: React.FC = () => {
         <MotivationCarousel />
 
         <RecentReadingCard onOpen={openSurah} />
+
+        <MemorizingCard surahs={surahList} memorizedAyahIds={memorizedAyahIds} onContinue={continueHafalan} />
 
         <div className="flex items-baseline justify-between px-1">
           <h2 className="text-lg font-bold text-[#173B4E] dark:text-white">Daftar Surah</h2>

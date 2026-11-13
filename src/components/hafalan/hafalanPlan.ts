@@ -516,6 +516,25 @@ export function getSurahsWithHafalanProgress(): Set<number> {
   return surahs;
 }
 
+/**
+ * Aktivitas hafalan per surah: ayat yang sudah mulai dilatih (minimal satu game selesai)
+ * beserta jumlah game-nya, dan waktu latihan terakhir.
+ */
+export function getHafalanActivityBySurah(): Map<number, { ayahs: Map<number, number>; lastAt: number }> {
+  const activity = new Map<number, { ayahs: Map<number, number>; lastAt: number }>();
+  Object.entries(readProgress()).forEach(([ayahId, entry]) => {
+    const [surah, ayah] = ayahId.split(':').map(Number);
+    if (!Number.isInteger(surah) || !Number.isInteger(ayah)) return;
+    const games = getCompletedStages(ayahId).length;
+    if (games === 0) return;
+    const item = activity.get(surah) ?? { ayahs: new Map<number, number>(), lastAt: 0 };
+    item.ayahs.set(ayah, games);
+    item.lastAt = Math.max(item.lastAt, Date.parse(entry.updatedAt) || 0);
+    activity.set(surah, item);
+  });
+  return activity;
+}
+
 /** Catat satu game selesai; mengembalikan daftar terbaru. */
 export function markStageCompleted(ayahId: string, stageId: StageId): StageId[] {
   const done = getCompletedStages(ayahId);
