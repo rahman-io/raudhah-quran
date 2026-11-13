@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, Share2, ExternalLink, Languages, ListMusic, PlayCircle, Square } from 'lucide-react';
+import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, Share2, ExternalLink, Languages, ListMusic, PlayCircle, Square, AlignJustify } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import {
@@ -23,8 +23,14 @@ import { ShareAyahModal } from './ShareAyahModal';
 import { getRecentReadings, recordReading } from './recentReading';
 import { loadView, saveView } from '../../utils/viewState';
 import { useIdleVisibility } from '../../utils/useIdleVisibility';
+import { MushafView, type AyahRef } from './mushaf/MushafView';
+import { MushafAyahSheet } from './mushaf/MushafAyahSheet';
+import { firstAyahOnPage, loadMushafLayout, surahsOnPage, type MushafLayout } from '../../services/mushafLayout';
 
 const NO_AYAHS: ReaderAyah[] = [];
+/** Mode baca terakhir yang dipilih: per ayat (Tadabbur) atau per halaman (Mushaf). */
+const READING_MODE_KEY = 'raudhah_reader_mode_v1';
+type ReadingMode = 'tadabbur' | 'mushaf';
 /** Jarak bar navigasi surah dari bawah header saat menempel. */
 const NAV_GAP = 8;
 /** Gulir otomatis berlanjut bila pengguna sudah berhenti menggulir selama ini. */
@@ -132,6 +138,41 @@ export const MushafReader: React.FC = () => {
   // Transliterasi latin versi Kemenag (mis. "Bismillāhir-raḥmānir-raḥīm(i).").
   const [kemenagLatin, setKemenagLatin] = useState<{ surah: number; ayahs: Map<number, string> } | null>(null);
 
+  /* ---------- Mode baca: Tadabbur (per ayat) atau Mushaf (per halaman) ---------- */
+  const [readingMode, setReadingModeState] = useState<ReadingMode>(() => {
+    try {
+      return localStorage.getItem(READING_MODE_KEY) === 'mushaf' ? 'mushaf' : 'tadabbur';
+    } catch {
+      return 'tadabbur';
+    }
+  });
+  const [mushafLayout, setMushafLayout] = useState<MushafLayout | null>(null);
+  const [mushafPage, setMushafPage] = useState<number>(() => loadView().reader?.mushafPage ?? 1);
+  /** Surah/ayat yang dituju di Mode Mushaf; halamannya dihitung setelah data halaman dimuat. */
+  const [mushafTarget, setMushafTarget] = useState<{ surah: number; ayah?: number } | null>(() =>
+    restored.open && (restored.linkAyah || !loadView().reader?.mushafPage)
+      ? { surah: restored.surah, ayah: restored.linkAyah ?? restored.ayah ?? undefined }
+      : null
+  );
+  /** Ayat yang diketuk di Mode Mushaf (lembar aksi). */
+  const [mushafSelected, setMushafSelected] = useState<AyahRef | null>(null);
+  /** Aksi untuk ayat dari surah lain di halaman yang sama: dijalankan setelah surahnya dimuat. */
+  const [pendingAction, setPendingAction] = useState<{ type: 'play' | 'tafsir' | 'share'; surah: number; ayah: number } | null>(null);
+
+  useEffect(() => {
+    if (readingMode !== 'mushaf' || mushafLayout) return;
+    loadMushafLayout().then(setMushafLayout).catch(() => undefined);
+  }, [readingMode, mushafLayout]);
+
+  useEffect(() => {
+    if (!mushafLayout || !mushafTarget) return;
+    const page = mushafTarget.ayah
+      ? mushafLayout.ayahPage.get(`${mushafTarget.surah}:${mushafTarget.ayah}`)
+      : mushafLayout.surahPage[mushafTarget.surah];
+    if (page) setMushafPage(page);
+    setMushafTarget(null);
+  }, [mushafLayout, mushafTarget]);
+
   useEffect(() => {
     loadReaderIndex().then(setSurahIndex);
     loadSurahInfoIndex().then(setInfoIndex);
@@ -183,6 +224,9 @@ export const MushafReader: React.FC = () => {
   useEffect(() => {
     saveView({ reader: { surah: surahNumber, open: !showList, hafalanAyah: hafalanAyahIndex } });
   }, [surahNumber, showList, hafalanAyahIndex]);
+  useEffect(() => {
+    if (readingMode === 'mushaf') saveView({ reader: { mushafPage } });
+  }, [readingMode, mushafPage]);
 
   // Posisi gulir Daftar Surah: dicatat sebagai surah paling atas yang terlihat
   // (tetap tepat walau tinggi kartu berubah saat ringkasan surah dimuat), dipulihkan sekali.
@@ -249,6 +293,7 @@ export const MushafReader: React.FC = () => {
     }
     if (number !== searchMark?.surah) setSearchMark(null);
     setPendingAyah(ayah && ayah > 1 ? ayah : null);
+    if (readingMode === 'mushaf') setMushafTarget({ surah: number, ayah });
     setSurahNumber(number);
     setShowList(false);
     setIsPickerOpen(false);
@@ -458,9 +503,83 @@ export const MushafReader: React.FC = () => {
     setPendingHafalan(ayah - 1);
   };
 
+  /* ---------- Mode Mushaf: halaman, ayat yang diketuk, murottal ---------- */
+  const setReadingMode = (next: ReadingMode) => {
+    if (next === readingMode) return;
+    try {
+      localStorage.setItem(READING_MODE_KEY, next);
+    } catch {
+      // abaikan
+    }
+    if (next === 'mushaf') {
+      // Buka halaman tempat ayat yang terakhir dibaca di surah ini.
+      const recent = getRecentReadings()[0];
+      setMushafTarget({ surah: surahNumber, ayah: recent?.number === surahNumber ? recent.ayah : undefined });
+    } else if (mushafLayout) {
+      const first = firstAyahOnPage(mushafLayout, mushafPage);
+      if (first && first.surah === surahNumber) setPendingAyah(first.ayah > 1 ? first.ayah : null);
+    }
+    setMushafSelected(null);
+    setReadingModeState(next);
+    topRef.current?.scrollIntoView({ block: 'start' });
+  };
+
+  const handleMushafPage = (page: number) => {
+    setMushafPage(page);
+    setMushafSelected(null);
+    if (!mushafLayout) return;
+    const first = firstAyahOnPage(mushafLayout, page);
+    const onPage = surahsOnPage(mushafLayout, page);
+    // Surah di bar navigasi mengikuti halaman (kecuali sedang memutar murottal surah ini).
+    if (!playerRunning && onPage.length && !onPage.includes(surahNumber)) setSurahNumber(first?.surah ?? onPage[0]);
+    const meta = first && surahList.find((m) => m.number === first.surah);
+    if (first && meta) recordReading({ number: meta.number, nameLatin: meta.nameLatin, ayah: first.ayah, totalAyahs: meta.numberOfAyahs });
+  };
+
+  // Ayat yang sedang dibacakan murottal (untuk disorot di halaman mushaf).
+  const mushafActive: AyahRef | null =
+    playerActive && playerState.status !== 'done' && !openingPart && loadedSurah
+      ? { surah: loadedSurah.number, ayah: playerState.index + 1 }
+      : null;
+  // Halaman ikut berpindah ke ayat yang sedang dibacakan.
+  useEffect(() => {
+    if (readingMode !== 'mushaf' || !mushafActive || !mushafLayout) return;
+    const page = mushafLayout.ayahPage.get(`${mushafActive.surah}:${mushafActive.ayah}`);
+    if (page && page !== mushafPage) setMushafPage(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readingMode, mushafActive?.surah, mushafActive?.ayah, mushafLayout]);
+
+  const runAyahAction = (type: 'play' | 'tafsir' | 'share', surah: number, ayah: number) => {
+    setMushafSelected(null);
+    if (loadedSurah?.number === surah && surahReady) {
+      if (type === 'play') startPlayer(ayah - 1);
+      else if (type === 'tafsir') setTafsirAyah(ayah);
+      else setShareAyah(ayah);
+      return;
+    }
+    if (isPlayingAudio) pauseMurottal();
+    setPendingAction({ type, surah, ayah });
+    setSurahNumber(surah);
+  };
+  useEffect(() => {
+    if (!pendingAction || !surahReady || loadedSurah?.number !== pendingAction.surah) return;
+    const { type, ayah } = pendingAction;
+    setPendingAction(null);
+    if (type === 'play') startPlayer(ayah - 1);
+    else if (type === 'tafsir') setTafsirAyah(ayah);
+    else setShareAyah(ayah);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingAction, surahReady, loadedSurah]);
+
+  const playMushafPage = () => {
+    if (playerRunning) return player.stop();
+    const first = mushafLayout && firstAyahOnPage(mushafLayout, mushafPage);
+    if (first) runAyahAction('play', first.surah, first.ayah);
+  };
+
   // Catat surah yang dibuka dan ayat teratas yang sedang terlihat di layar.
   useEffect(() => {
-    if (!surahReady || !loadedSurah) return;
+    if (!surahReady || !loadedSurah || readingMode === 'mushaf') return;
     const surah = loadedSurah;
     const save = (ayah: number) =>
       recordReading({ number: surah.number, nameLatin: surah.nameLatin, ayah, totalAyahs: surah.ayahs.length });
@@ -479,7 +598,7 @@ export const MushafReader: React.FC = () => {
     ayahRefs.current.slice(0, surah.ayahs.length).forEach((el) => el && observer.observe(el));
     return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [surahReady, loadedSurah]);
+  }, [surahReady, loadedSurah, readingMode]);
 
   // Murottal satu ayat (tombol "Putar" biasa) dimulai: hentikan pemutar berurutan.
   useEffect(() => {
@@ -723,6 +842,72 @@ export const MushafReader: React.FC = () => {
         </div>
       </div>
 
+      {/* Pilihan mode baca */}
+      <div className="flex items-center justify-center gap-2">
+        <div className="inline-grid grid-cols-2 gap-1 p-1 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs" role="tablist" aria-label="Mode baca">
+          {([
+            { id: 'tadabbur', label: 'Tadabbur', hint: 'per ayat', Icon: AlignJustify },
+            { id: 'mushaf', label: 'Mushaf', hint: 'per halaman', Icon: BookOpen }
+          ] as const).map(({ id, label, hint, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={readingMode === id}
+              onClick={() => setReadingMode(id)}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                readingMode === id ? 'bg-[#246579] text-white shadow-xs' : 'text-[#246579] dark:text-[#A7CDD3] hover:bg-[#246579]/5'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+              <span className={`hidden sm:inline font-medium ${readingMode === id ? 'text-white/75' : 'text-[#477F8D]'}`}>· {hint}</span>
+            </button>
+          ))}
+        </div>
+        {readingMode === 'mushaf' && (
+          <button
+            type="button"
+            onClick={playMushafPage}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-[#D3A253]/15 hover:bg-[#D3A253]/25 text-[#8A6420] dark:text-[#E9CF99] text-xs font-semibold"
+            aria-label={playerRunning ? 'Hentikan murottal' : 'Putar murottal dari halaman ini'}
+          >
+            {playerRunning ? <Square className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />}
+            {playerRunning ? 'Hentikan' : 'Putar'}
+          </button>
+        )}
+      </div>
+
+      {readingMode === 'mushaf' ? (
+        <>
+          <MushafView
+            page={mushafPage}
+            onPageChange={handleMushafPage}
+            surahs={surahList}
+            activeAyah={mushafActive}
+            markedAyah={mushafSelected ?? flashAyah}
+            onAyahTap={(surah, ayah) => setMushafSelected({ surah, ayah })}
+          />
+          {playerActive && <div className="h-28 lg:h-20" aria-hidden="true" />}
+          {loadedSurah && (
+            <PlayerDock
+              state={playerState}
+              total={loadedSurah.ayahs.length}
+              surahName={loadedSurah.nameLatin}
+              following
+              onFollow={() => undefined}
+              onToggle={() => (playerState.status === 'playing' ? player.pause() : player.resume())}
+              onPrevious={player.previous}
+              onNext={player.next}
+              onStop={player.stop}
+              prefs={player.prefs}
+              setPrefs={player.setPrefs}
+              canSpeak={player.canSpeak}
+            />
+          )}
+        </>
+      ) : (
+      <>
       {loadError && (
         <div className="bg-white dark:bg-slate-800/80 rounded-3xl p-6 text-center border border-slate-200 dark:border-slate-700 space-y-3">
           <p className="text-sm text-[#293640] dark:text-[#CBD5E1]">Surah ini belum bisa dimuat. Periksa koneksi internet Anda.</p>
@@ -1163,6 +1348,38 @@ export const MushafReader: React.FC = () => {
       />
       <style>{'@keyframes reader-glow { 0%, 100% { box-shadow: 0 0 0 3px rgba(211,162,83,0.30), 0 6px 18px rgba(211,162,83,0.12); } 50% { box-shadow: 0 0 0 4px rgba(211,162,83,0.40), 0 10px 36px rgba(211,162,83,0.32); } } .reader-now-playing { box-shadow: 0 0 0 3px rgba(211,162,83,0.30); animation: reader-glow 2.4s ease-in-out infinite; } @media (prefers-reduced-motion: reduce) { .reader-now-playing { animation: none; } }'}</style>
       </>
+        );
+      })()}
+      </>
+      )}
+
+      {mushafSelected && readingMode === 'mushaf' && !showList && (() => {
+        const { surah, ayah } = mushafSelected;
+        const id = `${surah}:${ayah}`;
+        const memorized = memorizedAyahIds.includes(id);
+        return (
+          <MushafAyahSheet
+            surah={surah}
+            ayah={ayah}
+            surahName={surahList.find((m) => m.number === surah)?.nameLatin ?? `Surah ${surah}`}
+            memorized={memorized}
+            onClose={() => setMushafSelected(null)}
+            onPlay={() => runAyahAction('play', surah, ayah)}
+            onTafsir={() => runAyahAction('tafsir', surah, ayah)}
+            onShare={() => runAyahAction('share', surah, ayah)}
+            onToggleMemorized={() => (memorized ? unmarkAyahMemorized(id) : markAyahMemorized(id))}
+            onOpenTadabbur={() => {
+              setMushafSelected(null);
+              try {
+                localStorage.setItem(READING_MODE_KEY, 'tadabbur');
+              } catch {
+                // abaikan
+              }
+              setReadingModeState('tadabbur');
+              openSurah(surah, ayah);
+              setFlashAyah({ surah, ayah });
+            }}
+          />
         );
       })()}
 
