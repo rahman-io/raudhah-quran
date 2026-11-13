@@ -522,7 +522,7 @@ export const MushafReader: React.FC = () => {
 
         <RecentReadingCard onOpen={openSurah} />
 
-        <MemorizingCard surahs={surahList} memorizedAyahIds={memorizedAyahIds} onContinue={continueHafalan} />
+        <MemorizingCard surahs={surahList} memorizedAyahIds={memorizedAyahIds} onContinue={continueHafalan} onOpen={openSurah} />
 
         <div className="flex items-baseline justify-between px-1">
           <h2 className="text-lg font-bold text-[#173B4E] dark:text-white">Daftar Surah</h2>
