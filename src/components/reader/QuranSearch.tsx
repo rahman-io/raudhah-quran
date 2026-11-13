@@ -31,7 +31,7 @@ const termMatches = (padded: string, term: string) =>
 
 /** Huruf kecil tanpa tanda diakritik (ā → a), selain huruf/angka jadi spasi. */
 const plain = (text: string) =>
-  text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9؀-ۿ]+/g, ' ').trim();
+  text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\u0600-\u06ff]+/g, ' ').trim();
 const compact = (text: string) => plain(text).replace(/\s+/g, '');
 // Kerangka konsonan agar ejaan berbeda tetap cocok, mis. "baqoroh" → Al-Baqarah.
 const skeleton = (text: string) => compact(text).replace(/[aiueo'h]/g, '').replace(/(.)\1+/g, '$1');
@@ -68,7 +68,7 @@ function matchSurahs(surahs: SurahMeta[], query: string): SurahMeta[] {
 function parseReference(surahs: SurahMeta[], query: string): { surah: SurahMeta; ayah: number } | null {
   const text = query.trim();
   const numeric = text.match(/^(\d{1,3})\s*[:.\s]\s*(\d{1,3})$/);
-  const named = text.match(/^(.*?[a-zA-Z؀-ۿ].*?)\s*[:.\s]\s*(\d{1,3})$/);
+  const named = text.match(/^(.*?[a-zA-Z\u0600-\u06ff].*?)\s*[:.\s]\s*(\d{1,3})$/);
   let surah: SurahMeta | undefined;
   let ayah = 0;
   if (numeric) {
@@ -85,43 +85,69 @@ function parseReference(surahs: SurahMeta[], query: string): { surah: SurahMeta;
   return { surah, ayah };
 }
 
-/** Potongan terjemah di sekitar kata yang cocok, dengan kata yang dicari ditebalkan. */
-function Snippet({ text, terms }: { text: string; terms: string[] }) {
-  const lower = text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const first = Math.min(...terms.map((t) => lower.indexOf(t)).filter((i) => i >= 0), text.length);
-  const start = first > 90 ? lower.lastIndexOf(' ', first - 60) + 1 : 0;
-  const end = Math.min(text.length, start + 220);
-  const piece = text.slice(start, end);
-  const pieceLower = lower.slice(start, end);
+/** Huruf kecil tanpa diakritik, panjangnya sama dengan teks asli (untuk mencari posisi). */
+const foldSameLength = (text: string) =>
+  [...text].map((ch) => ch.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()[0] ?? ch).join('');
+
+/** Posisi kata yang dicari di dalam teks (kata pendek hanya di awal kata). */
+function findMarks(text: string, terms: string[]): [number, number][] {
+  const lower = foldSameLength(text);
   const marks: [number, number][] = [];
   terms.forEach((term) => {
-    let i = pieceLower.indexOf(term);
-    while (term && i >= 0) {
-      const atWordStart = i === 0 || !/[a-z0-9]/.test(pieceLower[i - 1]);
+    let i = term ? lower.indexOf(term) : -1;
+    while (i >= 0) {
+      const atWordStart = i === 0 || !/[a-z0-9]/.test(lower[i - 1]);
       if (term.length > SHORT_TERM || atWordStart) marks.push([i, i + term.length]);
-      i = pieceLower.indexOf(term, i + term.length);
+      i = lower.indexOf(term, i + term.length);
     }
   });
-  marks.sort((a, b) => a[0] - b[0]);
+  return marks.sort((a, b) => a[0] - b[0]);
+}
+
+function renderMarks(text: string, marks: [number, number][], offset = 0): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
   let cursor = 0;
-  marks.forEach(([a, b], k) => {
-    if (a < cursor) return;
-    parts.push(piece.slice(cursor, a));
-    parts.push(<mark key={k} className="bg-[#D3A253]/35 text-inherit rounded px-0.5">{piece.slice(a, b)}</mark>);
+  marks.forEach(([a0, b0], k) => {
+    const a = a0 - offset;
+    const b = b0 - offset;
+    if (a < cursor || a < 0 || b > text.length) return;
+    parts.push(text.slice(cursor, a));
+    parts.push(<mark key={k} className="bg-[#D3A253]/40 text-inherit rounded-sm">{text.slice(a, b)}</mark>);
     cursor = b;
   });
-  parts.push(piece.slice(cursor));
-  return <>{start > 0 && '… '}{parts}{end < text.length && ' …'}</>;
+  parts.push(text.slice(cursor));
+  return parts;
+}
+
+/** Teks utuh dengan kata yang dicari disorot (dipakai di kartu ayat setelah dibuka dari pencarian). */
+export const HighlightedText: React.FC<{ text: string; terms: string[] }> = ({ text, terms }) => (
+  <>{renderMarks(text, findMarks(text, terms))}</>
+);
+
+/** Kata kunci pencarian (sudah dinormalkan) yang dipakai untuk menyorot. */
+export const searchTerms = (query: string) => plain(query).split(' ').filter((t) => t.length >= 2);
+
+/** Potongan terjemah di sekitar kata yang cocok, dengan kata yang dicari disorot. */
+function Snippet({ text, terms }: { text: string; terms: string[] }) {
+  const marks = findMarks(text, terms);
+  const first = marks.length ? marks[0][0] : 0;
+  const lower = foldSameLength(text);
+  const start = first > 90 ? lower.lastIndexOf(' ', first - 60) + 1 : 0;
+  const end = Math.min(text.length, start + 220);
+  const inside = marks.filter(([a, b]) => a >= start && b <= end);
+  return <>{start > 0 && '… '}{renderMarks(text.slice(start, end), inside, start)}{end < text.length && ' …'}</>;
 }
 
 export const QuranSearch: React.FC<{
   surahs: SurahMeta[];
-  onOpen: (surah: number, ayah?: number) => void;
+  /** Kata kunci disimpan di luar agar tetap ada saat kembali dari surah. */
+  query: string;
+  onQueryChange: (query: string) => void;
+  /** `terms`: kata yang dicari, untuk disorot di terjemahan ayat yang dibuka. */
+  onOpen: (surah: number, ayah?: number, terms?: string[]) => void;
   children: React.ReactNode;
-}> = ({ surahs, onOpen, children }) => {
-  const [query, setQuery] = useState('');
-  const [debounced, setDebounced] = useState('');
+}> = ({ surahs, query, onQueryChange: setQuery, onOpen, children }) => {
+  const [debounced, setDebounced] = useState(query);
   const [rows, setRows] = useState<SearchRow[] | null>(null);
   const [loadingIndex, setLoadingIndex] = useState(false);
   const [indexError, setIndexError] = useState(false);
@@ -132,7 +158,15 @@ export const QuranSearch: React.FC<{
     const timer = setTimeout(() => setDebounced(query), 220);
     return () => clearTimeout(timer);
   }, [query]);
-  useEffect(() => setLimit(PAGE), [debounced]);
+  const firstDebounce = useRef(true);
+  useEffect(() => {
+    // Kembali dari surah: jangan ulang dari awal jumlah hasil yang ditampilkan.
+    if (firstDebounce.current) {
+      firstDebounce.current = false;
+      return;
+    }
+    setLimit(PAGE);
+  }, [debounced]);
 
   const prepareIndex = () => {
     if (rows || loadingIndex) return;
@@ -147,7 +181,12 @@ export const QuranSearch: React.FC<{
   const active = query.trim().length > 0;
   const surahResults = useMemo(() => matchSurahs(surahs, debounced).slice(0, 8), [surahs, debounced]);
   const reference = useMemo(() => parseReference(surahs, debounced), [surahs, debounced]);
-  const terms = useMemo(() => plain(debounced).split(' ').filter((t) => t.length >= 2), [debounced]);
+  const terms = useMemo(() => searchTerms(debounced), [debounced]);
+  // Kembali dari surah dengan kata kunci yang masih ada: muat lagi indeksnya.
+  useEffect(() => {
+    if (query.trim()) prepareIndex();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const ayahResults = useMemo(() => {
     if (!rows || plain(debounced).length < 3 || terms.length === 0) return [];
     const phrase = ` ${plain(debounced)}`;
@@ -196,6 +235,7 @@ export const QuranSearch: React.FC<{
           {reference && (
             <button
               type="button"
+              data-search-key="reference"
               onClick={() => onOpen(reference.surah.number, reference.ayah)}
               className="w-full flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-br from-[#246579] to-[#174C60] text-white text-left shadow-xs hover:brightness-110 transition"
             >
@@ -216,6 +256,7 @@ export const QuranSearch: React.FC<{
                   <button
                     key={s.number}
                     type="button"
+                    data-search-key={`surah-${s.number}`}
                     onClick={() => onOpen(s.number)}
                     className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#F8F6F1] dark:hover:bg-slate-700/40"
                   >
@@ -244,7 +285,8 @@ export const QuranSearch: React.FC<{
                     <button
                       key={`${row.surah}:${row.ayah}`}
                       type="button"
-                      onClick={() => onOpen(row.surah, row.ayah)}
+                      data-search-key={`ayah-${row.surah}-${row.ayah}`}
+                      onClick={() => onOpen(row.surah, row.ayah, terms)}
                       className="w-full text-left p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-[#477F8D]/50 transition-colors"
                     >
                       <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#246579] dark:text-[#A7CDD3]">

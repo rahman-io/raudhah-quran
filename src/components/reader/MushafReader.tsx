@@ -17,7 +17,7 @@ import { PlayerDock, PlayerOptions } from './SurahPlayerBar';
 import { RecentReadingCard } from './RecentReadingCard';
 import { MemorizingCard } from './MemorizingCard';
 import { AyahEndMarker } from './AyahEndMarker';
-import { QuranSearch } from './QuranSearch';
+import { HighlightedText, QuranSearch } from './QuranSearch';
 import { TafsirModal } from './TafsirModal';
 import { getRecentReadings, recordReading } from './recentReading';
 import { loadView, saveView } from '../../utils/viewState';
@@ -102,6 +102,12 @@ export const MushafReader: React.FC = () => {
   const [showList, setShowList] = useState(!restored.open);
   /** Ayat yang dituju saat membuka surah dari "Terakhir Dibaca" (atau setelah refresh). */
   const [pendingAyah, setPendingAyah] = useState<number | null>(restored.ayah);
+  /** Kata kunci pencarian di Daftar Surah; tetap ada saat kembali dari surah. */
+  const [listQuery, setListQuery] = useState('');
+  /** Kata yang disorot di terjemahan ayat yang dibuka dari pencarian arti. */
+  const [searchMark, setSearchMark] = useState<{ surah: number; ayah: number; terms: string[] } | null>(null);
+  /** Posisi Daftar Surah sebelum membuka surah, untuk dipulihkan saat kembali. */
+  const listPositionRef = useRef<{ y: number; anchor?: string; offset: number } | null>(null);
   /** Nomor ayat yang tafsirnya sedang dibuka. */
   const [tafsirAyah, setTafsirAyah] = useState<number | null>(null);
   /** Ayat yang disorot sebentar setelah dibuka dari hasil pencarian. */
@@ -218,6 +224,20 @@ export const MushafReader: React.FC = () => {
 
   const openSurah = (number: number, ayah?: number) => {
     if (isPlayingAudio) pauseMurottal();
+    if (showList) {
+      // Ingat posisi daftar (dan item yang diketuk) agar tombol kembali tidak melompat ke atas.
+      // Safari iPhone tidak memfokuskan tombol saat diketuk, jadi pakai elemen yang terakhir diketuk;
+      // bila tidak ada, pakai item surah teratas yang terlihat.
+      const tapped = lastTapRef.current?.closest<HTMLElement>('[data-surah-item],[data-search-key]');
+      const item =
+        (tapped?.isConnected ? tapped : null) ??
+        Array.from(document.querySelectorAll<HTMLElement>('[data-surah-item]')).find((el) => el.getBoundingClientRect().top >= 0);
+      const anchor = item?.dataset.surahItem
+        ? `[data-surah-item="${item.dataset.surahItem}"]`
+        : item?.dataset.searchKey ? `[data-search-key="${item.dataset.searchKey}"]` : undefined;
+      listPositionRef.current = { y: window.scrollY, anchor, offset: item?.getBoundingClientRect().top ?? 0 };
+    }
+    if (number !== searchMark?.surah) setSearchMark(null);
     setPendingAyah(ayah && ayah > 1 ? ayah : null);
     setSurahNumber(number);
     setShowList(false);
@@ -248,8 +268,40 @@ export const MushafReader: React.FC = () => {
     if (isPlayingAudio) pauseMurottal();
     setShowList(true);
     setIsPickerOpen(false);
-    topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setSearchMark(null);
+    // Posisi daftar dipulihkan oleh efek di bawah setelah daftar tampil lagi.
+    if (!listPositionRef.current) topRef.current?.scrollIntoView({ block: 'start' });
   };
+
+  // Elemen yang terakhir diketuk di Daftar Surah, sebagai patokan posisi saat kembali.
+  const lastTapRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!showList) return;
+    const remember = (event: Event) => {
+      lastTapRef.current = event.target instanceof HTMLElement ? event.target : null;
+    };
+    document.addEventListener('click', remember, true);
+    return () => document.removeEventListener('click', remember, true);
+  }, [showList]);
+
+  // Kembali ke Daftar Surah: pulihkan posisi gulir terakhir (item yang diketuk tetap di tempatnya).
+  useEffect(() => {
+    if (!showList || !listPositionRef.current) return;
+    const saved = listPositionRef.current;
+    listPositionRef.current = null;
+    const restore = () => {
+      const el = saved.anchor ? document.querySelector<HTMLElement>(saved.anchor) : null;
+      const y = el ? window.scrollY + el.getBoundingClientRect().top - saved.offset : saved.y;
+      window.scrollTo(0, Math.max(0, y));
+    };
+    const frame = requestAnimationFrame(restore);
+    // Hasil pencarian arti muncul sedikit lebih lambat (indeks dimuat): pulihkan sekali lagi.
+    const timer = setTimeout(restore, 450);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
+  }, [showList]);
 
   // Tombol back HP: tutup mode Hafalkan dulu, lalu kembali dari surah ke Daftar Surah.
   useBackHandler(!showList, backToList, 1);
@@ -369,15 +421,27 @@ export const MushafReader: React.FC = () => {
   }, [surahReady, pendingHafalan]);
 
   // Dari pencarian: buka surah (dan ayatnya), lalu sorot ayat itu sebentar.
-  const openFromSearch = (surah: number, ayah?: number) => {
+  const openFromSearch = (surah: number, ayah?: number, terms?: string[]) => {
     openSurah(surah, ayah);
     setFlashAyah(ayah ? { surah, ayah } : null);
+    setSearchMark(ayah && terms?.length ? { surah, ayah, terms } : null);
   };
   useEffect(() => {
     if (!flashAyah || !surahReady) return;
     const timer = setTimeout(() => setFlashAyah(null), 3500);
     return () => clearTimeout(timer);
   }, [flashAyah, surahReady]);
+  // Ayat panjang: bila kata yang dicari belum terlihat setelah ayatnya dituju, gulir sampai kata itu tampak.
+  useEffect(() => {
+    if (!searchMark || !surahReady || searchMark.surah !== surahNumber) return;
+    const timer = setTimeout(() => {
+      const mark = ayahRefs.current[searchMark.ayah - 1]?.querySelector('mark');
+      if (!mark) return;
+      const { top, bottom } = mark.getBoundingClientRect();
+      if (top < 80 || bottom > window.innerHeight - 140) mark.scrollIntoView({ block: 'center' });
+    }, 1400);
+    return () => clearTimeout(timer);
+  }, [searchMark, surahReady, surahNumber]);
 
   const continueHafalan = (surah: number, ayah: number) => {
     openSurah(surah, ayah);
@@ -465,7 +529,7 @@ export const MushafReader: React.FC = () => {
           {surahList.length > 0 && <span className="text-xs text-[#477F8D] dark:text-[#94A3B8]">{surahList.length} surah</span>}
         </div>
 
-        <QuranSearch surahs={surahList} onOpen={openFromSearch}>
+        <QuranSearch surahs={surahList} query={listQuery} onQueryChange={setListQuery} onOpen={openFromSearch}>
         {surahList.length === 0 ? (
           <div className="flex items-center justify-center gap-2 py-16 text-sm text-[#246579] dark:text-[#A7CDD3]">
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -1008,7 +1072,11 @@ export const MushafReader: React.FC = () => {
                     "
                   </>
                 ) : (
-                  <>"{ayah.translationId}"</>
+                  searchMark?.surah === ayah.surahNumber && searchMark.ayah === ayah.ayahNumber ? (
+                    <>"<HighlightedText text={ayah.translationId} terms={searchMark.terms} />"</>
+                  ) : (
+                    <>"{ayah.translationId}"</>
+                  )
                 )}
               </p>
 
