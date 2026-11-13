@@ -16,6 +16,7 @@ import { isOpeningPart, useSurahPlayer } from './useSurahPlayer';
 import { PlayerDock, PlayerOptions } from './SurahPlayerBar';
 import { RecentReadingCard } from './RecentReadingCard';
 import { MemorizingCard } from './MemorizingCard';
+import { AyahEndMarker } from './AyahEndMarker';
 import { getRecentReadings, recordReading } from './recentReading';
 import { loadView, saveView } from '../../utils/viewState';
 import { useIdleVisibility } from '../../utils/useIdleVisibility';
@@ -931,10 +932,8 @@ export const MushafReader: React.FC = () => {
                     {word.arabic}
                   </button>
                 ))}
-                {/* Traditional Ayah End Emblem */}
-                <span className="inline-block px-2 text-[#BE9452] font-bold text-lg select-none">
-                  ۝{ayah.ayahNumber}
-                </span>
+                {/* Tanda akhir ayat: nomor ayat (angka Arab) di dalam bingkai berornamen */}
+                <AyahEndMarker number={ayah.ayahNumber} fontSize={fontSize} />
               </div>
 
               {/* Transliteration */}
