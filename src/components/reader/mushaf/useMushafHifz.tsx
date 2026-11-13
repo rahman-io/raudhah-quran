@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronsLeft, Dumbbell, Highlighter, Palette, Play, RotateCcw, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, CheckCircle2, ChevronLeft, ChevronsLeft, Dumbbell, Highlighter, Palette, Play, RotateCcw, X } from 'lucide-react';
 import { useQuranGame } from '../../../context/QuranGameContext';
 import { useBackHandler } from '../../../utils/backNavigation';
 import { arabicSkeleton } from '../../../services/arabicSkeleton';
@@ -11,7 +11,8 @@ import { MicButton, useRecitation } from '../../hafalan/stages/reciteShared';
  * Setor Hafalan di Mode Mushaf (seperti "Hidden Verses" di Tarteel).
  * Teks halaman disembunyikan tanpa menggeser tata letak (garis & nomor ayat tetap di tempatnya).
  * Pengguna menekan rekam saat siap dan membaca; kata muncul di posisi aslinya saat terbaca.
- * Halaman yang selesai dibaca langsung berganti ke halaman berikutnya.
+ * Setelah satu halaman selesai, rekaman berhenti dan hasil halaman itu ditampilkan; pengguna memilih
+ * lanjut ke halaman berikutnya atau mengulang halaman itu.
  *
  * - "Kata berikutnya" / "Ayat berikutnya": munculkan kata/sisa ayat sebagai bantuan (dicatat "dibantu").
  * - Saat rekaman dihentikan, bacaan langsung dinilai: per ayat yang sudah dibaca, termasuk ayat
@@ -37,7 +38,6 @@ export const hifzKey = (surah: number, ayah: number, index: number) => `${surah}
 
 const WINDOW_WORDS = 30;
 const COMMIT_LAG = 2;
-const PAGE_TURN_DELAY_MS = 700;
 const PREFS_KEY = 'raudhah_mushaf_hifz_v1';
 
 interface HifzPrefs {
@@ -106,7 +106,8 @@ export function useMushafHifz({
   const [consumed, setConsumed] = useState(0);
   /** Hasil halaman-halaman sebelumnya dalam satu setoran. */
   const [log, setLog] = useState<LogEntry[]>([]);
-  const [report, setReport] = useState<HifzReportRow[] | null>(null);
+  /** Hasil yang sedang ditampilkan. `pageDone`: hasil satu halaman yang baru selesai. */
+  const [report, setReport] = useState<{ rows: HifzReportRow[]; pageDone: boolean } | null>(null);
   const onPageDoneRef = useRef(onPageDone);
   onPageDoneRef.current = onPageDone;
 
@@ -167,7 +168,7 @@ export function useMushafHifz({
       return { surah: w.surah, ayah: w.ayah, status: g === 'pending' ? 'missed' : g };
     });
 
-  // Kunci nilai kata yang sudah terlewati; halaman selesai → catat & halaman berikutnya.
+  // Kunci nilai kata yang sudah terlewati; halaman selesai → rekaman berhenti & hasil halaman tampil.
   useEffect(() => {
     if (!running) return;
     if (frontier >= words.length) {
@@ -181,9 +182,10 @@ export function useMushafHifz({
       setPageDone(true);
       const end = anchoredEnd(live, live.status.length);
       if (end >= 0) setConsumed(end);
-      setLog((prev) => [...prev, ...entries]);
       const ratio = entries.filter((e) => e.status === 'ok').length / Math.max(1, entries.length);
       if (ratio >= 0.9) addXP(5, 'Setor hafalan');
+      // Berhenti merekam: hasil halaman ini muncul (lihat efek rec.listening di bawah).
+      rec.stop();
       return;
     }
     const commit = live.next - COMMIT_LAG;
@@ -200,15 +202,10 @@ export function useMushafHifz({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [live, running]);
 
-  useEffect(() => {
-    if (!pageDone || !active) return;
-    const timer = setTimeout(() => onPageDoneRef.current(), PAGE_TURN_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [pageDone, active]);
-
   /* ----- Penilaian otomatis saat rekaman dihentikan ----- */
   const buildReport = (): HifzReportRow[] => {
-    const entries = [...log, ...(pageDone ? [] : pageEntries(Math.min(frontier, words.length)))];
+    // Halaman selesai: hasil halaman ini saja. Dihentikan di tengah: seluruh setoran sejauh ini.
+    const entries = pageDone ? pageEntries(words.length) : [...log, ...pageEntries(Math.min(frontier, words.length))];
     const rows: HifzReportRow[] = [];
     entries.forEach((e) => {
       let row = rows[rows.length - 1];
@@ -225,7 +222,7 @@ export function useMushafHifz({
   useEffect(() => {
     if (wasListening.current && !rec.listening && active) {
       const rows = buildReport();
-      if (rows.length) setReport(rows);
+      if (rows.length) setReport({ rows, pageDone });
     }
     wasListening.current = rec.listening;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -304,10 +301,22 @@ export function useMushafHifz({
     restartPage,
     report,
     closeReport,
-    restartSession: () => {
-      setLog([]);
-      restartPage();
+    pageDone,
+    /** Hasil halaman yang sudah ditutup: tampilkan lagi. */
+    reopenReport: () => setReport({ rows: buildReport(), pageDone }),
+    /** Dari hasil halaman: catat halaman ini, buka halaman berikutnya, dan langsung merekam. */
+    nextPage: () => {
+      setLog((prev) => [...prev, ...pageEntries(words.length)]);
       setReport(null);
+      onPageDoneRef.current();
+      rec.reset();
+      setConsumed(0);
+      rec.start();
+    },
+    /** Dari hasil: ulangi halaman ini (setoran halaman sebelumnya tetap tercatat). */
+    repeatPage: () => {
+      setReport(null);
+      restartPage();
     },
     frontierKey: words[frontier] ? hifzKey(words[frontier].surah, words[frontier].ayah, words[frontier].index) : null,
     ok,
@@ -320,7 +329,6 @@ export function useMushafHifz({
 
 export type MushafHifz = ReturnType<typeof useMushafHifz>;
 
-/** Hasil setoran: muncul otomatis saat rekaman dihentikan. */
 interface AyahActions {
   /** Latih ayat ini di Mode Hafalkan (9 game per ayat). */
   onTrain: (surah: number, ayah: number) => void;
@@ -328,8 +336,10 @@ interface AyahActions {
   onRestartFrom: (surah: number, ayah: number) => void;
 }
 
+/** Hasil setoran: muncul otomatis saat rekaman dihentikan atau satu halaman selesai. */
 const HifzReport: React.FC<{ hifz: MushafHifz; surahName: (n: number) => string } & AyahActions> = ({ hifz, surahName, onTrain, onRestartFrom }) => {
-  const rows = hifz.report ?? [];
+  const rows = hifz.report?.rows ?? [];
+  const pageFinished = !!hifz.report?.pageDone;
   const totals = rows.reduce((t, r) => ({ ok: t.ok + r.ok, missed: t.missed + r.missed, hint: t.hint + r.hint, read: t.read + r.read }), { ok: 0, missed: 0, hint: 0, read: 0 });
   const percent = Math.round((totals.ok / Math.max(1, totals.read)) * 100);
   const first = rows[0];
@@ -351,7 +361,7 @@ const HifzReport: React.FC<{ hifz: MushafHifz; surahName: (n: number) => string 
     >
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#477F8D]">Hasil setoran</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#477F8D]">{pageFinished ? 'Halaman selesai' : 'Hasil setoran'}</p>
           <p className="text-sm font-bold text-[#173B4E] dark:text-white truncate">{range}</p>
         </div>
         <span className="text-2xl font-bold text-[#173B4E] dark:text-white">{percent}%</span>
@@ -407,21 +417,31 @@ const HifzReport: React.FC<{ hifz: MushafHifz; surahName: (n: number) => string 
       <div className="flex flex-wrap justify-center gap-2">
         <button
           type="button"
-          onClick={hifz.restartSession}
+          onClick={hifz.repeatPage}
           className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-600 text-xs font-semibold text-[#246579] dark:text-[#A7CDD3] hover:bg-slate-50 dark:hover:bg-slate-700/50"
         >
           <RotateCcw className="w-4 h-4" /> Ulangi halaman
         </button>
-        <button
-          type="button"
-          onClick={() => {
-            hifz.closeReport();
-            hifz.rec.start();
-          }}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#246579] hover:bg-[#174C60] text-white text-xs font-semibold"
-        >
-          <Play className="w-4 h-4" /> Lanjut membaca
-        </button>
+        {pageFinished ? (
+          <button
+            type="button"
+            onClick={hifz.nextPage}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#246579] hover:bg-[#174C60] text-white text-xs font-semibold"
+          >
+            <ArrowLeft className="w-4 h-4" /> Halaman berikutnya
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              hifz.closeReport();
+              hifz.rec.start();
+            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#246579] hover:bg-[#174C60] text-white text-xs font-semibold"
+          >
+            <Play className="w-4 h-4" /> Lanjut membaca
+          </button>
+        )}
       </div>
     </motion.div>
   );
@@ -455,7 +475,7 @@ export const MushafHifzBar: React.FC<{ hifz: MushafHifz; immersive: boolean; sur
       <span className="text-[9px] font-semibold leading-none">{label.split(' ')[0]}</span>
     </button>
   );
-  const hint = rec.error ?? (hifz.report ? '' : !rec.listening ? (hifz.started ? 'Rekaman dijeda. Ketuk mikrofon untuk lanjut.' : 'Ketuk mikrofon jika sudah siap. Baca dari awal halaman, atau ketuk ayat untuk mulai dari situ.') : '');
+  const hint = rec.error ?? (hifz.report ? '' : hifz.pageDone ? 'Halaman selesai. Ketuk mikrofon untuk melihat hasil dan lanjut.' : !rec.listening ? (hifz.started ? 'Rekaman dijeda. Ketuk mikrofon untuk lanjut.' : 'Ketuk mikrofon jika sudah siap. Baca dari awal halaman, atau ketuk ayat untuk mulai dari situ.') : '');
   return (
     <div
       className={`fixed inset-x-3 sm:inset-x-6 z-40 mx-auto max-w-xl ${
@@ -493,6 +513,7 @@ export const MushafHifzBar: React.FC<{ hifz: MushafHifz; immersive: boolean; sur
           listening={rec.listening}
           onClick={() => {
             if (rec.listening) rec.stop();
+            else if (hifz.pageDone) hifz.reopenReport();
             else {
               hifz.closeReport();
               rec.start();
