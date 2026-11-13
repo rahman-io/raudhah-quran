@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, Loader2, X } from 'lucide-react';
+import { useBackHandler } from '../../../utils/backNavigation';
 import { loadKemenagSurah, loadReaderSurah, splitKemenagWords, type ReaderSurahMeta } from '../../../services/quranReaderData';
 import {
   firstPageOfJuz,
@@ -95,7 +97,7 @@ const itemsEm = (items: LineItem[]) =>
   items.reduce((sum, item) => sum + (item.kind === 'word' ? wordEm(item.text) : MARKER_EM), 0) + WORD_GAP_EM * Math.max(0, items.length - 1);
 
 /** Lebar isi halaman (di dalam bingkai) untuk lebar halaman tertentu. */
-const innerWidthOf = (width: number) => Math.max(200, width - 2 * 18 - 22);
+const innerWidthOf = (width: number) => Math.max(200, width - 2 * 12 - 22);
 
 /** Ukuran huruf alami satu halaman: baris terpanjangnya pas selebar halaman. null bila teks belum dimuat. */
 function naturalFontSize(page: number, layout: MushafLayout, texts: TextStore, width: number): number | null {
@@ -120,112 +122,183 @@ interface PageProps {
   basmalah: string[] | null;
   surahs: ReaderSurahMeta[];
   width: number;
-  /** Ukuran huruf halaman ini (dihitung pemanggil; dua halaman berdampingan memakai ukuran yang sama). */
+  /** Ukuran huruf dasar halaman ini (pas selebar halaman; dua halaman berdampingan memakai ukuran yang sama). */
   fontSize: number;
+  /** Perbesaran huruf pilihan pengguna (1 = pas selebar halaman). */
+  scale: number;
+  /** Tinggi minimum halaman agar memenuhi layar. */
+  minHeight: number;
   activeAyah: AyahRef | null;
   markedAyah: AyahRef | null;
   onAyahTap: (surah: number, ayah: number) => void;
 }
 
-const MushafPage: React.FC<PageProps> = React.memo(({ page, layout, texts, basmalah, surahs, width, fontSize, activeAyah, markedAyah, onAyahTap }) => {
-  const lines = layout.pages[page - 1];
-  const rendered = useMemo(
-    () => lines.map((line) => (line.kind === 'text' ? lineItems(line, layout, texts) : null)),
-    [lines, layout, texts]
-  );
-  const ready = rendered.every((items, i) => lines[i].kind !== 'text' || items);
+const MushafPage: React.FC<PageProps> = React.memo(
+  ({ page, layout, texts, basmalah, surahs, width, fontSize: baseFont, scale, minHeight, activeAyah, markedAyah, onAyahTap }) => {
+    const lines = layout.pages[page - 1];
+    const rendered = useMemo(
+      () => lines.map((line) => (line.kind === 'text' ? lineItems(line, layout, texts) : null)),
+      [lines, layout, texts]
+    );
+    const ready = rendered.every((items, i) => lines[i].kind !== 'text' || items);
 
-  const innerWidth = innerWidthOf(width);
-  const special = page <= 2; // Al-Fatihah & awal Al-Baqarah: baris lebih sedikit dan di tengah
-  const lineEms = rendered.map((items) => (items ? itemsEm(items) : 0));
-  const lineHeight = fontSize * LINE_HEIGHT;
-  const surahMeta = (n: number) => surahs.find((s) => s.number === n);
-  const firstSurah = lines.map((l) => (l.kind === 'text' ? l.tokens[0].surah : l.surah)).find(Boolean) ?? 1;
-  const meta = surahMeta(firstSurah);
-  const odd = page % 2 === 1;
+    const innerWidth = innerWidthOf(width);
+    const special = page <= 2; // Al-Fatihah & awal Al-Baqarah: baris lebih sedikit dan di tengah
+    const fontSize = baseFont * scale;
+    // Huruf diperbesar melebihi lebar baris: teks mengalir (isi halaman tetap sama, baris menyesuaikan).
+    const reflow = scale > 1.01;
+    const lineEms = rendered.map((items) => (items ? itemsEm(items) : 0));
+    const lineHeight = fontSize * LINE_HEIGHT;
+    const surahMeta = (n: number) => surahs.find((s) => s.number === n);
+    const firstSurah = lines.map((l) => (l.kind === 'text' ? l.tokens[0].surah : l.surah)).find(Boolean) ?? 1;
+    const meta = surahMeta(firstSurah);
+    const odd = page % 2 === 1;
 
-  return (
-    <MushafFrame className="w-full">
-      <div className="px-[18px] pt-2.5 pb-3" style={{ minHeight: special ? undefined : lineHeight * 15 + 44 }}>
-        {/* Kepala halaman: nama surah, nomor halaman, juz (bergantian sisi seperti mushaf) */}
-        <div className={`flex items-center justify-between gap-2 mb-1.5 ${odd ? 'flex-row-reverse' : ''}`}>
-          <HeaderPill className="min-w-[30%]">{meta ? `${meta.number}. ${meta.nameLatin}` : ''}</HeaderPill>
-          <HeaderPill>{page}</HeaderPill>
-          <HeaderPill className="min-w-[30%]">JUZ {juzOfPage(page)}</HeaderPill>
+    const toneOf = (surah: number, ayah: number) =>
+      sameAyah(activeAyah, surah, ayah)
+        ? 'bg-[#D3A253]/35 dark:bg-[#D3A253]/30'
+        : sameAyah(markedAyah, surah, ayah)
+          ? 'bg-[#246579]/12 dark:bg-[#5FA8B8]/20'
+          : '';
+
+    const header = (line: Extract<MushafLine, { kind: 'header' }>, key: string) => {
+      const m = surahMeta(line.surah);
+      return (
+        <div key={key} className="py-1 shrink-0" style={{ height: Math.max(lineHeight, 44) }}>
+          <SurahTitleCard nameArabic={m?.nameArabic ?? ''} revelationType={m?.revelationType} ayahCount={m?.numberOfAyahs} fontSize={Math.max(fontSize, 22)} />
         </div>
-
-        {!ready ? (
-          <div className="flex items-center justify-center gap-2 text-sm text-[#246579]" style={{ height: lineHeight * 15 }}>
-            <Loader2 className="w-5 h-5 animate-spin" /> Memuat halaman…
-          </div>
-        ) : (
-          <div className={special ? 'py-6 flex flex-col justify-center' : ''} dir="rtl">
-            {lines.map((line, index) => {
-              if (line.kind === 'header') {
-                const m = surahMeta(line.surah);
-                return (
-                  <div key={`h${index}`} className="py-1" style={{ height: lineHeight }}>
-                    <SurahTitleCard nameArabic={m?.nameArabic ?? ''} revelationType={m?.revelationType} ayahCount={m?.numberOfAyahs} fontSize={fontSize} />
-                  </div>
-                );
-              }
-              if (line.kind === 'basmalah') {
-                return (
-                  <div
-                    key={`b${index}`}
-                    className="flex items-center justify-center font-mushaf-id text-[#173B4E] dark:text-[#EEF4F5] border-b border-[#D3A253]/35"
-                    style={{ height: lineHeight, fontSize: fontSize * 0.95, lineHeight: 1 }}
-                  >
-                    {basmalah?.join(' ') ?? 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ'}
-                  </div>
-                );
-              }
-              const items = rendered[index]!;
-              const centered = special || lineEms[index] * fontSize < innerWidth * 0.72;
-              // Jarak antarkata dijadikan padding kata, agar sorotan satu ayat menyambung tanpa celah.
-              const spare = centered ? (WORD_GAP_EM * fontSize) / 2 : Math.max(0, (innerWidth - lineEms[index] * fontSize) / Math.max(1, items.length - 1) / 2) * 0.9;
-              return (
-                <div
-                  key={`t${index}`}
-                  className={`flex items-center border-b border-[#D3A253]/35 last:border-b-0 font-mushaf-id text-[#173B4E] dark:text-[#EEF4F5] ${
-                    centered ? 'justify-center' : 'justify-between'
-                  }`}
-                  style={{ height: lineHeight, fontSize, lineHeight: 1, marginInline: centered ? 0 : -spare }}
-                >
-                  {items.map((item, i) => {
-                    const active = sameAyah(activeAyah, item.surah, item.ayah);
-                    const marked = !active && sameAyah(markedAyah, item.surah, item.ayah);
-                    const tone = active
-                      ? 'bg-[#D3A253]/35 dark:bg-[#D3A253]/30'
-                      : marked
-                        ? 'bg-[#246579]/12 dark:bg-[#5FA8B8]/20'
-                        : '';
-                    const prev = items[i - 1];
-                    const nextItem = items[i + 1];
-                    const startsSegment = !prev || prev.surah !== item.surah || prev.ayah !== item.ayah;
-                    const endsSegment = !nextItem || nextItem.surah !== item.surah || nextItem.ayah !== item.ayah;
-                    const rounding = `${startsSegment ? 'rounded-s-lg' : ''} ${endsSegment ? 'rounded-e-lg' : ''}`;
-                    return (
-                      <span
-                        key={i}
-                        data-ayah={`${item.surah}:${item.ayah}`}
-                        onClick={() => onAyahTap(item.surah, item.ayah)}
-                        className={`inline-flex items-center self-stretch cursor-pointer transition-colors whitespace-nowrap ${rounding} ${tone}`}
-                        style={{ paddingInline: spare }}
-                      >
-                        {item.kind === 'end' ? <AyahEndMarker number={item.ayah} fontSize={fontSize} /> : item.text}
-                      </span>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
-        )}
+      );
+    };
+    const basmalahLine = (key: string) => (
+      <div
+        key={key}
+        className="flex items-center justify-center font-mushaf-id text-[#173B4E] dark:text-[#EEF4F5] border-b border-[#D3A253]/35 shrink-0"
+        style={{ minHeight: lineHeight, fontSize: fontSize * 0.95, lineHeight: 1 }}
+      >
+        {basmalah?.join(' ') ?? 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ'}
       </div>
-    </MushafFrame>
-  );
-});
+    );
+
+    /** Satu baris mushaf: rata kiri-kanan; jarak antarkata jadi padding agar sorotan ayat menyambung. */
+    const fixedLine = (items: LineItem[], index: number) => {
+      const centered = special || lineEms[index] * fontSize < innerWidth * 0.72;
+      const spare = centered
+        ? (WORD_GAP_EM * fontSize) / 2
+        : Math.max(0, (innerWidth - lineEms[index] * fontSize) / Math.max(1, items.length - 1) / 2) * 0.9;
+      return (
+        <div
+          key={`t${index}`}
+          className={`flex items-center border-b border-[#D3A253]/35 last:border-b-0 font-mushaf-id text-[#173B4E] dark:text-[#EEF4F5] ${
+            centered ? 'justify-center' : 'justify-between'
+          }`}
+          style={{ flex: '1 0 auto', minHeight: lineHeight, fontSize, lineHeight: 1, marginInline: centered ? 0 : -spare }}
+        >
+          {items.map((item, i) => {
+            const prev = items[i - 1];
+            const next = items[i + 1];
+            const startsSegment = !prev || prev.surah !== item.surah || prev.ayah !== item.ayah;
+            const endsSegment = !next || next.surah !== item.surah || next.ayah !== item.ayah;
+            return (
+              <span
+                key={i}
+                data-ayah={`${item.surah}:${item.ayah}`}
+                onClick={() => onAyahTap(item.surah, item.ayah)}
+                className={`inline-flex items-center self-stretch cursor-pointer transition-colors whitespace-nowrap ${startsSegment ? 'rounded-s-lg' : ''} ${
+                  endsSegment ? 'rounded-e-lg' : ''
+                } ${toneOf(item.surah, item.ayah)}`}
+                style={{ paddingInline: spare }}
+              >
+                {item.kind === 'end' ? <AyahEndMarker number={item.ayah} fontSize={fontSize} /> : item.text}
+              </span>
+            );
+          })}
+        </div>
+      );
+    };
+
+    /** Paragraf berakhir di ayat terakhir surah: baris terakhirnya di tengah, selain itu rata penuh. */
+    const endsSurah = (items: LineItem[]) => {
+      const last = items[items.length - 1];
+      return !!last && last.kind === 'end' && last.ayah === (surahMeta(last.surah)?.numberOfAyahs ?? -1);
+    };
+    /** Mode huruf besar: baris-baris berurutan dialirkan jadi satu paragraf rata kiri-kanan. */
+    const flowBlock = (items: LineItem[], key: string) => (
+      <p
+        key={key}
+        className={`font-mushaf-id text-[#173B4E] dark:text-[#EEF4F5] text-justify ${endsSurah(items) ? '[text-align-last:center]' : '[text-align-last:justify]'}`}
+        style={{
+          fontSize,
+          lineHeight: `${lineHeight}px`,
+          backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${lineHeight - 1}px, rgba(211,162,83,0.35) ${lineHeight - 1}px, rgba(211,162,83,0.35) ${lineHeight}px)`
+        }}
+      >
+        {items.map((item, i) => (
+          <span
+            key={i}
+            data-ayah={`${item.surah}:${item.ayah}`}
+            onClick={() => onAyahTap(item.surah, item.ayah)}
+            className={`cursor-pointer rounded-md transition-colors [box-decoration-break:clone] ${toneOf(item.surah, item.ayah)}`}
+          >
+            {item.kind === 'end' ? (
+              <span className="inline-flex align-middle mx-0.5">
+                <AyahEndMarker number={item.ayah} fontSize={fontSize} />
+              </span>
+            ) : (
+              item.text
+            )}{' '}
+          </span>
+        ))}
+      </p>
+    );
+
+    const body = () => {
+      if (!reflow) {
+        return lines.map((line, index) =>
+          line.kind === 'header' ? header(line, `h${index}`) : line.kind === 'basmalah' ? basmalahLine(`b${index}`) : fixedLine(rendered[index]!, index)
+        );
+      }
+      // Gabungkan baris teks yang berurutan menjadi paragraf; judul & basmalah tetap barisnya sendiri.
+      const blocks: React.ReactNode[] = [];
+      let run: LineItem[] = [];
+      const flush = (key: string) => {
+        if (run.length) blocks.push(flowBlock(run, key));
+        run = [];
+      };
+      lines.forEach((line, index) => {
+        if (line.kind === 'text') run.push(...rendered[index]!);
+        else {
+          flush(`f${index}`);
+          blocks.push(line.kind === 'header' ? header(line, `h${index}`) : basmalahLine(`b${index}`));
+        }
+      });
+      flush('f-end');
+      return blocks;
+    };
+
+    return (
+      <MushafFrame className="w-full">
+        <div className="px-3 pt-2.5 pb-3 flex flex-col" style={{ minHeight }}>
+          {/* Kepala halaman: nama surah, nomor halaman, juz (bergantian sisi seperti mushaf) */}
+          <div className={`flex items-center justify-between gap-2 mb-1.5 shrink-0 ${odd ? 'flex-row-reverse' : ''}`}>
+            <HeaderPill className="min-w-[30%]">{meta ? `${meta.number}. ${meta.nameLatin}` : ''}</HeaderPill>
+            <HeaderPill>{page}</HeaderPill>
+            <HeaderPill className="min-w-[30%]">JUZ {juzOfPage(page)}</HeaderPill>
+          </div>
+
+          {!ready ? (
+            <div className="flex-1 flex items-center justify-center gap-2 text-sm text-[#246579]" style={{ minHeight: lineHeight * 8 }}>
+              <Loader2 className="w-5 h-5 animate-spin" /> Memuat halaman…
+            </div>
+          ) : (
+            <div className={`flex-1 flex flex-col ${special ? 'justify-center py-4' : reflow ? 'justify-start' : ''}`} dir="rtl">
+              {body()}
+            </div>
+          )}
+        </div>
+      </MushafFrame>
+    );
+  }
+);
 MushafPage.displayName = 'MushafPage';
 
 /* ---------------- Pengatur halaman + efek balik lembar ---------------- */
@@ -234,11 +307,32 @@ interface Turn {
   to: number;
   /** +1 = halaman berikutnya, -1 = sebelumnya. */
   dir: 1 | -1;
-  /** Sudut lembar yang sedang dibalik (0 = rata, 90 = tegak lurus/hilang). */
+  /** Sudut lembar yang sedang dibalik: 0 = menutup halaman, 180 = sudah terbalik ke kanan (lewat punggung mushaf). */
   angle: number;
 }
 
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
+/**
+ * Ukuran huruf Mode Mushaf (px, disimpan per perangkat; kosong = otomatis).
+ * Bila ukuran ≤ ukuran yang pas dengan lebar baris, halaman tampil persis per baris seperti mushaf;
+ * bila lebih besar, teks halaman itu mengalir menyesuaikan layar (isi halamannya tetap sama).
+ */
+const FONT_KEY = 'raudhah_mushaf_font_v1';
+const MIN_FONT_PX = 12;
+const MAX_FONT_PX = 44;
+/** Ukuran otomatis di layar sempit agar nyaman dibaca. */
+const AUTO_FONT_PX = 22;
+const clampFont = (value: number) => Math.round(Math.min(MAX_FONT_PX, Math.max(MIN_FONT_PX, value)));
+const readFontPref = (): number | null => {
+  try {
+    const value = Number(localStorage.getItem(FONT_KEY));
+    return value ? clampFont(value) : null;
+  } catch {
+    return null;
+  }
+};
 
 export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, activeAyah, markedAyah, onAyahTap }) => {
   const [layout, setLayout] = useState<MushafLayout | null>(null);
@@ -253,6 +347,16 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
   const [jumpOpen, setJumpOpen] = useState(false);
   const [fontsReady, setFontsReady] = useState(false);
   const [viewportHeight, setViewportHeight] = useState(() => (typeof window !== 'undefined' ? window.innerHeight : 800));
+  const [fontPref, setFontPrefState] = useState<number | null>(readFontPref);
+  const setFontPref = useCallback((value: number) => {
+    const next = clampFont(value);
+    setFontPrefState(next);
+    try {
+      localStorage.setItem(FONT_KEY, String(next));
+    } catch {
+      // abaikan
+    }
+  }, []);
 
   const loadLayout = useCallback(() => {
     setLayoutError(false);
@@ -275,10 +379,10 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     const update = () => {
       const w = el.clientWidth;
       const wide = w >= 880 && window.innerWidth > window.innerHeight;
-      // Halaman setinggi layar (rasio mushaf ±0,64), tidak lebih lebar dari wadahnya.
+      // Ponsel/tablet tegak: halaman selebar layar. Dua halaman berdampingan: setinggi layar.
       const byHeight = Math.max(320, (window.innerHeight - 170) * 0.64);
       setSpread(wide);
-      setWidth(Math.floor(Math.min(wide ? (w - 16) / 2 : Math.min(w, 620), wide ? byHeight : Math.max(byHeight, Math.min(w, 420)))));
+      setWidth(Math.floor(wide ? Math.min((w - 16) / 2, byHeight) : Math.min(w, 680)));
       setViewportHeight(window.innerHeight);
     };
     update();
@@ -339,13 +443,13 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
   const animateTo = useCallback(
     (from: Turn, target: number, done: () => void) => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
-      if (prefersReducedMotion()) return done();
       const start = performance.now();
       const startAngle = from.angle;
-      const duration = 380 * (Math.abs(target - startAngle) / 90 || 0.3);
+      const full = prefersReducedMotion() ? 260 : 650;
+      const duration = Math.max(140, full * (Math.abs(target - startAngle) / 180));
       const step = (now: number) => {
-        const t = Math.min(1, (now - start) / Math.max(120, duration));
-        const eased = 1 - (1 - t) ** 3;
+        const t = Math.min(1, (now - start) / duration);
+        const eased = easeInOut(t);
         setTurn({ ...from, angle: startAngle + (target - startAngle) * eased });
         if (t < 1) animRef.current = requestAnimationFrame(step);
         else {
@@ -371,9 +475,9 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
         if (to !== page) onPageChange(to);
         return;
       }
-      const startTurn: Turn = { to, dir, angle: dir === 1 ? 0 : 90 };
+      const startTurn: Turn = { to, dir, angle: dir === 1 ? 0 : 180 };
       setTurn(startTurn);
-      animateTo(startTurn, dir === 1 ? 90 : 0, () => {
+      animateTo(startTurn, dir === 1 ? 180 : 0, () => {
         setTurn(null);
         setShown(to);
         if (to !== page) onPageChange(to);
@@ -390,6 +494,17 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     goTo(page, Math.abs(page - shown) <= stepSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
+
+  // Setelah berganti halaman, mulai baca dari atas halaman bila sudah tergulir ke bawah.
+  const firstShown = useRef(true);
+  useEffect(() => {
+    if (firstShown.current) {
+      firstShown.current = false;
+      return;
+    }
+    const top = containerRef.current?.getBoundingClientRect().top ?? 0;
+    if (top < 0) window.scrollTo({ top: window.scrollY + top - 96 });
+  }, [shown]);
 
   const next = () => goTo(spread ? spreadOf(shown)[0] + 2 : shown + 1);
   const previous = () => goTo(spread ? spreadOf(shown)[0] - 2 : shown - 1);
@@ -430,9 +545,9 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
       if (spread) return;
     }
     if (spread || !d.dir) return;
-    const progress = Math.min(1, Math.abs(dx) / Math.max(160, width * 0.8));
+    const progress = Math.min(1, Math.abs(dx) / Math.max(180, width * 0.95));
     const to = d.dir === 1 ? shown + 1 : shown - 1;
-    setTurn({ to, dir: d.dir, angle: d.dir === 1 ? progress * 90 : 90 - progress * 90 });
+    setTurn({ to, dir: d.dir, angle: d.dir === 1 ? progress * 180 : 180 - progress * 180 });
   };
   const onPointerUp = (event: React.PointerEvent) => {
     const d = drag.current;
@@ -445,8 +560,8 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     }
     const current = turn;
     if (!current) return;
-    const committed = Math.abs(dx) > Math.min(90, width * 0.22);
-    const finish = committed ? (current.dir === 1 ? 90 : 0) : current.dir === 1 ? 0 : 90;
+    const committed = Math.abs(dx) > Math.min(80, width * 0.2);
+    const finish = committed ? (current.dir === 1 ? 180 : 0) : current.dir === 1 ? 0 : 180;
     animateTo(current, finish, () => {
       setTurn(null);
       if (committed) {
@@ -454,6 +569,25 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
         onPageChange(current.to);
       }
     });
+  };
+
+  // Cubit dua jari untuk memperbesar/memperkecil huruf.
+  const pinch = useRef<{ distance: number; font: number } | null>(null);
+  const touchDistance = (touches: React.TouchList) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+  const onTouchStart = (event: React.TouchEvent) => {
+    if (event.touches.length !== 2) return;
+    pinch.current = { distance: touchDistance(event.touches), font: currentFont };
+    drag.current = null;
+    setTurn(null);
+  };
+  const onTouchMove = (event: React.TouchEvent) => {
+    if (!pinch.current || event.touches.length !== 2) return;
+    const ratio = touchDistance(event.touches) / pinch.current.distance;
+    const next = clampFont(pinch.current.font * ratio);
+    if (next !== currentFont) setFontPref(next);
+  };
+  const onTouchEnd = (event: React.TouchEvent) => {
+    if (event.touches.length < 2) pinch.current = null;
   };
 
   const tap = useCallback(
@@ -478,35 +612,51 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     );
   }
 
-  // Ukuran huruf: baris terpanjang pas selebar halaman, tidak melebihi tinggi layar;
-  // dua halaman berdampingan memakai ukuran yang sama.
-  const heightCap = Math.max(18, (viewportHeight - 230) / (15 * LINE_HEIGHT));
+  // Ukuran huruf dasar: baris terpanjang pas selebar halaman (dua halaman berdampingan: juga
+  // tidak melebihi tinggi layar, dan keduanya memakai ukuran yang sama). Lalu dikali perbesaran.
+  const heightCap = spread ? Math.max(16, (viewportHeight - 230) / (15 * LINE_HEIGHT)) : MAX_FONT;
   const fontFor = (pages: number[]) => {
     const sizes = layout ? pages.map((p) => naturalFontSize(p, layout, texts, width) ?? MAX_FONT) : [MAX_FONT];
     return Math.min(MAX_FONT, heightCap, ...sizes);
   };
-  const pageProps = (p: number) => ({
+  // Ukuran huruf yang dipakai: pilihan pengguna, atau otomatis (pas baris di layar lebar, 22px di ponsel).
+  const baseOfShown = layout ? fontFor(spread ? spreadOf(shown) : [shown]) : AUTO_FONT_PX;
+  const currentFont = fontPref ?? (baseOfShown >= 19 ? Math.round(baseOfShown) : AUTO_FONT_PX);
+  const scaleFor = (base: number) => {
+    const target = fontPref ?? (base >= 19 ? base : AUTO_FONT_PX);
+    return target <= base + 0.5 ? 1 : target / base;
+  };
+  // Halaman memenuhi layar: tinggi minimum = layar dikurangi kepala app, menu bawah, dan tombol halaman.
+  const minHeight = Math.max(420, viewportHeight - (spread ? 190 : 250));
+  const pageProps = (p: number) => {
+    const base = fontFor(spread ? spreadOf(p) : [p]);
+    return {
     page: p,
     layout: layout!,
     texts,
     basmalah,
     surahs,
     width,
-    fontSize: fontFor(spread ? spreadOf(p) : [p]),
+    fontSize: base,
+    scale: scaleFor(base),
+    minHeight,
     activeAyah,
     markedAyah,
     onAyahTap: tap
-  });
+    };
+  };
 
-  // Lapisan balik lembar: lembar atas berputar pada tepi kanan (punggung mushaf).
+  // Lapisan balik lembar: lembar atas berputar pada tepi kanan (punggung mushaf), tepi kirinya
+  // terangkat ke arah pembaca lalu terbalik ke kanan, memperlihatkan halaman di bawahnya.
   const top = turn ? (turn.dir === 1 ? shown : turn.to) : shown;
   const under = turn ? (turn.dir === 1 ? turn.to : shown) : null;
   const angle = turn?.angle ?? 0;
+  const lift = Math.sin((angle * Math.PI) / 180); // 0 → 1 (tegak) → 0
 
   const rangeLabel = spread ? `${spreadOf(shown)[0]}–${spreadOf(shown)[1]}` : String(shown);
 
   return (
-    <div className="space-y-3" ref={containerRef}>
+    <div className="space-y-3 [overflow-x:clip]" ref={containerRef}>
       {!layout || !fontsReady || width === 0 ? (
         <div className="flex items-center justify-center gap-2 py-24 text-sm text-[#246579] dark:text-[#A7CDD3]">
           <Loader2 className="w-5 h-5 animate-spin" /> Menyiapkan mushaf…
@@ -514,7 +664,10 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
       ) : (
         <div
           className="relative mx-auto select-none touch-pan-y"
-          style={{ width: spread ? undefined : width, perspective: 2200 }}
+          style={{ width: spread ? undefined : width, perspective: Math.max(900, width * 2.4), perspectiveOrigin: '70% 50%' }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
@@ -535,22 +688,46 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
               {under !== null && (
                 <div className="absolute inset-0">
                   <MushafPage {...pageProps(under)} />
+                  {/* Bayangan lembar yang terangkat, jatuh di halaman bawah dekat punggung mushaf */}
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded-[18px]"
+                    style={{ background: `linear-gradient(to left, rgba(15,30,36,${0.38 * lift}) 0%, rgba(15,30,36,${0.12 * lift}) 35%, rgba(15,30,36,0) 70%)` }}
+                  />
                 </div>
               )}
               <div
                 className="relative"
                 style={{
                   transformOrigin: 'right center',
-                  transform: `rotateY(${angle}deg)`,
-                  backfaceVisibility: 'hidden',
-                  willChange: turn ? 'transform' : undefined
+                  transform: turn ? `rotateY(${-angle}deg)` : undefined,
+                  transformStyle: 'preserve-3d',
+                  willChange: turn ? 'transform' : undefined,
+                  zIndex: 1
                 }}
               >
-                <MushafPage {...pageProps(top)} />
+                {/* Muka depan lembar */}
+                <div style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }} className="relative">
+                  <MushafPage {...pageProps(top)} />
+                  {turn && (
+                    <div
+                      className="pointer-events-none absolute inset-0 rounded-[18px]"
+                      style={{
+                        background: `linear-gradient(to left, rgba(0,0,0,${0.32 * lift}) 0%, rgba(255,255,255,${0.18 * lift}) 55%, rgba(0,0,0,${0.08 * lift}) 100%)`
+                      }}
+                    />
+                  )}
+                </div>
+                {/* Punggung lembar (kertas bagian belakang) */}
                 {turn && (
                   <div
-                    className="pointer-events-none absolute inset-0 rounded-[18px]"
-                    style={{ background: `linear-gradient(to left, rgba(0,0,0,${(angle / 90) * 0.28}), rgba(0,0,0,0) 60%)` }}
+                    className="absolute inset-0 rounded-[18px] border border-[#D3A253]/60"
+                    style={{
+                      transform: 'rotateY(180deg)',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden',
+                      background: `linear-gradient(to right, rgba(0,0,0,${0.25 * lift}), rgba(0,0,0,0) 40%), linear-gradient(135deg, #FBF5E6, #EFE4CB)`,
+                      boxShadow: 'inset 0 0 40px rgba(120,90,40,0.18)'
+                    }}
                   />
                 )}
               </div>
@@ -568,15 +745,16 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
           className="flex items-center gap-1 px-3 py-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-[#246579] dark:text-[#A7CDD3] disabled:opacity-40"
           aria-label="Halaman berikutnya"
         >
-          <ChevronLeft className="w-4 h-4" /> Berikutnya
+          <ChevronLeft className="w-4 h-4" /> <span className="hidden min-[400px]:inline">Berikutnya</span>
         </button>
         <button
           type="button"
           onClick={() => setJumpOpen((open) => !open)}
-          className="px-3 py-2 rounded-2xl text-xs font-semibold text-[#173B4E] dark:text-white hover:bg-white/70 dark:hover:bg-slate-800"
+          className="px-3 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap text-[#173B4E] dark:text-white bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800"
           aria-expanded={jumpOpen}
+          aria-label="Buka halaman, juz, dan ukuran huruf"
         >
-          Hal. {rangeLabel} · Juz {juzOfPage(shown)}
+          Hal. {rangeLabel} · Juz {juzOfPage(shown)} · <span className="font-bold">Aa</span>
         </button>
         <button
           type="button"
@@ -585,34 +763,50 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
           className="flex items-center gap-1 px-3 py-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-[#246579] dark:text-[#A7CDD3] disabled:opacity-40"
           aria-label="Halaman sebelumnya"
         >
-          Sebelumnya <ChevronRight className="w-4 h-4" />
+          <span className="hidden min-[400px]:inline">Sebelumnya</span> <ChevronRight className="w-4 h-4" />
         </button>
 
-        {jumpOpen && (
+        {jumpOpen &&
+          createPortal(
           <PageJump
             current={shown}
+            font={currentFont}
+            fitFont={Math.floor(baseOfShown)}
+            onFont={setFontPref}
             onClose={() => setJumpOpen(false)}
             onJump={(p) => {
               setJumpOpen(false);
               goTo(p, false);
             }}
-          />
-        )}
+          />,
+            document.body
+          )}
       </div>
     </div>
   );
 };
 
 /** Lompat ke halaman atau juz. */
-const PageJump: React.FC<{ current: number; onJump: (page: number) => void; onClose: () => void }> = ({ current, onJump, onClose }) => {
+const PageJump: React.FC<{
+  current: number;
+  font: number;
+  /** Ukuran huruf terbesar yang masih pas per baris mushaf. */
+  fitFont: number;
+  onFont: (px: number) => void;
+  onJump: (page: number) => void;
+  onClose: () => void;
+}> = ({ current, font, fitFont, onFont, onJump, onClose }) => {
   const [value, setValue] = useState(String(current));
+  useBackHandler(true, onClose, 10);
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
     const n = Number(value);
     if (Number.isInteger(n) && n >= 1 && n <= TOTAL_PAGES) onJump(n);
   };
   return (
-    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-20 w-[min(92vw,360px)] rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 space-y-3">
+    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center sm:p-6" role="dialog" aria-modal="true" aria-label="Halaman dan ukuran huruf">
+    <div className="absolute inset-0 bg-[#0B1F27]/40" onClick={onClose} />
+    <div className="relative w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm font-bold text-[#173B4E] dark:text-white">Buka halaman</p>
         <button type="button" onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700" aria-label="Tutup">
@@ -635,6 +829,53 @@ const PageJump: React.FC<{ current: number; onJump: (page: number) => void; onCl
         </button>
       </form>
       <div>
+        <p className="mb-1.5 text-[11px] font-semibold text-[#477F8D]">Ukuran huruf</p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onFont(font - 2)}
+            disabled={font <= MIN_FONT_PX}
+            className="w-10 h-9 rounded-xl bg-[#246579]/[0.07] text-[#246579] dark:text-[#A7CDD3] font-bold disabled:opacity-40"
+            aria-label="Perkecil huruf"
+          >
+            A−
+          </button>
+          <input
+            type="range"
+            min={MIN_FONT_PX}
+            max={MAX_FONT_PX}
+            step={1}
+            value={font}
+            onChange={(event) => onFont(Number(event.target.value))}
+            className="flex-1 accent-[#246579]"
+            aria-label="Ukuran huruf mushaf"
+          />
+          <button
+            type="button"
+            onClick={() => onFont(font + 2)}
+            disabled={font >= MAX_FONT_PX}
+            className="w-10 h-9 rounded-xl bg-[#246579]/[0.07] text-[#246579] dark:text-[#A7CDD3] font-bold text-lg disabled:opacity-40"
+            aria-label="Perbesar huruf"
+          >
+            A+
+          </button>
+        </div>
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">
+            {font}px · bisa juga dicubit dua jari. Isi setiap halaman tetap sama dengan mushaf.
+          </p>
+          <button
+            type="button"
+            onClick={() => onFont(fitFont)}
+            className={`shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold ${
+              font <= fitFont ? 'bg-[#246579] text-white' : 'bg-[#246579]/[0.07] text-[#246579] dark:text-[#A7CDD3]'
+            }`}
+          >
+            Baris asli
+          </button>
+        </div>
+      </div>
+      <div>
         <p className="mb-1.5 text-[11px] font-semibold text-[#477F8D]">Juz</p>
         <div className="grid grid-cols-6 gap-1.5">
           {Array.from({ length: 30 }, (_, i) => i + 1).map((juz) => (
@@ -651,6 +892,7 @@ const PageJump: React.FC<{ current: number; onJump: (page: number) => void; onCl
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 };
