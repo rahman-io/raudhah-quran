@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, ChevronRight, Hash, Loader2, Search, X } from 'lucide-react';
 import { assetUrl } from '../../utils/assetUrl';
+import { VoiceSearchButton } from './VoiceSearch';
 
 /**
  * Pencarian di menu Baca: surah (nama/arti/nomor), ayat ("2:255", "Al-Baqarah 255"),
@@ -226,6 +227,7 @@ export const QuranSearch: React.FC<{
             <X className="w-4 h-4" />
           </button>
         )}
+        <VoiceSearchButton surahs={surahs} onOpen={(surah, ayah) => onOpen(surah, ayah)} />
       </label>
 
       {!active ? (
