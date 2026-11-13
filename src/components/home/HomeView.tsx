@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import {
-  BookOpen, CheckCircle2, ChevronRight, Circle, CloudSun, Compass, Flame, GraduationCap, HandHeart, History, Loader2, LocateFixed, MapPin,
-  MicVocal, Minus, Moon, MoonStar, Plus, Search, SlidersHorizontal, Sun, Sunrise, Sunset, Swords, X
+  CheckCircle2, ChevronRight, Circle, CloudSun, Flame, Loader2, LocateFixed, MapPin,
+  Minus, Moon, MoonStar, Plus, Search, SlidersHorizontal, Sun, Sunrise, Sunset, X
 } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { useBackHandler } from '../../utils/backNavigation';
@@ -15,7 +15,8 @@ import {
 } from '../../services/prayerTimes';
 import { ACTIVITIES, claimDailyBonus, useTodayActivities, type ActivityId } from '../../services/dailyActivity';
 import { getRecentReadings } from '../reader/recentReading';
-import { TasbihIcon, TasbihView } from '../tasbih/TasbihView';
+import { TasbihView } from '../tasbih/TasbihView';
+import { menuIcon } from '../../utils/menuIcons';
 import { QiblaView } from '../qibla/QiblaView';
 import { DoaView } from '../doa/DoaView';
 
@@ -302,15 +303,15 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
     else onGo(target);
   };
 
-  const shortcuts: { label: string; Icon: React.ElementType; target: HomeTarget | 'tasbih' | 'qibla' | 'doa'; note?: string }[] = [
-    { label: 'Lanjut Baca', Icon: History, target: 'continue', note: recent ? `${recent.nameLatin} ${recent.ayah}` : undefined },
-    { label: "Al-Qur'an", Icon: BookOpen, target: 'quran' },
-    { label: 'Setor Hafalan', Icon: MicVocal, target: 'setor' },
-    { label: 'Tantangan', Icon: Swords, target: 'challenge' },
-    { label: 'Tajwid', Icon: GraduationCap, target: 'tajwid' },
-    { label: 'Doa', Icon: HandHeart, target: 'doa' },
-    { label: 'Tasbih', Icon: TasbihIcon, target: 'tasbih' },
-    { label: 'Kiblat', Icon: Compass, target: 'qibla' }
+  const shortcuts: { label: string; icon: string; target: HomeTarget | 'tasbih' | 'qibla' | 'doa'; note?: string }[] = [
+    { label: 'Lanjut Baca', icon: 'lanjut', target: 'continue', note: recent ? `${recent.nameLatin} ${recent.ayah}` : undefined },
+    { label: "Al-Qur'an", icon: 'quran', target: 'quran' },
+    { label: 'Setor Hafalan', icon: 'setor', target: 'setor' },
+    { label: 'Tantangan', icon: 'tantangan', target: 'challenge' },
+    { label: 'Tajwid', icon: 'tajwid', target: 'tajwid' },
+    { label: 'Doa', icon: 'doa', target: 'doa' },
+    { label: 'Tasbih', icon: 'tasbih', target: 'tasbih' },
+    { label: 'Kiblat', icon: 'kiblat', target: 'qibla' }
   ];
 
   return (
@@ -389,9 +390,9 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
 
       {/* Pintasan */}
       <section className="relative -mt-16 max-w-3xl mx-auto bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_10px_30px_rgba(23,59,78,0.10)] px-2 py-4 grid grid-cols-4 gap-y-4" aria-label="Menu pintasan">
-        {shortcuts.map(({ label, Icon, target, note }) => (
+        {shortcuts.map(({ label, icon, target, note }) => (
           <button key={label} type="button" onClick={() => (target === 'tasbih' ? setTasbihOpen(true) : target === 'qibla' ? setQiblaOpen(true) : target === 'doa' ? setDoaOpen('menu') : onGo(target))} className="flex flex-col items-center gap-1.5 px-1 rounded-2xl hover:bg-[#F8F6F1] dark:hover:bg-slate-700/40 py-1">
-            <Icon className="w-7 h-7 text-[#BE9452]" strokeWidth={1.6} />
+            <img src={menuIcon(icon)} alt="" className="w-12 h-12 drop-shadow-[0_4px_6px_rgba(23,59,78,0.18)]" draggable={false} />
             <span className="text-[12px] font-medium text-[#293640] dark:text-slate-200 text-center leading-tight">{label}</span>
             {note && <span className="text-[9px] text-[#477F8D] leading-none truncate max-w-full">{note}</span>}
           </button>

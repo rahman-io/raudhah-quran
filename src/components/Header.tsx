@@ -1,5 +1,6 @@
 import React from 'react';
-import { Award, BookMarked, BookOpen, GraduationCap, House, Settings, Trees } from 'lucide-react';
+import { Settings } from 'lucide-react';
+import { menuIcon } from '../utils/menuIcons';
 
 type Tab = 'home' | 'iqro' | 'reader' | 'tajwid' | 'garden' | 'achievements';
 
@@ -10,12 +11,12 @@ interface HeaderProps {
 }
 
 const navigation = [
-  { id: 'home', label: 'Beranda', short: 'Beranda', icon: House },
-  { id: 'iqro', label: 'Iqro Digital', short: 'Iqro', icon: BookMarked },
-  { id: 'reader', label: 'Baca & Tadabbur', short: 'Baca', icon: BookOpen },
-  { id: 'tajwid', label: 'Belajar Tajwid', short: 'Tajwid', icon: GraduationCap },
-  { id: 'garden', label: 'Taman Surga', short: 'Taman', icon: Trees },
-  { id: 'achievements', label: 'Prestasi', short: 'Prestasi', icon: Award }
+  { id: 'home', label: 'Beranda', short: 'Beranda', icon: 'beranda' },
+  { id: 'iqro', label: 'Iqro Digital', short: 'Iqro', icon: 'iqro' },
+  { id: 'reader', label: 'Baca & Tadabbur', short: 'Baca', icon: 'quran' },
+  { id: 'tajwid', label: 'Belajar Tajwid', short: 'Tajwid', icon: 'tajwid' },
+  { id: 'garden', label: 'Taman Surga', short: 'Taman', icon: 'taman' },
+  { id: 'achievements', label: 'Prestasi', short: 'Prestasi', icon: 'prestasi' }
 ] as const;
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenSettings }) => {
@@ -86,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenS
 
       <nav aria-label="Navigasi seluler" className="fixed inset-x-0 bottom-0 z-50 border-t border-[#E8E1D6] bg-white/95 px-1 pb-[max(0.625rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(23,59,78,0.08)] backdrop-blur-md dark:border-slate-700 dark:bg-[#152E38]/95 lg:hidden">
         <div className="mx-auto grid max-w-lg grid-cols-6 gap-0.5">
-          {navigation.map(({ id, short, icon: Icon }) => (
+          {navigation.map(({ id, short, icon }) => (
             <button
               key={id}
               type="button"
@@ -96,7 +97,12 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenS
                 ? 'bg-[#EAF2F3] text-[#174C60] dark:bg-[#246579]/35 dark:text-white'
                 : 'text-[#667882] hover:bg-[#F8F6F1] dark:text-slate-300'}`}
             >
-              <Icon className="h-[19px] w-[19px]" strokeWidth={activeTab === id ? 2.3 : 1.8} />
+              <img
+                src={menuIcon(icon)}
+                alt=""
+                draggable={false}
+                className={`h-7 w-7 transition-[filter,opacity,transform] duration-200 ${activeTab === id ? 'scale-110 drop-shadow-[0_2px_3px_rgba(23,59,78,0.25)]' : 'opacity-60 grayscale-[70%]'}`}
+              />
               <span className="w-full truncate text-center">{short}</span>
             </button>
           ))}
