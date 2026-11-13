@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import {
-  ArrowLeft, Award, BookOpen, CheckCircle2, EyeOff, HelpCircle, KeyRound, Layers, Music, PenLine, Play, Puzzle, RotateCcw, Sparkles, X
+  ArrowLeft, Award, BookOpen, CheckCircle2, EyeOff, HelpCircle, KeyRound, Layers, Mic, Music, PenLine, Play, Puzzle, RotateCcw, Sparkles, X
 } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import type { ReaderSurah } from '../../services/quranReaderData';
@@ -14,19 +14,27 @@ import { BlankStage } from './stages/BlankStage';
 import { AudioStage } from './stages/AudioStage';
 import { WriteStage } from './stages/WriteStage';
 import { TaisirStage } from './stages/TaisirStage';
+import { ReciteStage } from './stages/ReciteStage';
+import { isBrowserRecitationSupported } from '../../services/recitation/browserListener';
 import { useBackHandler } from '../../utils/backNavigation';
 
 const STAGE_XP = 20;
 
 const STAGE_ICONS: Record<StageId, React.ElementType> = {
-  memory: Layers, tajwid: Award, vanish: EyeOff, puzzle: Puzzle, blank: HelpCircle, audio: Music, write: PenLine, taisir: KeyRound
+  memory: Layers, tajwid: Award, vanish: EyeOff, puzzle: Puzzle, blank: HelpCircle, audio: Music, write: PenLine, taisir: KeyRound, recite: Mic
 };
+
+/**
+ * Game yang wajib diselesaikan agar ayat tercatat Sudah Dihafal. Tantangan Bacaan butuh
+ * pengenal suara; di browser yang tidak mendukung, game itu tidak dihitung.
+ */
+const REQUIRED_STAGES = isBrowserRecitationSupported() ? STAGES : STAGES.filter((s) => s.id !== 'recite');
 
 type View = { kind: 'menu' } | { kind: 'play'; id: StageId; run: number } | { kind: 'done'; id: StageId };
 
 /**
- * Mode Hafalkan: 8 game penguat hafalan untuk satu ayat. Pengguna bebas memilih
- * game mana saja dan dalam urutan apa saja. Bila kedelapannya pernah diselesaikan,
+ * Mode Hafalkan: 9 game penguat hafalan untuk satu ayat. Pengguna bebas memilih
+ * game mana saja dan dalam urutan apa saja. Bila semua game wajib pernah diselesaikan,
  * ayat otomatis tercatat "Sudah Dihafal".
  */
 export const HafalanSession: React.FC<{
@@ -78,7 +86,7 @@ export const HafalanSession: React.FC<{
     const next = markStageCompleted(ayah.id, id);
     setCompleted(next);
     if (firstTime) addXP(STAGE_XP, `Hafalkan: ${STAGES.find((s) => s.id === id)?.title}`);
-    if (firstTime && next.length === STAGES.length) {
+    if (firstTime && REQUIRED_STAGES.every((s) => next.includes(s.id))) {
       if (!isMemorized) markAyahMemorized(ayah.id);
       setJustFinishedAll(true);
     }
@@ -88,8 +96,8 @@ export const HafalanSession: React.FC<{
   // Tombol back HP: dari game kembali ke pilihan game.
   useBackHandler(view.kind !== 'menu', backToMenu);
 
-  const doneCount = completed.length;
-  const suggestion = STAGES.find((s) => !completed.includes(s.id));
+  const doneCount = REQUIRED_STAGES.filter((s) => completed.includes(s.id)).length;
+  const suggestion = REQUIRED_STAGES.find((s) => !completed.includes(s.id));
   const currentStage = view.kind !== 'menu' ? STAGES.find((s) => s.id === view.id)! : null;
 
   return (
@@ -117,13 +125,13 @@ export const HafalanSession: React.FC<{
               )}
             </p>
           </div>
-          <div className="hidden sm:flex items-center gap-1.5" aria-label={`${doneCount} dari ${STAGES.length} game selesai`}>
-            {STAGES.map((s) => (
+          <div className="hidden sm:flex items-center gap-1.5" aria-label={`${doneCount} dari ${REQUIRED_STAGES.length} game selesai`}>
+            {REQUIRED_STAGES.map((s) => (
               <span key={s.id} className={`w-2 h-2 rounded-full ${completed.includes(s.id) ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
             ))}
           </div>
           <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-[#F1EDE6] dark:bg-slate-800 text-[#9A7035] dark:text-[#D3A253] whitespace-nowrap">
-            {doneCount}/{STAGES.length}
+            {doneCount}/{REQUIRED_STAGES.length}
           </span>
           <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-[#246579] dark:text-[#A7CDD3]" title="Tutup (progres tersimpan)">
             <X className="w-5 h-5" />
@@ -148,7 +156,7 @@ export const HafalanSession: React.FC<{
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-3xl bg-[#246579] text-white flex flex-col sm:flex-row sm:items-center gap-4">
                   <Sparkles className="w-8 h-8 text-[#D3A253] shrink-0" />
                   <div className="flex-1">
-                    <p className="font-bold">Masya Allah, semua {STAGES.length} game selesai!</p>
+                    <p className="font-bold">Masya Allah, semua {REQUIRED_STAGES.length} game selesai!</p>
                     <p className="text-xs text-white/85 mt-0.5">Ayat ini tercatat Sudah Dihafal. Ulangi besok agar hafalan semakin kuat.</p>
                   </div>
                   {onNextAyah && (
@@ -213,6 +221,7 @@ export const HafalanSession: React.FC<{
               {view.id === 'audio' && <AudioStage ctx={ctx} onPass={() => passStage('audio')} />}
               {view.id === 'write' && <WriteStage ctx={ctx} onPass={() => passStage('write')} />}
               {view.id === 'taisir' && <TaisirStage ctx={ctx} onPass={() => passStage('taisir')} />}
+              {view.id === 'recite' && <ReciteStage ctx={ctx} onPass={() => passStage('recite')} />}
             </div>
           )}
 
@@ -228,7 +237,7 @@ export const HafalanSession: React.FC<{
               <div>
                 <h3 className="text-base font-bold">{currentStage.title} selesai!</h3>
                 <p className="text-xs text-[#246579] dark:text-[#A7CDD3] mt-1">
-                  {doneCount}/{STAGES.length} game selesai untuk ayat ini.
+                  {doneCount}/{REQUIRED_STAGES.length} game selesai untuk ayat ini.
                   {justFinishedAll && ' Ayat ini kini tercatat Sudah Dihafal.'}
                 </p>
               </div>
