@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Crosshair, Pause, Play, Repeat, SkipBack, SkipForward, X } from 'lucide-react';
 import type { PlayMode, PlayerPrefs, PlayerState, RepeatCount } from './useSurahPlayer';
@@ -9,6 +9,8 @@ const MODES: { id: PlayMode; label: string; short: string }[] = [
   { id: 'arti', label: 'Arti saja', short: 'Arti' }
 ];
 const REPEATS: RepeatCount[] = [1, 3, 5];
+/** Pemutar disembunyikan bila layar tidak disentuh selama ini (hanya saat sedang memutar). */
+const AUTO_HIDE_MS = 3500;
 
 interface PrefsProps {
   prefs: PlayerPrefs;
@@ -83,6 +85,40 @@ export const PlayerDock: React.FC<DockProps> = ({
 }) => {
   const visible = state.status !== 'idle';
   const playing = state.status === 'playing';
+
+  // Sembunyi otomatis agar tidak menutupi bacaan; muncul lagi saat layar disentuh,
+  // digulir, atau kursor digerakkan. Tetap tampil saat dijeda/selesai atau sedang dipakai.
+  const [shown, setShown] = useState(true);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const holding = useRef(false);
+
+  useEffect(() => {
+    if (!visible) return;
+    const schedule = () => {
+      clearTimeout(hideTimer.current);
+      setShown(true);
+      if (!playing) return;
+      hideTimer.current = setTimeout(() => {
+        if (!holding.current) setShown(false);
+      }, AUTO_HIDE_MS);
+    };
+    const onMouseMove = (event: PointerEvent) => event.pointerType === 'mouse' && schedule();
+    schedule();
+    window.addEventListener('touchstart', schedule, { passive: true });
+    window.addEventListener('touchmove', schedule, { passive: true });
+    window.addEventListener('wheel', schedule, { passive: true });
+    window.addEventListener('keydown', schedule);
+    window.addEventListener('pointermove', onMouseMove);
+    return () => {
+      clearTimeout(hideTimer.current);
+      window.removeEventListener('touchstart', schedule);
+      window.removeEventListener('touchmove', schedule);
+      window.removeEventListener('wheel', schedule);
+      window.removeEventListener('keydown', schedule);
+      window.removeEventListener('pointermove', onMouseMove);
+    };
+  }, [visible, playing]);
+
   const ayahNumber = state.index + 1;
   // Ulangan berlaku untuk bacaan ayat; pada mode "Arti saja" berlaku untuk artinya.
   const repeating = prefs.repeat > 1 && !state.single && (state.part === 'arab' ? prefs.mode !== 'arti' : prefs.mode === 'arti');
@@ -98,12 +134,28 @@ export const PlayerDock: React.FC<DockProps> = ({
       {visible && (
         <motion.div
           key="surah_player_dock"
+          data-surah-player
           initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={shown ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
           exit={{ opacity: 0, y: 24 }}
-          className="fixed inset-x-3 sm:inset-x-6 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] lg:bottom-6 z-40 mx-auto max-w-xl"
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className={`fixed inset-x-3 sm:inset-x-6 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] lg:bottom-6 z-40 mx-auto max-w-xl ${shown ? '' : 'pointer-events-none'}`}
           role="region"
           aria-label="Pemutar surah"
+          aria-hidden={!shown}
+          onPointerEnter={(event) => {
+            if (event.pointerType === 'mouse') holding.current = true;
+          }}
+          onPointerLeave={(event) => {
+            if (event.pointerType === 'mouse') holding.current = false;
+          }}
+          onFocus={(event) => {
+            // Hanya fokus keyboard yang menahan pemutar tetap tampil.
+            holding.current = (event.target as HTMLElement).matches?.(':focus-visible') ?? false;
+          }}
+          onBlur={() => {
+            holding.current = false;
+          }}
         >
           <div className="rounded-3xl border border-[#D3A253]/50 bg-white/95 dark:bg-[#152E38]/95 backdrop-blur-md shadow-[0_12px_40px_rgba(23,59,78,0.22)] p-3 space-y-2.5">
             <div className="flex items-center gap-2">

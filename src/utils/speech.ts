@@ -55,6 +55,30 @@ function chunk(text: string, max = 180): { text: string; offset: number }[] {
   return parts.length ? parts : [{ text, offset: 0 }];
 }
 
+/**
+ * Perkiraan lama tiap kata untuk perangkat yang tidak mengirim event "boundary"
+ * (mis. Chrome di Android): ± 14,5 huruf per detik pada kecepatan normal,
+ * ditambah jeda singkat setelah tanda baca.
+ */
+const CHARS_PER_SECOND = 14.5;
+const BOUNDARY_WAIT_MS = 450;
+
+function wordSchedule(text: string, rate: number) {
+  const words: { start: number; at: number }[] = [];
+  const pattern = /\S+/g;
+  let elapsed = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text))) {
+    words.push({ start: match.index, at: elapsed });
+    const word = match[0];
+    let ms = ((word.length + 1) / (CHARS_PER_SECOND * rate)) * 1000;
+    if (/[.!?;:]["”')]*$/.test(word)) ms += 380 / rate;
+    else if (/[,)]["”']*$/.test(word)) ms += 220 / rate;
+    elapsed += ms;
+  }
+  return words;
+}
+
 export interface SpeakHandlers {
   /** Posisi karakter (dalam teks asli) dari kata yang sedang dibacakan. */
   onWord?: (charIndex: number) => void;
@@ -76,6 +100,23 @@ export function speak(text: string, rate: number, handlers: SpeakHandlers): () =
   let cancelled = false;
   let index = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  // Mode perkiraan dipakai bila perangkat tidak mengirim posisi kata.
+  let realBoundaries = false;
+  let estimating = false;
+  let estimateTimers: ReturnType<typeof setTimeout>[] = [];
+  const clearEstimate = () => {
+    estimateTimers.forEach(clearTimeout);
+    estimateTimers = [];
+  };
+  const startEstimate = (part: string, offset: number, startedAt: number) => {
+    clearEstimate();
+    const elapsed = Date.now() - startedAt;
+    for (const word of wordSchedule(part, rate)) {
+      estimateTimers.push(setTimeout(() => {
+        if (!cancelled && !realBoundaries) handlers.onWord?.(offset + word.start);
+      }, Math.max(0, word.at - elapsed)));
+    }
+  };
 
   const next = () => {
     if (cancelled) return;
@@ -88,12 +129,35 @@ export function speak(text: string, rate: number, handlers: SpeakHandlers): () =
     utterance.lang = voice?.lang ?? 'id-ID';
     if (voice) utterance.voice = voice;
     utterance.rate = rate;
-    utterance.onstart = () => !cancelled && handlers.onWord?.(offset);
-    utterance.onboundary = (event) => {
-      if (!cancelled && (event.name === undefined || event.name === 'word')) handlers.onWord?.(offset + event.charIndex);
+    utterance.onstart = () => {
+      if (cancelled) return;
+      handlers.onWord?.(offset);
+      if (realBoundaries) return;
+      const startedAt = Date.now();
+      if (estimating) {
+        startEstimate(part, offset, startedAt);
+        return;
+      }
+      // Tunggu sebentar: bila tidak ada posisi kata dari perangkat, pakai perkiraan.
+      estimateTimers.push(setTimeout(() => {
+        if (cancelled || realBoundaries) return;
+        estimating = true;
+        startEstimate(part, offset, startedAt);
+      }, BOUNDARY_WAIT_MS));
     };
-    utterance.onend = () => next();
+    utterance.onboundary = (event) => {
+      if (cancelled || (event.name !== undefined && event.name !== 'word')) return;
+      realBoundaries = true;
+      estimating = false;
+      clearEstimate();
+      handlers.onWord?.(offset + event.charIndex);
+    };
+    utterance.onend = () => {
+      clearEstimate();
+      next();
+    };
     utterance.onerror = (event) => {
+      clearEstimate();
       if (cancelled || event.error === 'interrupted' || event.error === 'canceled') return;
       cancelled = true;
       handlers.onError?.();
@@ -108,6 +172,7 @@ export function speak(text: string, rate: number, handlers: SpeakHandlers): () =
   return () => {
     cancelled = true;
     clearTimeout(timer);
+    clearEstimate();
     synth.cancel();
   };
 }

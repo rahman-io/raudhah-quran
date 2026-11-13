@@ -16,6 +16,8 @@ import { useSurahPlayer } from './useSurahPlayer';
 import { PlayerDock, PlayerOptions } from './SurahPlayerBar';
 
 const NO_AYAHS: ReaderAyah[] = [];
+/** Gulir otomatis berlanjut bila pengguna sudah berhenti menggulir selama ini. */
+const FOLLOW_RESUME_MS = 3500;
 
 /** Terjemah dipecah per kata (dengan posisi karakternya) untuk highlight saat dibacakan. */
 const translationTokens = (text: string) => {
@@ -154,7 +156,7 @@ export const MushafReader: React.FC = () => {
       // Pemutar berurutan sedang aktif: lompat ke ayat ini.
       const index = loadedSurah?.ayahs.findIndex((a) => a.id === ayah.id) ?? -1;
       if (index >= 0) {
-        setFollowing(true);
+        resumeFollow();
         player.playFrom(index);
       }
       return;
@@ -184,7 +186,12 @@ export const MushafReader: React.FC = () => {
   /** Pemutar berurutan sedang berjalan atau dijeda (bukan sekadar baca arti satu ayat). */
   const playerRunning = playerActive && !playerState.single && playerState.status !== 'done';
   const ayahRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [following, setFollowing] = useState(true);
+  /** Waktu terakhir pengguna menggulir sendiri; gulir otomatis menunggu sampai ia berhenti. */
+  const lastUserScrollRef = useRef(0);
+  const [activeOffscreen, setActiveOffscreen] = useState(false);
+  const resumeFollow = () => {
+    lastUserScrollRef.current = 0;
+  };
 
   const scrollToAyah = (index: number) => {
     const el = ayahRefs.current[index];
@@ -195,7 +202,7 @@ export const MushafReader: React.FC = () => {
 
   const startPlayer = (index: number) => {
     if (isPlayingAudio) pauseMurottal();
-    setFollowing(true);
+    resumeFollow();
     player.playFrom(index);
   };
 
@@ -205,22 +212,28 @@ export const MushafReader: React.FC = () => {
       player.stop();
       return;
     }
-    setFollowing(true);
     player.speakArti(index);
   };
 
-  // Gulir otomatis mengikuti ayat yang sedang dibaca.
-  useEffect(() => {
-    if (playerState.status === 'playing' && following && !playerState.single) scrollToAyah(playerState.index);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playerState.index, playerState.status, following]);
-
-  // Pengguna menggulir sendiri: jeda gulir otomatis agar layar tidak "direbut".
+  // Gulir otomatis mengikuti ayat yang sedang dibaca. Bila pengguna baru saja menggulir
+  // sendiri, tunggu sampai ia berhenti; gulir otomatis lanjut lagi di ayat berikutnya
+  // (pilihan gulir otomatis tidak pernah mati karena sentuhan).
   useEffect(() => {
     if (playerState.status !== 'playing' || playerState.single) return;
-    const userScrolled = () => setFollowing(false);
+    if (Date.now() - lastUserScrollRef.current < FOLLOW_RESUME_MS) return;
+    scrollToAyah(playerState.index);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerState.index, playerState.status]);
+
+  // Catat guliran oleh pengguna (bukan guliran otomatis); sentuhan di pemutar tidak dihitung.
+  useEffect(() => {
+    if (!playerActive || playerState.single) return;
+    const fromDock = (event: Event) => (event.target as Element | null)?.closest?.('[data-surah-player]');
+    const userScrolled = (event: Event) => {
+      if (!fromDock(event)) lastUserScrollRef.current = Date.now();
+    };
     const onKey = (event: KeyboardEvent) => {
-      if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) userScrolled();
+      if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) userScrolled(event);
     };
     window.addEventListener('wheel', userScrolled, { passive: true });
     window.addEventListener('touchmove', userScrolled, { passive: true });
@@ -230,7 +243,22 @@ export const MushafReader: React.FC = () => {
       window.removeEventListener('touchmove', userScrolled);
       window.removeEventListener('keydown', onKey);
     };
-  }, [playerState.status, playerState.single]);
+  }, [playerActive, playerState.single]);
+
+  // Apakah ayat yang sedang dibaca terlihat di layar? (untuk tombol "Ke ayat dibaca")
+  useEffect(() => {
+    const el = ayahRefs.current[playerState.index];
+    if (!playerActive || playerState.single || !el || typeof IntersectionObserver === 'undefined') {
+      setActiveOffscreen(false);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => setActiveOffscreen(!entry.isIntersecting),
+      { rootMargin: '-90px 0px -140px 0px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [playerActive, playerState.single, playerState.index]);
 
   // Murottal satu ayat (tombol "Putar" biasa) dimulai: hentikan pemutar berurutan.
   useEffect(() => {
@@ -807,18 +835,18 @@ export const MushafReader: React.FC = () => {
         state={playerState}
         total={activeSurah.ayahs.length}
         surahName={activeSurah.nameLatin}
-        following={following}
+        following={!activeOffscreen}
         onFollow={() => {
-          setFollowing(true);
+          resumeFollow();
           scrollToAyah(playerState.index);
         }}
         onToggle={() => (playerState.status === 'playing' ? player.pause() : player.resume())}
         onPrevious={() => {
-          setFollowing(true);
+          resumeFollow();
           player.previous();
         }}
         onNext={() => {
-          setFollowing(true);
+          resumeFollow();
           player.next();
         }}
         onStop={player.stop}
