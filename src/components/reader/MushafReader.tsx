@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, Share2, ExternalLink, Languages, ListMusic, PlayCircle, Square, AlignJustify } from 'lucide-react';
+import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, Share2, ExternalLink, Languages, ListMusic, PlayCircle, Square, AlignJustify, Maximize2, Minimize2 } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import {
@@ -577,6 +577,57 @@ export const MushafReader: React.FC = () => {
     if (first) runAyahAction('play', first.surah, first.ayah);
   };
 
+  /* ---------- Mode Mushaf layar penuh: hanya halaman mushaf & pemutar ---------- */
+  const [mushafFull, setMushafFull] = useState(false);
+  const fullActive = mushafFull && readingMode === 'mushaf' && !showList;
+  const exitMushafFull = () => setMushafFull(false);
+  useBackHandler(fullActive, exitMushafFull, 6);
+  // Tombol keluar & navigasi halaman: muncul saat layar disentuh, hilang sendiri.
+  const fullControls = useIdleVisibility(fullActive, { delay: 3000 });
+  useEffect(() => {
+    if (!fullActive) return;
+    const root = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
+    const doc = document as Document & { webkitFullscreenElement?: Element | null; webkitExitFullscreen?: () => void };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    // Sembunyikan juga bilah browser & status HP bila didukung (iPhone tidak mendukung: cukup tampilan penuh).
+    let entered = false;
+    try {
+      if (root.requestFullscreen) {
+        root.requestFullscreen({ navigationUI: 'hide' }).then(() => (entered = true)).catch(() => undefined);
+      } else if (root.webkitRequestFullscreen) {
+        root.webkitRequestFullscreen();
+        entered = true;
+      }
+    } catch {
+      // tidak didukung
+    }
+    // Keluar dari layar penuh browser (mis. tombol back / gerakan sistem): keluar juga dari mode ini.
+    const onChange = () => {
+      if (!(document.fullscreenElement ?? doc.webkitFullscreenElement)) {
+        if (entered) setMushafFull(false);
+      } else {
+        entered = true;
+      }
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    document.addEventListener('webkitfullscreenchange', onChange);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('fullscreenchange', onChange);
+      document.removeEventListener('webkitfullscreenchange', onChange);
+      try {
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => undefined);
+        else if (doc.webkitFullscreenElement) doc.webkitExitFullscreen?.();
+      } catch {
+        // abaikan
+      }
+    };
+  }, [fullActive]);
+  useEffect(() => {
+    if (mushafFull && (readingMode !== 'mushaf' || showList)) setMushafFull(false);
+  }, [mushafFull, readingMode, showList]);
+
   // Catat surah yang dibuka dan ayat teratas yang sedang terlihat di layar.
   useEffect(() => {
     if (!surahReady || !loadedSurah || readingMode === 'mushaf') return;
@@ -876,10 +927,54 @@ export const MushafReader: React.FC = () => {
             {playerRunning ? 'Hentikan' : 'Putar'}
           </button>
         )}
+        {readingMode === 'mushaf' && (
+          <button
+            type="button"
+            onClick={() => setMushafFull(true)}
+            className="flex items-center gap-1.5 px-3 py-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#246579] dark:text-[#A7CDD3] text-xs font-semibold hover:bg-[#246579]/5"
+            aria-label="Layar penuh"
+            title="Layar penuh"
+          >
+            <Maximize2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Layar penuh</span>
+          </button>
+        )}
       </div>
 
       {readingMode === 'mushaf' ? (
-        <>
+        <div
+          className={`space-y-6 ${fullActive ? 'fixed inset-0 z-[55] overflow-y-auto overscroll-contain bg-[#F7F4EF] dark:bg-[#0D202A] px-1.5 sm:px-4 pt-[max(0.5rem,env(safe-area-inset-top))]' : ''}`}
+          role={fullActive ? 'dialog' : undefined}
+          aria-modal={fullActive || undefined}
+          aria-label={fullActive ? 'Mushaf layar penuh' : undefined}
+        >
+          {fullActive && (
+            <div
+              className={`fixed top-[max(0.75rem,env(safe-area-inset-top))] right-3 z-30 flex items-center gap-1.5 transition-[transform,opacity] duration-300 ${
+                fullControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
+              }`}
+              aria-hidden={!fullControls}
+            >
+              <button
+                type="button"
+                onClick={playMushafPage}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white/95 dark:bg-slate-800/95 shadow-md border border-slate-200 dark:border-slate-700 text-[#8A6420] dark:text-[#E9CF99] text-xs font-semibold"
+                aria-label={playerRunning ? 'Hentikan murottal' : 'Putar murottal dari halaman ini'}
+              >
+                {playerRunning ? <Square className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />}
+                {playerRunning ? 'Hentikan' : 'Putar'}
+              </button>
+              <button
+                type="button"
+                onClick={exitMushafFull}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-[#246579] text-white shadow-md text-xs font-semibold"
+                aria-label="Keluar dari layar penuh"
+              >
+                <Minimize2 className="w-4 h-4" />
+                Keluar
+              </button>
+            </div>
+          )}
           <MushafView
             page={mushafPage}
             onPageChange={handleMushafPage}
@@ -887,6 +982,8 @@ export const MushafReader: React.FC = () => {
             activeAyah={mushafActive}
             markedAyah={mushafSelected ?? flashAyah}
             onAyahTap={(surah, ayah) => setMushafSelected({ surah, ayah })}
+            immersive={fullActive}
+            controlsVisible={fullControls}
           />
           {playerActive && <div className="h-28 lg:h-20" aria-hidden="true" />}
           {loadedSurah && (
@@ -905,7 +1002,7 @@ export const MushafReader: React.FC = () => {
               canSpeak={player.canSpeak}
             />
           )}
-        </>
+        </div>
       ) : (
       <>
       {loadError && (

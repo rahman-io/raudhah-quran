@@ -36,6 +36,10 @@ interface Props {
   /** Ayat yang dipilih / dituju (disorot lembut). */
   markedAyah: AyahRef | null;
   onAyahTap: (surah: number, ayah: number) => void;
+  /** Layar penuh: halaman setinggi layar, tombol halaman melayang di bawah. */
+  immersive?: boolean;
+  /** Layar penuh: tombol halaman tampil (muncul saat layar disentuh, hilang sendiri). */
+  controlsVisible?: boolean;
 }
 
 const ARABIC_FONT = '"LPMQ Isep Misbah"';
@@ -333,7 +337,7 @@ const readFontPref = (): number | null => {
   }
 };
 
-export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, activeAyah, markedAyah, onAyahTap }) => {
+export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, activeAyah, markedAyah, onAyahTap, immersive = false, controlsVisible = true }) => {
   const [layout, setLayout] = useState<MushafLayout | null>(null);
   const [layoutError, setLayoutError] = useState(false);
   const [texts, setTexts] = useState<TextStore>(new Map());
@@ -379,7 +383,7 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
       const w = el.clientWidth;
       const wide = w >= 880 && window.innerWidth > window.innerHeight;
       // Ponsel/tablet tegak: halaman selebar layar. Dua halaman berdampingan: setinggi layar.
-      const byHeight = Math.max(320, (window.innerHeight - 170) * 0.64);
+      const byHeight = Math.max(320, (window.innerHeight - (immersive ? 40 : 170)) * 0.64);
       setSpread(wide);
       setWidth(Math.floor(wide ? Math.min((w - 16) / 2, byHeight) : Math.min(w, 680)));
       setViewportHeight(window.innerHeight);
@@ -392,7 +396,7 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
       observer.disconnect();
       window.removeEventListener('resize', update);
     };
-  }, [layout]);
+  }, [layout, immersive]);
 
   // Halaman yang tampil: satu halaman, atau pasangan (ganjil di kanan, genap di kiri).
   const spreadOf = (p: number) => (p % 2 === 1 ? [p, Math.min(TOTAL_PAGES, p + 1)] : [p - 1, p]);
@@ -734,7 +738,8 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
     return target <= base + 0.5 ? 1 : target / base;
   };
   // Halaman memenuhi layar: tinggi minimum = layar dikurangi kepala app, menu bawah, dan tombol halaman.
-  const minHeight = Math.max(420, viewportHeight - (spread ? 190 : 250));
+  // Layar penuh: hanya dikurangi jarak tepi (tombol halaman melayang).
+  const minHeight = Math.max(420, viewportHeight - (immersive ? 24 : spread ? 190 : 250));
   const pageProps = (p: number) => {
     const base = fontFor(spread ? spreadOf(p) : [p]);
     return {
@@ -815,8 +820,17 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
         </div>
       )}
 
-      {/* Navigasi halaman: arah mushaf (berikutnya di kiri) */}
-      <div className="relative flex items-center justify-between gap-2 max-w-[620px] mx-auto">
+      {/* Navigasi halaman: arah mushaf (berikutnya di kiri). Layar penuh: melayang di bawah, sembunyi sendiri. */}
+      <div
+        className={
+          immersive
+            ? `fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex items-center justify-between gap-2 max-w-[620px] mx-auto transition-[transform,opacity] duration-300 ${
+                controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'
+              }`
+            : 'relative flex items-center justify-between gap-2 max-w-[620px] mx-auto'
+        }
+        aria-hidden={immersive && !controlsVisible}
+      >
         <button
           type="button"
           onClick={next}
