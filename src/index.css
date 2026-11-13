@@ -9,6 +9,13 @@
     --raudhah-gold: #D3A253;
     --raudhah-cream: #F7F4EF;
   }
+
+  /* Tanpa zoom ketuk-dua-kali (termasuk iPhone) dan tanpa pembesaran teks otomatis. */
+  html {
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
 }
 
 .raudhah-ui {

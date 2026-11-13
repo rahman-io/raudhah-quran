@@ -18,6 +18,7 @@ import { RecentReadingCard } from './RecentReadingCard';
 import { MemorizingCard } from './MemorizingCard';
 import { AyahEndMarker } from './AyahEndMarker';
 import { QuranSearch } from './QuranSearch';
+import { TafsirModal } from './TafsirModal';
 import { getRecentReadings, recordReading } from './recentReading';
 import { loadView, saveView } from '../../utils/viewState';
 import { useIdleVisibility } from '../../utils/useIdleVisibility';
@@ -101,6 +102,8 @@ export const MushafReader: React.FC = () => {
   const [showList, setShowList] = useState(!restored.open);
   /** Ayat yang dituju saat membuka surah dari "Terakhir Dibaca" (atau setelah refresh). */
   const [pendingAyah, setPendingAyah] = useState<number | null>(restored.ayah);
+  /** Nomor ayat yang tafsirnya sedang dibuka. */
+  const [tafsirAyah, setTafsirAyah] = useState<number | null>(null);
   /** Ayat yang disorot sebentar setelah dibuka dari hasil pencarian. */
   const [flashAyah, setFlashAyah] = useState<{ surah: number; ayah: number } | null>(null);
   /** Mode Hafalkan yang dibuka setelah surah selesai dimuat (dari kartu "Sedang Dihafal"). */
@@ -1026,8 +1029,16 @@ export const MushafReader: React.FC = () => {
                 </div>
               )}
 
-              {/* Mode Hafalkan: 8 game penguat hafalan untuk ayat ini */}
-              <div className="mt-4 flex justify-end">
+              {/* Tafsir Kemenag & Mode Hafalkan (8 game penguat hafalan) untuk ayat ini */}
+              <div className="mt-4 flex items-center justify-between gap-2">
+                <button
+                  onClick={() => setTafsirAyah(ayah.ayahNumber)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-full border border-[#246579]/30 text-[#246579] dark:text-[#A7CDD3] hover:bg-[#246579]/5 transition-colors"
+                  title="Baca Tafsir Kemenag untuk ayat ini"
+                >
+                  <ScrollText className="w-4 h-4" />
+                  <span>Tafsir</span>
+                </button>
                 <button
                   onClick={() => {
                     if (isPlayingAudio) pauseMurottal();
@@ -1076,6 +1087,26 @@ export const MushafReader: React.FC = () => {
       />
       <style>{'@keyframes reader-glow { 0%, 100% { box-shadow: 0 0 0 3px rgba(211,162,83,0.30), 0 6px 18px rgba(211,162,83,0.12); } 50% { box-shadow: 0 0 0 4px rgba(211,162,83,0.40), 0 10px 36px rgba(211,162,83,0.32); } } .reader-now-playing { box-shadow: 0 0 0 3px rgba(211,162,83,0.30); animation: reader-glow 2.4s ease-in-out infinite; } @media (prefers-reduced-motion: reduce) { .reader-now-playing { animation: none; } }'}</style>
       </>
+        );
+      })()}
+
+      {tafsirAyah !== null && loadedSurah && !showList && (() => {
+        const ayah = loadedSurah.ayahs[tafsirAyah - 1];
+        if (!ayah) return null;
+        const msi = kemenagText?.surah === loadedSurah.number ? kemenagText.ayahs.get(tafsirAyah) : undefined;
+        return (
+          <TafsirModal
+            surahNumber={loadedSurah.number}
+            surahName={loadedSurah.nameLatin}
+            totalAyahs={loadedSurah.ayahs.length}
+            ayahNumber={tafsirAyah}
+            arabic={msi ?? ayah.arabicText}
+            msi={!!msi}
+            textSize={Math.max(14, translationFontSize)}
+            arabicSize={fontSize}
+            onChangeAyah={(n) => setTafsirAyah(Math.min(Math.max(1, n), loadedSurah.ayahs.length))}
+            onClose={() => setTafsirAyah(null)}
+          />
         );
       })()}
 

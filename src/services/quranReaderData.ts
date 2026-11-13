@@ -234,3 +234,33 @@ export function loadSurahInfo(number: number): Promise<SurahInfoDetail | null> {
   }
   return cached;
 }
+
+/* ------------------------------------------------------------------ */
+/* Tafsir Kemenag per ayat (Tafsir Ringkas & Tafsir Tahlili)          */
+/* Hasil impor scripts/import-tafsir-kemenag.mjs                      */
+/* ------------------------------------------------------------------ */
+
+export interface AyahTafsir {
+  ringkas: string;
+  tahlili: string;
+}
+
+const tafsirCache = new Map<number, Promise<Map<number, AyahTafsir> | null>>();
+
+/** Tafsir satu surah per nomor ayat; null bila data belum diimpor atau gagal dimuat. */
+export function loadKemenagTafsir(number: number): Promise<Map<number, AyahTafsir> | null> {
+  let cached = tafsirCache.get(number);
+  if (!cached) {
+    cached = fetch(assetUrl(`/quran-tafsir/${number}.json`))
+      .then((response) => (response.ok ? (response.json() as Promise<{ ayahs: [number, string, string][] }>) : null))
+      .then((data) =>
+        data?.ayahs?.length ? new Map(data.ayahs.map(([ayah, ringkas, tahlili]) => [ayah, { ringkas, tahlili }])) : null
+      )
+      .catch(() => {
+        tafsirCache.delete(number);
+        return null;
+      });
+    tafsirCache.set(number, cached);
+  }
+  return cached;
+}
