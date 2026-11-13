@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronsLeft, Highlighter, Palette, Play, RotateCcw, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronsLeft, Dumbbell, Highlighter, Palette, Play, RotateCcw, X } from 'lucide-react';
 import { useQuranGame } from '../../../context/QuranGameContext';
 import { useBackHandler } from '../../../utils/backNavigation';
 import { arabicSkeleton } from '../../../services/arabicSkeleton';
-import { alignRecitationTail, expectedSkeletons, type WordStatus } from '../../../services/recitation/recitationAlign';
+import { alignRecitationFrom, anchoredEnd, expectedSkeletons, type RecitationProgressFrom } from '../../../services/recitation/recitationAlign';
 import { MicButton, useRecitation } from '../../hafalan/stages/reciteShared';
 
 /**
@@ -72,11 +72,14 @@ export interface HifzReportRow {
 
 export function useMushafHifz({
   active,
+  paused = false,
   words,
   onPageDone,
   ayahWordCount
 }: {
   active: boolean;
+  /** Jendela lain (mis. Mode Hafalkan) sedang terbuka di atasnya: tombol back bukan untuk kartu hasil. */
+  paused?: boolean;
   words: PageWord[];
   onPageDone: () => void;
   ayahWordCount: (surah: number, ayah: number) => number;
@@ -99,6 +102,8 @@ export function useMushafHifz({
   const [pointer, setPointer] = useState(0);
   const [final, setFinal] = useState<Graded[]>([]);
   const [pageDone, setPageDone] = useState(false);
+  /** Huruf bacaan yang sudah dipakai untuk kata yang dikunci (tidak dicocokkan lagi). */
+  const [consumed, setConsumed] = useState(0);
   /** Hasil halaman-halaman sebelumnya dalam satu setoran. */
   const [log, setLog] = useState<LogEntry[]>([]);
   const [report, setReport] = useState<HifzReportRow[] | null>(null);
@@ -121,6 +126,7 @@ export function useMushafHifz({
     if (active) return;
     rec.stop();
     rec.reset();
+    setConsumed(0);
     resetPage();
     setLog([]);
     setReport(null);
@@ -139,8 +145,13 @@ export function useMushafHifz({
   );
   const running = active && !pageDone && words.length > 0;
   const live = useMemo(
-    () => (running ? alignRecitationTail(variants, rec.transcript, tailLetters) : { status: [] as WordStatus[], next: 0 }),
-    [running, variants, rec.transcript, tailLetters]
+    (): RecitationProgressFrom => {
+      if (!running) return { status: [], next: 0, ends: [] };
+      // Teks bacaan dikosongkan (mulai ulang): hitungan huruf terpakai ikut kembali ke 0.
+      const from = consumed > arabicSkeleton(rec.transcript).length ? 0 : consumed;
+      return alignRecitationFrom(variants, rec.transcript, Math.max(0, from - 3), tailLetters);
+    },
+    [running, variants, rec.transcript, tailLetters, consumed]
   );
   const frontier = pointer + live.next;
 
@@ -168,6 +179,8 @@ export function useMushafHifz({
       setFinal(next);
       setPointer(words.length);
       setPageDone(true);
+      const end = anchoredEnd(live, live.status.length);
+      if (end >= 0) setConsumed(end);
       setLog((prev) => [...prev, ...entries]);
       const ratio = entries.filter((e) => e.status === 'ok').length / Math.max(1, entries.length);
       if (ratio >= 0.9) addXP(5, 'Setor hafalan');
@@ -181,6 +194,8 @@ export function useMushafHifz({
         return next;
       });
       setPointer(pointer + commit);
+      const end = anchoredEnd(live, commit);
+      if (end >= 0) setConsumed(end);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [live, running]);
@@ -216,7 +231,7 @@ export function useMushafHifz({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rec.listening]);
   const closeReport = () => setReport(null);
-  useBackHandler(report !== null, closeReport, 12);
+  useBackHandler(report !== null && !paused, closeReport, 12);
 
   const stateOf = (surah: number, ayah: number, index: number): HifzWordState => {
     const i = indexOf.get(hifzKey(surah, ayah, index));
@@ -237,6 +252,7 @@ export function useMushafHifz({
     setPageDone(false);
     setLog([]);
     rec.reset();
+    setConsumed(0);
   };
 
   /** Munculkan kata (atau sisa ayat) berikutnya sebagai bantuan, lalu lanjut membaca setelahnya. */
@@ -257,6 +273,7 @@ export function useMushafHifz({
     setFinal(next);
     setPointer(to);
     rec.reset();
+    setConsumed(0);
   };
 
   const restartPage = () => {
@@ -264,6 +281,7 @@ export function useMushafHifz({
     setFinal([]);
     setPageDone(false);
     rec.reset();
+    setConsumed(0);
   };
 
   // Ringkasan halaman ini (untuk bilah bawah).
@@ -303,7 +321,14 @@ export function useMushafHifz({
 export type MushafHifz = ReturnType<typeof useMushafHifz>;
 
 /** Hasil setoran: muncul otomatis saat rekaman dihentikan. */
-const HifzReport: React.FC<{ hifz: MushafHifz; surahName: (n: number) => string }> = ({ hifz, surahName }) => {
+interface AyahActions {
+  /** Latih ayat ini di Mode Hafalkan (9 game per ayat). */
+  onTrain: (surah: number, ayah: number) => void;
+  /** Setor ulang mulai dari ayat ini. */
+  onRestartFrom: (surah: number, ayah: number) => void;
+}
+
+const HifzReport: React.FC<{ hifz: MushafHifz; surahName: (n: number) => string } & AyahActions> = ({ hifz, surahName, onTrain, onRestartFrom }) => {
   const rows = hifz.report ?? [];
   const totals = rows.reduce((t, r) => ({ ok: t.ok + r.ok, missed: t.missed + r.missed, hint: t.hint + r.hint, read: t.read + r.read }), { ok: 0, missed: 0, hint: 0, read: 0 });
   const percent = Math.round((totals.ok / Math.max(1, totals.read)) * 100);
@@ -344,17 +369,37 @@ const HifzReport: React.FC<{ hifz: MushafHifz; surahName: (n: number) => string 
           const partial = r.read < r.total;
           const fluent = r.missed === 0 && r.hint === 0;
           return (
-            <li key={`${r.surah}:${r.ayah}`} className="flex items-center gap-2.5 px-3 py-2 text-xs">
-              {fluent ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />}
-              <span className="font-semibold text-[#173B4E] dark:text-white whitespace-nowrap">
-                {surahName(r.surah)} {r.ayah}
-              </span>
-              <span className="flex-1 text-[#477F8D] dark:text-[#94A3B8]">
-                {partial ? `sebagian (${r.read}/${r.total} kata)` : `${r.read} kata`}
-                {r.missed > 0 && ` · ${r.missed} salah`}
-                {r.hint > 0 && ` · ${r.hint} dibantu`}
-                {fluent && ' · lancar'}
-              </span>
+            <li key={`${r.surah}:${r.ayah}`} className={`px-3 py-2 text-xs ${fluent ? '' : 'bg-amber-50/60 dark:bg-amber-950/20'}`}>
+              <div className="flex items-center gap-2.5">
+                {fluent ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />}
+                <span className="font-semibold text-[#173B4E] dark:text-white whitespace-nowrap">
+                  {surahName(r.surah)} {r.ayah}
+                </span>
+                <span className="flex-1 text-[#477F8D] dark:text-[#94A3B8]">
+                  {partial ? `sebagian (${r.read}/${r.total} kata)` : `${r.read} kata`}
+                  {r.missed > 0 && ` · ${r.missed} salah`}
+                  {r.hint > 0 && ` · ${r.hint} dibantu`}
+                  {fluent && ' · lancar'}
+                </span>
+              </div>
+              {!fluent && (
+                <div className="mt-1.5 flex justify-end gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => onRestartFrom(r.surah, r.ayah)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-[11px] font-semibold text-[#246579] dark:text-[#A7CDD3]"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Setor ulang
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onTrain(r.surah, r.ayah)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#246579] hover:bg-[#174C60] text-white text-[11px] font-semibold"
+                  >
+                    <Dumbbell className="w-3.5 h-3.5" /> Latih ayat ini
+                  </button>
+                </div>
+              )}
             </li>
           );
         })}
@@ -383,7 +428,13 @@ const HifzReport: React.FC<{ hifz: MushafHifz; surahName: (n: number) => string 
 };
 
 /** Bilah bawah Setor Hafalan: ringkasan, bantuan kata/ayat, ulang, tanda kesalahan, warna tajwid, rekam. */
-export const MushafHifzBar: React.FC<{ hifz: MushafHifz; immersive: boolean; surahName: (n: number) => string }> = ({ hifz, immersive, surahName }) => {
+export const MushafHifzBar: React.FC<{ hifz: MushafHifz; immersive: boolean; surahName: (n: number) => string } & AyahActions> = ({
+  hifz,
+  immersive,
+  surahName,
+  onTrain,
+  onRestartFrom
+}) => {
   const { rec, prefs, setPrefs } = hifz;
   const counted = hifz.ok + hifz.missed + hifz.hint;
   const percent = counted ? Math.round((hifz.ok / counted) * 100) : 100;
@@ -413,7 +464,7 @@ export const MushafHifzBar: React.FC<{ hifz: MushafHifz; immersive: boolean; sur
       role="region"
       aria-label="Setor Hafalan"
     >
-      {hifz.report && <HifzReport hifz={hifz} surahName={surahName} />}
+      {hifz.report && <HifzReport hifz={hifz} surahName={surahName} onTrain={onTrain} onRestartFrom={onRestartFrom} />}
       {hint && (
         <p className="mb-1.5 text-center" aria-live="polite">
           <span

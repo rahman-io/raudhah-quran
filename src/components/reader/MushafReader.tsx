@@ -591,7 +591,8 @@ export const MushafReader: React.FC = () => {
   const [mushafFull, setMushafFull] = useState(false);
   const fullActive = mushafFull && readingMode === 'mushaf' && !showList;
   const exitMushafFull = () => setMushafFull(false);
-  useBackHandler(fullActive, exitMushafFull, 6);
+  // Selama Mode Hafalkan terbuka di atas layar penuh, tombol back untuk Mode Hafalkan dulu.
+  useBackHandler(fullActive && hafalanAyahIndex === null, exitMushafFull, 6);
   // Tombol keluar & navigasi halaman: muncul saat layar disentuh, hilang sendiri.
   const fullControls = useIdleVisibility(fullActive, { delay: 3000 });
   useEffect(() => {
@@ -639,6 +640,15 @@ export const MushafReader: React.FC = () => {
   }, [mushafFull, readingMode, showList]);
   // Setor Hafalan selalu di layar penuh; keluar dari layar penuh = selesai setoran.
   const hifzActive = mushafHifz && fullActive;
+  // Dari hasil setoran: latih satu ayat di Mode Hafalkan (muat surahnya dulu bila berbeda).
+  const trainFromSetor = (surah: number, ayah: number) => {
+    if (surahReady && loadedSurah?.number === surah) {
+      setHafalanAyahIndex(ayah - 1);
+      return;
+    }
+    setSurahNumber(surah);
+    setPendingHafalan(ayah - 1);
+  };
   useEffect(() => {
     if (mushafHifz && !fullActive) setMushafHifz(false);
   }, [mushafHifz, fullActive]);
@@ -1031,7 +1041,7 @@ export const MushafReader: React.FC = () => {
             onAyahTap={(surah, ayah) => setMushafSelected({ surah, ayah })}
             immersive={fullActive}
             controlsVisible={fullControls}
-            hifz={{ active: hifzActive }}
+            hifz={{ active: hifzActive, paused: hafalanAyahIndex !== null, onTrainAyah: trainFromSetor }}
           />
           {playerActive && <div className="h-28 lg:h-20" aria-hidden="true" />}
           {loadedSurah && (

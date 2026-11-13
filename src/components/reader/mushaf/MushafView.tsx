@@ -44,7 +44,13 @@ interface Props {
   /** Layar penuh: tombol halaman tampil (muncul saat layar disentuh, hilang sendiri). */
   controlsVisible?: boolean;
   /** Setor Hafalan: teks disembunyikan, kata muncul saat dibaca. */
-  hifz?: { active: boolean };
+  hifz?: {
+    active: boolean;
+    /** Jendela lain (Mode Hafalkan) sedang terbuka di atas Setor Hafalan. */
+    paused?: boolean;
+    /** Dari hasil setoran: latih satu ayat di Mode Hafalkan. */
+    onTrainAyah: (surah: number, ayah: number) => void;
+  };
 }
 
 const ARABIC_FONT = '"LPMQ Isep Misbah"';
@@ -482,6 +488,7 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
   const nextPageRef = useRef<() => void>(() => undefined);
   const hifzState = useMushafHifz({
     active: hifzActive,
+    paused: !!hifz?.paused,
     words: hifzWords,
     onPageDone: () => nextPageRef.current(),
     ayahWordCount: (surah, ayah) => texts.get(surah)?.get(ayah)?.length ?? 0
@@ -496,6 +503,27 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
         .catch(() => undefined);
     });
   }, [hifzActive, hifzState.prefs.tajwid, hifzWords, tajwidMarks]);
+  // Setor ulang dari ayat tertentu: bila ayatnya di halaman lain, buka halamannya dulu.
+  const pendingStartRef = useRef<AyahRef | null>(null);
+  const restartHifzFrom = (surah: number, ayah: number) => {
+    hifzState.closeReport();
+    if (hifzWords.some((w) => w.surah === surah && w.ayah === ayah)) {
+      hifzState.startAt(surah, ayah);
+      return;
+    }
+    const target = layout?.ayahPage.get(`${surah}:${ayah}`);
+    if (!target) return;
+    pendingStartRef.current = { surah, ayah };
+    goToRef.current(target);
+  };
+  useEffect(() => {
+    const pending = pendingStartRef.current;
+    if (!pending || !hifzWords.some((w) => w.surah === pending.surah && w.ayah === pending.ayah)) return;
+    pendingStartRef.current = null;
+    hifzState.startAt(pending.surah, pending.ayah);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hifzWords]);
+  const goToRef = useRef<(page: number) => void>(() => undefined);
   const hifzTapRef = useRef<((surah: number, ayah: number) => void) | null>(null);
   hifzTapRef.current = hifzActive ? hifzState.startAt : null;
   const hifzRender: HifzRender | undefined = hifzActive
@@ -680,6 +708,7 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
   const next = () => goTo(spread ? spreadOf(shown)[0] + 2 : shown + 1);
   const previous = () => goTo(spread ? spreadOf(shown)[0] - 2 : shown - 1);
   nextPageRef.current = next;
+  goToRef.current = (target: number) => goTo(target, false);
 
   // Keyboard: panah kiri = berikutnya (arah mushaf), panah kanan = sebelumnya.
   useEffect(() => {
@@ -989,7 +1018,13 @@ export const MushafView: React.FC<Props> = ({ page, onPageChange, surahs, active
         <>
           {/* Ruang agar baris terakhir tidak tertutup bilah Mode Hafalan */}
           <div className="h-28" aria-hidden="true" />
-          <MushafHifzBar hifz={hifzState} immersive={immersive} surahName={(n) => surahs.find((m) => m.number === n)?.nameLatin ?? `Surah ${n}`} />
+          <MushafHifzBar
+            hifz={hifzState}
+            immersive={immersive}
+            surahName={(n) => surahs.find((m) => m.number === n)?.nameLatin ?? `Surah ${n}`}
+            onTrain={hifz.onTrainAyah}
+            onRestartFrom={restartHifzFrom}
+          />
           <style>{'.hifz-reveal{animation:hifz-in .35s ease-out}@keyframes hifz-in{from{opacity:0;filter:blur(2px)}to{opacity:1;filter:none}}@media (prefers-reduced-motion:reduce){.hifz-reveal{animation:none}}'}</style>
         </>
       )}

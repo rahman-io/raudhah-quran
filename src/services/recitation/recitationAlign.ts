@@ -62,7 +62,7 @@ const OP_SKIP = 4; // huruf ayat terlewat
  * Ayat dimulai dari kata pertama; awal dan akhir teks bacaan boleh diabaikan
  * (ta'awudz, basmalah, mengulang dari awal, atau sudah lanjut ke ayat berikutnya).
  */
-function alignOnce(expected: string[], text: string): { progress: RecitationProgress; score: number } {
+function alignOnce(expected: string[], text: string): { progress: RecitationProgress; score: number; ends: number[] } {
   const status: WordStatus[] = expected.map(() => 'pending');
   let target = '';
   const wordOf: number[] = [];
@@ -72,7 +72,7 @@ function alignOnce(expected: string[], text: string): { progress: RecitationProg
   });
   const m = text.length;
   const n = target.length;
-  const empty = { progress: { status, next: 0 }, score: 0 };
+  const empty = { progress: { status, next: 0 }, score: 0, ends: expected.map(() => -1) };
   if (!m || !n) return empty;
 
   const width = n + 1;
@@ -117,12 +117,15 @@ function alignOnce(expected: string[], text: string): { progress: RecitationProg
   if (bestJ === 0) return empty;
 
   const matched = new Array(expected.length).fill(0);
+  // Posisi di teks bacaan tepat setelah huruf terakhir yang cocok untuk tiap kata.
+  const ends: number[] = expected.map(() => -1);
   let i = bestI;
   let j = bestJ;
   while (j > 0 && i > 0) {
     const op = ops[i * width + j];
     if (op === OP_MATCH) {
       matched[wordOf[j - 1]] += 1;
+      if (ends[wordOf[j - 1]] < i) ends[wordOf[j - 1]] = i;
       i -= 1;
       j -= 1;
     } else if (op === OP_SUB) {
@@ -149,7 +152,7 @@ function alignOnce(expected: string[], text: string): { progress: RecitationProg
     status[next] = 'ok';
     next += 1;
   }
-  return { progress: { status, next }, score: bestScore };
+  return { progress: { status, next }, score: bestScore, ends };
 }
 
 export function alignRecitation(variants: string[][], transcript: string): RecitationProgress {
@@ -162,17 +165,38 @@ export function alignRecitation(variants: string[][], transcript: string): Recit
   return best?.progress ?? { status: [], next: 0 };
 }
 
+export interface RecitationProgressFrom extends RecitationProgress {
+  /** Posisi (huruf kerangka, dihitung dari awal seluruh teks bacaan) setelah tiap kata; -1 bila tidak cocok. */
+  ends: number[];
+}
+
 /**
- * Sama seperti `alignRecitation`, tetapi hanya memakai ekor teks bacaan (`maxLetters` huruf
- * terakhir). Dipakai untuk bacaan panjang (beberapa ayat): kata yang sudah dinilai tidak lagi
- * ikut dicocokkan, dan teks lama di depan diabaikan.
+ * Untuk bacaan panjang yang dinilai bertahap: cocokkan hanya teks bacaan mulai huruf ke-`fromLetter`
+ * (bagian sebelumnya sudah dipakai untuk kata yang dikunci), paling banyak `maxLetters` huruf terakhir.
+ * Tanpa batas ini, frasa yang berulang (mis. لَمْ يَلِدْ وَلَمْ يُوْلَدْ) bisa dicocokkan ke bacaan lama.
  */
-export function alignRecitationTail(variants: string[][], transcript: string, maxLetters: number): RecitationProgress {
-  const text = arabicSkeleton(transcript).slice(-maxLetters);
-  let best: { progress: RecitationProgress; score: number } | null = null;
+export function alignRecitationFrom(variants: string[][], transcript: string, fromLetter: number, maxLetters: number): RecitationProgressFrom {
+  const full = arabicSkeleton(transcript);
+  let offset = Math.min(Math.max(0, fromLetter), full.length);
+  if (full.length - offset > maxLetters) offset = full.length - maxLetters;
+  const text = full.slice(offset);
+  let best: { progress: RecitationProgress; score: number; ends: number[] } | null = null;
   for (const expected of variants) {
     const result = alignOnce(expected, text);
     if (!best || result.score > best.score) best = result;
   }
-  return best?.progress ?? { status: [], next: 0 };
+  if (!best) return { status: [], next: 0, ends: [] };
+  return { ...best.progress, ends: best.ends.map((e) => (e < 0 ? -1 : e + offset)) };
+}
+
+/**
+ * Posisi bacaan yang sudah pasti terpakai: akhir kata terbaca terakhir yang didahului kata
+ * terbaca juga (dua kata berturut-turut), agar kecocokan kebetulan di ayat yang terlewat
+ * tidak ikut "memakan" bacaan ayat berikutnya. -1 bila belum ada.
+ */
+export function anchoredEnd(progress: RecitationProgressFrom, upTo: number): number {
+  for (let k = Math.min(upTo, progress.status.length) - 1; k >= 1; k -= 1) {
+    if (progress.status[k] === 'ok' && progress.status[k - 1] === 'ok' && progress.ends[k] >= 0) return progress.ends[k];
+  }
+  return -1;
 }

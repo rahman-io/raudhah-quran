@@ -7,7 +7,7 @@ import type { QuranWord } from '../../types/quran';
 import { useBackHandler } from '../../utils/backNavigation';
 import { sounds } from '../../utils/soundEffects';
 import { isBrowserRecitationSupported } from '../../services/recitation/browserListener';
-import { alignRecitationTail, expectedSkeletons, type WordStatus } from '../../services/recitation/recitationAlign';
+import { alignRecitationFrom, anchoredEnd, expectedSkeletons, type RecitationProgressFrom, type WordStatus } from '../../services/recitation/recitationAlign';
 import { arabicSkeleton } from '../../services/arabicSkeleton';
 import { AyahEndMarker } from '../reader/AyahEndMarker';
 import { MicButton, useRecitation } from './stages/reciteShared';
@@ -86,6 +86,8 @@ export const SurahChallenge: React.FC<{
 
   const [final, setFinal] = useState<WordStatus[]>([]);
   const [pointer, setPointer] = useState(0);
+  /** Huruf bacaan yang sudah dipakai untuk kata yang dikunci (tidak dicocokkan lagi). */
+  const [consumed, setConsumed] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,8 +126,12 @@ export const SurahChallenge: React.FC<{
   );
   const reading = phase.kind === 'reading';
   const live = useMemo(
-    () => (reading ? alignRecitationTail(variants, rec.transcript, tailLetters) : { status: [] as WordStatus[], next: 0 }),
-    [reading, variants, rec.transcript, tailLetters]
+    (): RecitationProgressFrom => {
+      if (!reading) return { status: [], next: 0, ends: [] };
+      const from = consumed > arabicSkeleton(rec.transcript).length ? 0 : consumed;
+      return alignRecitationFrom(variants, rec.transcript, Math.max(0, from - 3), tailLetters);
+    },
+    [reading, variants, rec.transcript, tailLetters, consumed]
   );
   const frontier = pointer + live.next;
 
@@ -162,6 +168,8 @@ export const SurahChallenge: React.FC<{
         return next;
       });
       setPointer(pointer + commit);
+      const end = anchoredEnd(live, commit);
+      if (end >= 0) setConsumed(end);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [live, reading]);
@@ -178,6 +186,7 @@ export const SurahChallenge: React.FC<{
     setFinal([]);
     setPointer(0);
     rec.reset();
+    setConsumed(0);
     setPhase({ kind: 'reading' });
     pauseMurottal();
     rec.start();
@@ -458,6 +467,7 @@ export const SurahChallenge: React.FC<{
               type="button"
               onClick={() => {
                 rec.reset();
+                setConsumed(0);
                 setFinal([]);
                 setPointer(0);
                 scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
