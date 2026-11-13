@@ -16,6 +16,8 @@ export interface ViewState {
     listTopSurah?: number;
     /** Ayat dari tautan "Bagikan Ayat" (?surah=&ayat=), dipakai sekali saat app dibuka. */
     linkAyah?: number;
+    /** Halaman terakhir di Mode Mushaf. */
+    mushafPage?: number;
   };
 }
 
