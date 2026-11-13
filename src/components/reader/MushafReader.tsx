@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, ExternalLink, Languages, ListMusic, PlayCircle, Square } from 'lucide-react';
+import { Volume2, VolumeX, CheckCircle, Bookmark, Sparkles, BookOpen, Heart, ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, GraduationCap, ScrollText, Share2, ExternalLink, Languages, ListMusic, PlayCircle, Square } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { Ayah } from '../../types/quran';
 import {
@@ -19,6 +19,7 @@ import { MemorizingCard } from './MemorizingCard';
 import { AyahEndMarker } from './AyahEndMarker';
 import { HighlightedText, QuranSearch } from './QuranSearch';
 import { TafsirModal } from './TafsirModal';
+import { ShareAyahModal } from './ShareAyahModal';
 import { getRecentReadings, recordReading } from './recentReading';
 import { loadView, saveView } from '../../utils/viewState';
 import { useIdleVisibility } from '../../utils/useIdleVisibility';
@@ -111,6 +112,8 @@ export const MushafReader: React.FC = () => {
   const listPositionRef = useRef<{ y: number; anchor?: string; offset: number } | null>(null);
   /** Nomor ayat yang tafsirnya sedang dibuka. */
   const [tafsirAyah, setTafsirAyah] = useState<number | null>(null);
+  /** Nomor ayat yang sedang dibagikan (jendela "Bagikan Ayat"). */
+  const [shareAyah, setShareAyah] = useState<number | null>(null);
   /** Ayat yang disorot sebentar setelah dibuka dari hasil pencarian. */
   const [flashAyah, setFlashAyah] = useState<{ surah: number; ayah: number } | null>(null);
   /** Mode Hafalkan yang dibuka setelah surah selesai dimuat (dari kartu "Sedang Dihafal"). */
@@ -1101,14 +1104,24 @@ export const MushafReader: React.FC = () => {
 
               {/* Tafsir Kemenag & Mode Hafalkan (8 game penguat hafalan) untuk ayat ini */}
               <div className="mt-4 flex items-center justify-between gap-2">
-                <button
-                  onClick={() => setTafsirAyah(ayah.ayahNumber)}
-                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-full border border-[#246579]/30 text-[#246579] dark:text-[#A7CDD3] hover:bg-[#246579]/5 transition-colors"
-                  title="Baca Tafsir Kemenag untuk ayat ini"
-                >
-                  <ScrollText className="w-4 h-4" />
-                  <span>Tafsir</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setTafsirAyah(ayah.ayahNumber)}
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-full border border-[#246579]/30 text-[#246579] dark:text-[#A7CDD3] hover:bg-[#246579]/5 transition-colors"
+                    title="Baca Tafsir Kemenag untuk ayat ini"
+                  >
+                    <ScrollText className="w-4 h-4" />
+                    <span>Tafsir</span>
+                  </button>
+                  <button
+                    onClick={() => setShareAyah(ayah.ayahNumber)}
+                    className="flex items-center justify-center w-9 h-9 shrink-0 rounded-full border border-[#246579]/30 text-[#246579] dark:text-[#A7CDD3] hover:bg-[#246579]/5 transition-colors"
+                    aria-label={`Bagikan ayat ${ayah.ayahNumber}`}
+                    title="Bagikan ayat ini (gambar atau teks)"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                </div>
                 <button
                   onClick={() => {
                     if (isPlayingAudio) pauseMurottal();
@@ -1176,6 +1189,25 @@ export const MushafReader: React.FC = () => {
             arabicSize={fontSize}
             onChangeAyah={(n) => setTafsirAyah(Math.min(Math.max(1, n), loadedSurah.ayahs.length))}
             onClose={() => setTafsirAyah(null)}
+          />
+        );
+      })()}
+
+      {shareAyah !== null && loadedSurah && !showList && (() => {
+        const ayah = loadedSurah.ayahs[shareAyah - 1];
+        if (!ayah) return null;
+        const msi = kemenagText?.surah === loadedSurah.number ? kemenagText.ayahs.get(shareAyah) : undefined;
+        const latin = (kemenagLatin?.surah === loadedSurah.number && kemenagLatin.ayahs.get(shareAyah)) || ayah.transliteration;
+        return (
+          <ShareAyahModal
+            surahNumber={loadedSurah.number}
+            surahName={loadedSurah.nameLatin}
+            ayahNumber={shareAyah}
+            arabic={msi ?? ayah.arabicText}
+            msi={!!msi}
+            latin={latin ?? ''}
+            translation={ayah.translationId}
+            onClose={() => setShareAyah(null)}
           />
         );
       })()}
