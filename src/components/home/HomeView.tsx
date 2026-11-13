@@ -3,14 +3,15 @@ import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import {
   Award, BookMarked, BookOpen, CheckCircle2, ChevronRight, Circle, CloudSun, Flame, GraduationCap, History, Loader2, LocateFixed, MapPin,
-  MicVocal, Moon, MoonStar, Search, Sun, Sunrise, Sunset, Swords, Trees, X
+  MicVocal, Minus, Moon, MoonStar, Plus, Search, SlidersHorizontal, Sun, Sunrise, Sunset, Swords, Trees, X
 } from 'lucide-react';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { useBackHandler } from '../../utils/backNavigation';
 import { CITIES } from '../../data/cities';
 import { cityLocation, requestGpsLocation, setUserLocation, useUserLocation, type UserLocation } from '../../services/userLocation';
 import {
-  calendarDateIn, formatClock, gregorianDate, hijriDate, nextPrayer, PRAYER_LABELS, PRAYER_ORDER, prayerTimesFor, untilText, type PrayerKey
+  calendarDateIn, formatClock, gregorianDate, hijriDate, METHODS, methodForTimeZone, methodName, nextPrayer, PRAYER_LABELS, PRAYER_ORDER, prayerTimesFor,
+  resolveMethod, setPrayerSettings, untilText, usePrayerSettings, type PrayerKey, type PrayerSettings
 } from '../../services/prayerTimes';
 import { ACTIVITIES, claimDailyBonus, useTodayActivities, type ActivityId } from '../../services/dailyActivity';
 import { getRecentReadings } from '../reader/recentReading';
@@ -133,8 +134,107 @@ const LocationSheet: React.FC<{ current: UserLocation | null; onClose: () => voi
           {cities.length === 0 && <li className="px-5 py-6 text-center text-xs text-slate-500">Kota tidak ditemukan. Gunakan lokasi GPS.</li>}
         </ul>
         <p className="px-5 py-3 text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          Metode Kemenag RI: Subuh −20°, Isya −18°, Ashar Syafi'i, ihtiyath 2–3 menit. Lokasi hanya disimpan di perangkat ini.
+          Metode perhitungan mengikuti lokasi dan bisa diatur di pengaturan jadwal. Lokasi hanya disimpan di perangkat ini.
         </p>
+      </motion.div>
+    </div>,
+    document.body
+  );
+};
+
+/** Pengaturan jadwal sholat: metode perhitungan & koreksi menit per waktu. */
+const PrayerSettingsSheet: React.FC<{ location: UserLocation; onClose: () => void }> = ({ location, onClose }) => {
+  const settings = usePrayerSettings();
+  useBackHandler(true, onClose, 10);
+  const save = (patch: Partial<PrayerSettings>) => setPrayerSettings({ ...settings, ...patch });
+  const autoMethod = methodForTimeZone(location.tz);
+  const method = resolveMethod(settings, location.tz);
+  const times = prayerTimesFor(location.lat, location.lng, calendarDateIn(location.tz), method, settings.offsets);
+  const changed = PRAYER_ORDER.some((k) => settings.offsets[k] !== 0);
+  const option = (id: PrayerSettings['method'], title: string, detail: string) => {
+    const active = settings.method === id;
+    return (
+      <button
+        key={id}
+        type="button"
+        role="radio"
+        aria-checked={active}
+        onClick={() => save({ method: id })}
+        className={`w-full flex items-start gap-3 px-4 py-3 text-left rounded-2xl border ${
+          active ? 'border-[#246579] bg-[#246579]/5' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#477F8D]/50'
+        }`}
+      >
+        <span className={`mt-0.5 w-4 h-4 shrink-0 rounded-full border-2 ${active ? 'border-[#246579] bg-[#246579] shadow-[inset_0_0_0_3px_white]' : 'border-slate-300'}`} />
+        <span className="flex-1 min-w-0">
+          <span className="block text-sm font-semibold text-[#173B4E] dark:text-white">{title}</span>
+          <span className="block text-[11px] text-[#477F8D] dark:text-[#94A3B8]">{detail}</span>
+        </span>
+      </button>
+    );
+  };
+  return createPortal(
+    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center sm:p-6" role="dialog" aria-modal="true" aria-label="Pengaturan jadwal sholat">
+      <motion.div className="absolute inset-0 bg-[#0B1F27]/40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        className="relative w-full sm:max-w-md max-h-[88vh] flex flex-col bg-[#FBF8F2] dark:bg-[#152E38] rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
+      >
+        <div className="flex items-center gap-3 px-5 pt-4 pb-3 border-b border-slate-100 dark:border-slate-700">
+          <h2 className="flex-1 text-base font-bold text-[#173B4E] dark:text-white">Pengaturan jadwal sholat</h2>
+          <button type="button" onClick={onClose} className="p-2 rounded-xl text-slate-500 hover:bg-white dark:hover:bg-slate-700" aria-label="Tutup">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+          <p className="text-xs leading-relaxed text-[#477F8D] dark:text-[#94A3B8] bg-white/70 dark:bg-slate-800/60 rounded-2xl p-3 border border-slate-200 dark:border-slate-700">
+            Untuk ibadah, ikuti jadwal masjid setempat. Pakai <b>koreksi menit</b> di bawah agar jadwal di sini sama persis dengan masjidmu.
+          </p>
+          <div className="space-y-2" role="radiogroup" aria-label="Metode perhitungan">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#477F8D]">Metode perhitungan</p>
+            {option('auto', `Otomatis: ${methodName(autoMethod)}`, `Sesuai lokasi (${location.name})`)}
+            {METHODS.map((m) => option(m.id, m.name, m.detail))}
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#477F8D]">Koreksi menit</p>
+              {changed && (
+                <button
+                  type="button"
+                  onClick={() => save({ offsets: { subuh: 0, terbit: 0, dzuhur: 0, ashar: 0, maghrib: 0, isya: 0 } })}
+                  className="text-[11px] font-semibold text-[#246579] dark:text-[#A7CDD3] underline"
+                >
+                  Atur ulang
+                </button>
+              )}
+            </div>
+            <ul className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700/60">
+              {PRAYER_ORDER.map((key) => {
+                const value = settings.offsets[key];
+                const step = (delta: number) =>
+                  save({ offsets: { ...settings.offsets, [key]: Math.max(-60, Math.min(60, value + delta)) } });
+                return (
+                  <li key={key} className="flex items-center gap-3 px-4 py-2.5">
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-semibold text-[#173B4E] dark:text-white">{PRAYER_LABELS[key]}</span>
+                      <span className="block text-[11px] text-[#477F8D] tabular-nums">{formatClock(times[key], location.tz)}</span>
+                    </span>
+                    <button type="button" onClick={() => step(-1)} className="w-9 h-9 rounded-full bg-[#F1EDE6] dark:bg-slate-700 text-[#246579] dark:text-[#A7CDD3] flex items-center justify-center" aria-label={`${PRAYER_LABELS[key]} 1 menit lebih awal`}>
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className={`w-12 text-center text-sm font-bold tabular-nums ${value ? 'text-[#246579] dark:text-[#A7CDD3]' : 'text-slate-400'}`}>
+                      {value > 0 ? `+${value}` : value}
+                    </span>
+                    <button type="button" onClick={() => step(1)} className="w-9 h-9 rounded-full bg-[#F1EDE6] dark:bg-slate-700 text-[#246579] dark:text-[#A7CDD3] flex items-center justify-center" aria-label={`${PRAYER_LABELS[key]} 1 menit lebih lambat`}>
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
       </motion.div>
     </div>,
     document.body
@@ -147,6 +247,8 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
   const activities = useTodayActivities();
   const [now, setNow] = useState(() => new Date());
   const [locationOpen, setLocationOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const prayerSettings = usePrayerSettings();
   const [gpsState, setGpsState] = useState<'idle' | 'loading' | 'error'>('idle');
 
   useEffect(() => {
@@ -156,11 +258,13 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
 
   const tz = location?.tz ?? (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta');
   const dayKey = calendarDateIn(tz, now).getTime();
+  const method = resolveMethod(prayerSettings, tz);
+  const adjusted = PRAYER_ORDER.some((k) => prayerSettings.offsets[k] !== 0);
   const times = useMemo(
-    () => (location ? prayerTimesFor(location.lat, location.lng, new Date(dayKey)) : null),
-    [location, dayKey]
+    () => (location ? prayerTimesFor(location.lat, location.lng, new Date(dayKey), method, prayerSettings.offsets) : null),
+    [location, dayKey, method, prayerSettings]
   );
-  const upcoming = location ? nextPrayer(location.lat, location.lng, tz, now) : null;
+  const upcoming = location ? nextPrayer(location.lat, location.lng, tz, now, method, prayerSettings.offsets) : null;
 
   const doneCount = ACTIVITIES.filter((a) => activities[a.id]).length;
   const percent = Math.round((doneCount / ACTIVITIES.length) * 100);
@@ -254,6 +358,17 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
                   );
                 })}
               </div>
+              <div className="mt-3 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setSettingsOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/15 ring-1 ring-white/15 text-[11px] font-semibold text-white/85"
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-[#F5D58A]" />
+                  {methodName(method)}
+                  {adjusted && ' · disesuaikan'}
+                </button>
+              </div>
             </>
           )}
         </div>
@@ -322,6 +437,7 @@ export const HomeView: React.FC<{ onGo: (target: HomeTarget) => void }> = ({ onG
       </section>
 
       {locationOpen && <LocationSheet current={location} onClose={() => setLocationOpen(false)} />}
+      {settingsOpen && location && <PrayerSettingsSheet location={location} onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 };
