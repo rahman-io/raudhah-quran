@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, Search, Sparkles, ChevronDown, ChevronUp, Award, ArrowRight, Volume2, Sliders, Mic, Layers, HelpCircle, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Search, Sparkles, ChevronDown, ChevronUp, Award, ArrowRight, Volume2, Sliders, Mic, Layers, HelpCircle, CheckCircle2, Video } from 'lucide-react';
 import { TAJWID_RULES, TajwidRule } from '../../data/tajwidData';
 import { useFirebaseCollection } from '../../services/firebaseContent';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
 import { LetterAudioModal } from './LetterAudioModal';
+import { AymanVideoView } from './AymanVideoView';
 import { markActivity } from '../../services/dailyActivity';
 import {
   playPronunciation,
@@ -29,7 +30,7 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
   const tajwidRules = useFirebaseCollection<TajwidRule>('tajwidRules', TAJWID_RULES, (rule) =>
     Boolean(rule.id && rule.nameLatin && Array.isArray(rule.letters)));
   const { fontSize, mode } = useQuranGame();
-  const [activeTab, setActiveTab] = useState<'rules' | 'comparison'>('rules');
+  const [activeTab, setActiveTab] = useState<'rules' | 'comparison' | 'ayman_video'>('rules');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [expandedRuleId, setExpandedRuleId] = useState<string | null>(TAJWID_RULES[0].id);
@@ -104,11 +105,12 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
       </div>
 
       {/* Primary Tab Switcher */}
-      <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#F1EDE6] dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-[#F1EDE6] dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
         <button
           type="button"
           onClick={() => {
             sounds.playWordClick();
+            stopPronunciation();
             setActiveTab('rules');
           }}
           className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
@@ -117,7 +119,7 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
               : 'text-slate-600 dark:text-slate-300 hover:text-[#246579]'
           }`}
         >
-          <BookOpen className="w-4 h-4" />
+          <BookOpen className="w-4 h-4 shrink-0" />
           <span>Kaidah Tajwid Lengkap</span>
         </button>
 
@@ -125,6 +127,7 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
           type="button"
           onClick={() => {
             sounds.playWordClick();
+            stopPronunciation();
             setActiveTab('comparison');
           }}
           className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
@@ -133,8 +136,25 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
               : 'text-slate-600 dark:text-slate-300 hover:text-[#246579]'
           }`}
         >
-          <Volume2 className="w-4 h-4 text-[#D3A253]" />
-          <span>Bandingkan Huruf Mirip (Kho, Ha, Ho)</span>
+          <Volume2 className="w-4 h-4 text-[#D3A253] shrink-0" />
+          <span>Bandingkan Huruf Mirip</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            sounds.playWordClick();
+            stopPronunciation();
+            setActiveTab('ayman_video');
+          }}
+          className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeTab === 'ayman_video'
+              ? 'bg-[#246579] text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-300 hover:text-[#246579]'
+          }`}
+        >
+          <Video className="w-4 h-4 text-[#D3A253] shrink-0" />
+          <span>Video Makhraj (Dr. Ayman)</span>
         </button>
       </div>
 
@@ -646,6 +666,9 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
           </div>
         </div>
       )}
+
+      {/* TAB 3: VIDEO MAKHRAJ DR. AYMAN SUWAYD */}
+      {activeTab === 'ayman_video' && <AymanVideoView />}
 
       {/* Letter Makhraj & Audio Inspector Modal */}
       <LetterAudioModal
