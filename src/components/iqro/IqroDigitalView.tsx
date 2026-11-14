@@ -22,8 +22,10 @@ import {
   BookMarked,
   ShieldCheck,
   Zap,
-  Trophy
+  Trophy,
+  Video
 } from 'lucide-react';
+import { MakharijVideoView } from './MakharijVideoView';
 import { IQRO_LEVELS, IqroJilid, IqroPage, IqroItem } from '../../data/iqroData';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
@@ -74,6 +76,9 @@ interface IqroDigitalViewProps {
 export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
   const { addXP, celebrateSuccess, soundEnabled, firebaseUser } = useQuranGame();
   
+  // Tab Mode: 'practice' (Buku Iqro Jilid 1-6) | 'videos' (Video Pembelajaran Makhraj)
+  const [activeTab, setActiveTab] = useState<'practice' | 'videos'>('practice');
+
   // State
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
   const [activePageIndex, setActivePageIndex] = useState<number>(0);
@@ -362,7 +367,47 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner Hero */}
+      {/* Primary Tab Switcher */}
+      <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#F1EDE6] dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <button
+          type="button"
+          onClick={() => {
+            sounds.playWordClick();
+            setActiveTab('practice');
+          }}
+          className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeTab === 'practice'
+              ? 'bg-[#246579] text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-300 hover:text-[#246579]'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>Latihan Iqro (Jilid 1–6)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            sounds.playWordClick();
+            stopIqroAudio();
+            setActiveTab('videos');
+          }}
+          className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeTab === 'videos'
+              ? 'bg-[#246579] text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-300 hover:text-[#246579]'
+          }`}
+        >
+          <Video className="w-4 h-4 text-[#D3A253]" />
+          <span>Video Pembelajaran Makhraj</span>
+        </button>
+      </div>
+
+      {activeTab === 'videos' ? (
+        <MakharijVideoView />
+      ) : (
+        <>
+          {/* Top Banner Hero */}
       <div className="relative overflow-hidden rounded-3xl bg-[#246579] p-6 sm:p-8 text-white shadow-sm">
         <div className="absolute -right-10 -bottom-10 opacity-10 font-arabic text-[180px] pointer-events-none select-none">
           اقرأ
@@ -937,6 +982,8 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
             </div>
           )}
         </div>
+      )}
+        </>
       )}
     </div>
   );
