@@ -7,6 +7,7 @@ import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
 import { LetterAudioModal } from './LetterAudioModal';
 import { MakharijVideoView } from './MakharijVideoView';
+import { Makhraj3DVisualizer } from './Makhraj3DVisualizer';
 import { markActivity } from '../../services/dailyActivity';
 import {
   playPronunciation,
@@ -30,7 +31,7 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
   const tajwidRules = useFirebaseCollection<TajwidRule>('tajwidRules', TAJWID_RULES, (rule) =>
     Boolean(rule.id && rule.nameLatin && Array.isArray(rule.letters)));
   const { fontSize, mode } = useQuranGame();
-  const [activeTab, setActiveTab] = useState<'rules' | 'comparison' | 'makharij_video'>('rules');
+  const [activeTab, setActiveTab] = useState<'rules' | 'comparison' | 'makharij_video' | 'visualizer_3d'>('rules');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [expandedRuleId, setExpandedRuleId] = useState<string | null>(TAJWID_RULES[0].id);
@@ -105,7 +106,7 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
       </div>
 
       {/* Primary Tab Switcher */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-[#F1EDE6] dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 p-1.5 bg-[#F1EDE6] dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
         <button
           type="button"
           onClick={() => {
@@ -113,14 +114,14 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
             stopPronunciation();
             setActiveTab('rules');
           }}
-          className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`py-2.5 px-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             activeTab === 'rules'
               ? 'bg-[#246579] text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:text-[#246579]'
           }`}
         >
           <BookOpen className="w-4 h-4 shrink-0" />
-          <span>Kaidah Tajwid Lengkap</span>
+          <span>Kaidah Tajwid</span>
         </button>
 
         <button
@@ -130,14 +131,14 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
             stopPronunciation();
             setActiveTab('comparison');
           }}
-          className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`py-2.5 px-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             activeTab === 'comparison'
               ? 'bg-[#246579] text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:text-[#246579]'
           }`}
         >
           <Volume2 className="w-4 h-4 text-[#D3A253] shrink-0" />
-          <span>Bandingkan Huruf Mirip</span>
+          <span>Bandingkan Huruf</span>
         </button>
 
         <button
@@ -147,14 +148,31 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
             stopPronunciation();
             setActiveTab('makharij_video');
           }}
-          className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`py-2.5 px-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             activeTab === 'makharij_video'
               ? 'bg-[#246579] text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:text-[#246579]'
           }`}
         >
           <Video className="w-4 h-4 text-[#D3A253] shrink-0" />
-          <span>Video Makhraj & Sifat</span>
+          <span>Video Makhraj</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            sounds.playWordClick();
+            stopPronunciation();
+            setActiveTab('visualizer_3d');
+          }}
+          className={`py-2.5 px-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            activeTab === 'visualizer_3d'
+              ? 'bg-[#246579] text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-300 hover:text-[#246579]'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-[#D3A253] shrink-0" />
+          <span>Simulator 3D</span>
         </button>
       </div>
 
@@ -669,6 +687,9 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
 
       {/* TAB 3: VIDEO MAKHRAJ & SIFAT HURUF (ARABIC 101) */}
       {activeTab === 'makharij_video' && <MakharijVideoView />}
+
+      {/* TAB 4: SIMULATOR MAKHRAJ 3D */}
+      {activeTab === 'visualizer_3d' && <Makhraj3DVisualizer />}
 
       {/* Letter Makhraj & Audio Inspector Modal */}
       <LetterAudioModal
