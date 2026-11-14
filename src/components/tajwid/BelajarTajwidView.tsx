@@ -6,7 +6,7 @@ import { useFirebaseCollection } from '../../services/firebaseContent';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
 import { LetterAudioModal } from './LetterAudioModal';
-import { AymanVideoView } from './AymanVideoView';
+import { MakharijVideoView } from './MakharijVideoView';
 import { markActivity } from '../../services/dailyActivity';
 import {
   playPronunciation,
@@ -30,7 +30,7 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
   const tajwidRules = useFirebaseCollection<TajwidRule>('tajwidRules', TAJWID_RULES, (rule) =>
     Boolean(rule.id && rule.nameLatin && Array.isArray(rule.letters)));
   const { fontSize, mode } = useQuranGame();
-  const [activeTab, setActiveTab] = useState<'rules' | 'comparison' | 'ayman_video'>('rules');
+  const [activeTab, setActiveTab] = useState<'rules' | 'comparison' | 'makharij_video'>('rules');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [expandedRuleId, setExpandedRuleId] = useState<string | null>(TAJWID_RULES[0].id);
@@ -145,16 +145,16 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
           onClick={() => {
             sounds.playWordClick();
             stopPronunciation();
-            setActiveTab('ayman_video');
+            setActiveTab('makharij_video');
           }}
           className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-            activeTab === 'ayman_video'
+            activeTab === 'makharij_video'
               ? 'bg-[#246579] text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:text-[#246579]'
           }`}
         >
           <Video className="w-4 h-4 text-[#D3A253] shrink-0" />
-          <span>Video Makhraj (Dr. Ayman)</span>
+          <span>Video Makhraj & Sifat</span>
         </button>
       </div>
 
@@ -667,8 +667,8 @@ export const BelajarTajwidView: React.FC<BelajarTajwidViewProps> = ({ onGoToQuiz
         </div>
       )}
 
-      {/* TAB 3: VIDEO MAKHRAJ DR. AYMAN SUWAYD */}
-      {activeTab === 'ayman_video' && <AymanVideoView />}
+      {/* TAB 3: VIDEO MAKHRAJ & SIFAT HURUF (ARABIC 101) */}
+      {activeTab === 'makharij_video' && <MakharijVideoView />}
 
       {/* Letter Makhraj & Audio Inspector Modal */}
       <LetterAudioModal

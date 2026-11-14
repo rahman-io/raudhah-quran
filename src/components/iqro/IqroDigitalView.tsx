@@ -25,7 +25,7 @@ import {
   Trophy,
   Video
 } from 'lucide-react';
-import { MakharijVideoView } from './MakharijVideoView';
+import { AymanVideoView } from './AymanVideoView';
 import { IQRO_LEVELS, IqroJilid, IqroPage, IqroItem } from '../../data/iqroData';
 import { useQuranGame } from '../../context/QuranGameContext';
 import { sounds } from '../../utils/soundEffects';
@@ -399,12 +399,12 @@ export const IqroDigitalView: React.FC<IqroDigitalViewProps> = () => {
           }`}
         >
           <Video className="w-4 h-4 text-[#D3A253]" />
-          <span>Video Pembelajaran Makhraj</span>
+          <span>Video Pelafalan Huruf (Dr. Ayman)</span>
         </button>
       </div>
 
       {activeTab === 'videos' ? (
-        <MakharijVideoView />
+        <AymanVideoView />
       ) : (
         <>
           {/* Top Banner Hero */}

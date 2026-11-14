@@ -2,18 +2,15 @@ import React, { useState, useRef } from 'react';
 import {
   Play,
   CheckCircle2,
-  ExternalLink,
   BookOpen,
   Sparkles,
   ChevronRight,
   ChevronLeft,
   Search,
-  Youtube,
   Layers,
-  MonitorPlay,
-  AlertCircle
+  GraduationCap
 } from 'lucide-react';
-import { MAKHAREJ_LESSONS, PLAYLIST_ID, PLAYLIST_URL, type MakharijLesson } from '../../data/makharijVideosData';
+import { MAKHAREJ_LESSONS, type MakharijLesson } from '../../data/makharijVideosData';
 import { sounds } from '../../utils/soundEffects';
 
 const WATCHED_STORAGE_KEY = 'raudhah_makharij_watched_v1';
@@ -22,7 +19,6 @@ export const MakharijVideoView: React.FC = () => {
   const [activeLessonId, setActiveLessonId] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
-  const [playerMode, setPlayerMode] = useState<'embed' | 'preview'>('embed');
   const playerRef = useRef<HTMLDivElement>(null);
 
   // Watched lessons in local storage
@@ -105,16 +101,11 @@ export const MakharijVideoView: React.FC = () => {
 
   const progressPercent = Math.round((watchedLessons.length / MAKHAREJ_LESSONS.length) * 100);
 
-  // Fallback video ID for thumbnail & embed
+  // Fallback video ID for embed
   const currentVideoId = currentLesson.videoId || '-YrfRpwFMe8';
 
-  // Standard official YouTube embed URL with origin and strict referrer policy
+  // Standard embed URL
   const embedUrl = `https://www.youtube.com/embed/${currentVideoId}?rel=0&enablejsapi=1`;
-
-  // Direct link with playlist context and exact lesson index
-  const youtubeDirectLink = `https://www.youtube.com/watch?v=${currentVideoId}&list=${PLAYLIST_ID}&index=${currentLesson.index}`;
-
-  const thumbnailUrl = `https://img.youtube.com/vi/${currentVideoId}/hqdefault.jpg`;
 
   return (
     <div className="space-y-6">
@@ -128,11 +119,10 @@ export const MakharijVideoView: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-[#D3A253] text-[#173B4E] text-xs font-black uppercase tracking-wider shadow-xs flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Modul Video Visual Makhraj</span>
+              <span>Modul Teori Tajwid & Sifat Huruf</span>
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-semibold border border-white/30 backdrop-blur-xs flex items-center gap-1">
-              <Youtube className="w-3.5 h-3.5 text-red-400" />
-              <span>Arabic 101 Official Series</span>
+            <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-semibold border border-white/30 backdrop-blur-xs">
+              Arabic 101 Official Series (23 Video)
             </span>
           </div>
 
@@ -140,7 +130,7 @@ export const MakharijVideoView: React.FC = () => {
             Makharij & Sifaat Al-Huruf
           </h2>
           <p className="text-xs sm:text-sm text-slate-200 max-w-2xl leading-relaxed">
-            Katalog 23 video panduan visual anatomi titik artikulasi (tempat keluarnya huruf) dan sifat huruf hijaiyah. Pelajari bentuk posisi lidah, tenggorokan, dan bibir dengan mudah agar bacaan Al-Qur&apos;an lebih fasih dan bertajwid.
+            Katalog 23 video panduan visual anatomi titik artikulasi dan sifat huruf hijaiyah. Pelajari konsep makhraj, aliran nafas (*Hams/Jahr*), aliran suara (*Syiddah/Rakhawah*), serta tebal tipis (*Isti&apos;la/Ithbaq*).
           </p>
 
           {/* Progress Tracker */}
@@ -154,15 +144,6 @@ export const MakharijVideoView: React.FC = () => {
             <div className="flex items-center gap-3 text-xs text-slate-200">
               <span className="font-bold text-[#D3A253]">{watchedLessons.length} / {MAKHAREJ_LESSONS.length} Video Tuntas</span>
               <span>({progressPercent}%)</span>
-              <a
-                href={PLAYLIST_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-slate-300 hover:text-white underline underline-offset-2 ml-auto sm:ml-0"
-              >
-                <span>Buka Playlist Utuh</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
             </div>
           </div>
         </div>
@@ -192,36 +173,6 @@ export const MakharijVideoView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* Player Mode Switcher */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-700/80 p-1 rounded-xl text-xs font-bold">
-              <button
-                type="button"
-                onClick={() => setPlayerMode('embed')}
-                className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                  playerMode === 'embed'
-                    ? 'bg-white dark:bg-slate-800 text-[#246579] dark:text-[#A7CDD3] shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-300'
-                }`}
-                title="Putar video di dalam aplikasi"
-              >
-                <MonitorPlay className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Sematkan</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPlayerMode('preview')}
-                className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                  playerMode === 'preview'
-                    ? 'bg-white dark:bg-slate-800 text-[#246579] dark:text-[#A7CDD3] shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-300'
-                }`}
-                title="Tampilkan kartu dan tombol putar YouTube"
-              >
-                <Youtube className="w-3.5 h-3.5 text-red-500" />
-                <span className="hidden sm:inline">Kartu</span>
-              </button>
-            </div>
-
             <button
               type="button"
               onClick={() => toggleWatched(currentLesson.id)}
@@ -237,101 +188,18 @@ export const MakharijVideoView: React.FC = () => {
           </div>
         </div>
 
-        {/* Video Player Display: Embed vs Interactive Preview Card */}
-        {playerMode === 'embed' ? (
-          <div className="space-y-3">
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-md border border-slate-200 dark:border-slate-800">
-              <iframe
-                key={`makharij-lesson-${currentLesson.id}`}
-                src={embedUrl}
-                title={currentLesson.title}
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
-            </div>
-
-            {/* Notice if YouTube restricts playback */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-xs text-amber-900 dark:text-amber-200">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>
-                  Jika video di atas menampilkan <strong>&quot;Video tidak tersedia&quot;</strong>, YouTube membatasi pemutaran embed untuk video ini. Klik tombol di kanan untuk memutar langsung.
-                </span>
-              </div>
-              <a
-                href={youtubeDirectLink}
-                target="_blank"
-                rel="noreferrer"
-                className="shrink-0 px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
-              >
-                <Youtube className="w-4 h-4 fill-current" />
-                <span>Buka di YouTube</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-        ) : (
-          /* Interactive Preview Card */
-          <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 shadow-md border border-slate-200 dark:border-slate-800 flex flex-col justify-between p-6 group">
-            {/* Background Thumbnail Image with Backdrop */}
-            <img
-              src={thumbnailUrl}
-              alt={currentLesson.title}
-              className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:scale-105 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/60 pointer-events-none" />
-
-            {/* Top badges */}
-            <div className="relative z-10 flex items-center justify-between">
-              <span className="px-3 py-1 rounded-xl bg-black/60 backdrop-blur-md text-white text-xs font-bold border border-white/20 flex items-center gap-1.5">
-                <Youtube className="w-4 h-4 text-red-500" />
-                <span>Pelajaran {currentLesson.id}</span>
-              </span>
-              <span className="px-2.5 py-1 rounded-xl bg-black/60 backdrop-blur-md text-slate-200 text-xs font-semibold border border-white/10">
-                {currentLesson.duration}
-              </span>
-            </div>
-
-            {/* Center Big Play Action */}
-            <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto space-y-3">
-              <a
-                href={youtubeDirectLink}
-                target="_blank"
-                rel="noreferrer"
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all cursor-pointer ring-4 ring-white/30"
-                title="Buka dan tonton di YouTube"
-              >
-                <Play className="w-8 h-8 sm:w-10 sm:h-10 fill-current translate-x-0.5" />
-              </a>
-              <p className="text-white text-xs sm:text-sm font-bold drop-shadow-md">
-                Klik untuk memutar langsung di YouTube
-              </p>
-            </div>
-
-            {/* Bottom info */}
-            <div className="relative z-10 flex items-end justify-between gap-3 text-white">
-              <div className="space-y-1">
-                <h4 className="font-extrabold text-sm sm:text-base line-clamp-1 drop-shadow-md">
-                  {currentLesson.title}
-                </h4>
-                <p className="text-xs text-slate-300 line-clamp-1">
-                  {currentLesson.description}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setPlayerMode('embed')}
-                className="shrink-0 px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold backdrop-blur-md border border-white/20 flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <MonitorPlay className="w-3.5 h-3.5" />
-                <span>Coba Sematkan</span>
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Video Player */}
+        <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-md border border-slate-200 dark:border-slate-800">
+          <iframe
+            key={`makharij-lesson-${currentLesson.id}`}
+            src={embedUrl}
+            title={currentLesson.title}
+            className="w-full h-full border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        </div>
 
         {/* Video Explanation and Letters */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
