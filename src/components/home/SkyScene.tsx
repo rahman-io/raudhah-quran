@@ -66,7 +66,13 @@ const Moon: React.FC<{ fraction: number; angle: number; size: number; clipId: st
   );
 };
 
-export const SkyScene: React.FC<{ lat: number; lng: number; now: Date; smooth?: boolean }> = ({ lat, lng, now, smooth = true }) => {
+export const SkyScene: React.FC<{ lat: number; lng: number; now: Date; smooth?: boolean; showCamels?: boolean }> = ({
+  lat,
+  lng,
+  now,
+  smooth = true,
+  showCamels = false
+}) => {
   const ids = useId().replace(/:/g, '');
   const minuteKey = smooth ? Math.floor(now.getTime() / 60000) : now.getTime();
   const sun = useMemo(() => sunPosition(lat, lng, now), [lat, lng, minuteKey]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -222,12 +228,14 @@ export const SkyScene: React.FC<{ lat: number; lng: number; now: Date; smooth?: 
         style={{ bottom: 22, height: 84, backgroundImage: `url(${asset('dunes-near')})`, backgroundSize: 'auto 100%', backgroundRepeat: 'repeat-x', backgroundPosition: 'center bottom', filter: landFilter }}
       />
 
-      {/* Rombongan unta berjalan pelan ke kanan */}
-      <div className="sky-caravan absolute flex items-end gap-2" style={{ bottom: 64, filter: landFilter }}>
-        <img src={asset('camel-3')} alt="" className="sky-camel h-[22px]" style={{ animationDelay: '0.3s' }} />
-        <img src={asset('camel-2')} alt="" className="sky-camel h-[30px]" style={{ animationDelay: '0.15s' }} />
-        <img src={asset('camel-1')} alt="" className="sky-camel h-9" />
-      </div>
+      {/* Rombongan unta berjalan pelan ke kanan (disembunyikan sementara) */}
+      {showCamels && (
+        <div className="sky-caravan absolute flex items-end gap-2" style={{ bottom: 64, filter: landFilter }}>
+          <img src={asset('camel-3')} alt="" className="sky-camel h-[22px]" style={{ animationDelay: '0.3s' }} />
+          <img src={asset('camel-2')} alt="" className="sky-camel h-[30px]" style={{ animationDelay: '0.15s' }} />
+          <img src={asset('camel-1')} alt="" className="sky-camel h-9" />
+        </div>
+      )}
 
       {/* Peneduh agar teks tetap terbaca */}
       <div
