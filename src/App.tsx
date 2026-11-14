@@ -147,11 +147,9 @@ function MainApp() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto border-t border-[#E8E1D6] dark:border-slate-800/80 pt-7 pb-28 lg:pb-8 px-4 text-center text-xs text-slate-500 dark:text-slate-400 space-y-2">
-        <p className="font-medium text-[#246579] dark:text-[#477F8D] flex items-center justify-center gap-1.5">
-          <span>Raudhah Qur'an</span>
-          <span>·</span>
-          <span>Menghafal, Membaca & Memahami Al-Qur'an dengan Damai</span>
+      <footer className="mt-auto border-t border-[#E8E1D6] dark:border-slate-800/80 pt-7 pb-28 lg:pb-8 px-4 text-center text-xs text-slate-500 dark:text-slate-400">
+        <p className="font-medium text-[#246579] dark:text-[#477F8D]">
+          © Raudhah Qur&apos;an. All rights reserved.
         </p>
       </footer>
 
